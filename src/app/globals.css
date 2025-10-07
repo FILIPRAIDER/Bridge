@@ -1,26 +1,131 @@
 @import "tailwindcss";
 
+/* ====== Tema claro base ====== */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a; /* slate-900 */
+  --muted: #6b7280;
+
+  /* Marca (se usa en navbar para "Crear cuenta") */
+  --color-brand-500: #3a94ff;
+  --color-brand-600: #1a76e6;
+  --color-brand-700: #155ec0;
+
+  --surface: #ffffff;
+  --border: #e5e7eb; /* gray-200 */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ====== Base ====== */
+html, body { height: 100%; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
 }
+
+/* ====== Component classes ====== */
+@layer components {
+  .container { @apply max-w-6xl mx-auto px-4; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  /* ---- Botones ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.25rem; /* px-5 py-2.5 */
+    border-radius: 9999px;     /* rounded-full */
+    font-weight: 600;
+    line-height: 1;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .02s ease;
+    user-select: none;
+    white-space: nowrap;
+      will-change: transform;
+  }
+
+  /* Azul (solo navbar) */
+  .btn-primary {
+    background: var(--color-brand-600);
+    color: #fff;
+    border: 1px solid transparent;
+  }
+  .btn-primary:hover { background: var(--color-brand-700); }
+
+  /* Borde gris (secundario) */
+  .btn-outline {
+    background: #fff;
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { background: #f9fafb; }
+
+  /* Negro para CTAs de la landing */
+  .btn-dark {
+    background: #0b0f19;      /* negro azulado suave */
+    color: #fff;
+    border: 1px solid #0b0f19;
+  }
+    .btn-nav:hover {
+    background: #f8fafc;          /* sutil */
+    transform: scale(1.03);        /* un poquito más grande */
+  }
+  .btn-nav:active {
+    transform: scale(0.99);
+  }
+  .btn-dark:hover { background: #111827; border-color: #111827; } /* gray-900 */
+
+  .input { 
+    @apply w-full rounded-xl border border-gray-300 px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-all; 
+  }
+  .label { 
+    @apply block text-xs sm:text-sm font-medium text-gray-600 mb-1; 
+  }
+  
+  /* Mobile-first button sizes */
+  .btn-dark {
+    @apply px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base;
+    background: #0b0f19;
+    color: #fff;
+    border: 1px solid #0b0f19;
+    border-radius: 12px;
+  }
+}
+
+/* ====== Fondo cuadrícula plateada con desvanecido ====== */
+@layer utilities {
+  .bg-grid-fade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    --line: rgba(0, 0, 0, 0.05);
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 24px 24px;
+    -webkit-mask-image: radial-gradient(120% 80% at 50% 10%, #000 60%, transparent 100%);
+            mask-image: radial-gradient(120% 80% at 50% 10%, #000 60%, transparent 100%);
+  }
+}
+
+/* ====== Animación de parpadeo para el punto verde ====== */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Botón especial para la navbar: blanco + borde negro + hover scale */
+
