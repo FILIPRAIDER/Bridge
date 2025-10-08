@@ -3,8 +3,11 @@
 import { revalidatePath } from 'next/cache'
 import { sendInvitationEmail } from './send-invitation-email'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001'
-const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'https://cresia-app.vercel.app'
+// Helper para normalizar URLs (quitar "/" al final)
+const norm = (url?: string) => (url ?? '').replace(/\/+$/, '')
+
+const API_BASE_URL = norm(process.env.NEXT_PUBLIC_API_BASE_URL) || 'http://localhost:4001'
+const FRONTEND_URL = norm(process.env.NEXT_PUBLIC_APP_BASE_URL) || 'https://cresia-app.vercel.app'
 
 // Tipos
 interface SendInvitationParams {
@@ -128,7 +131,7 @@ export async function sendTeamInvitation(
         email: data.email,
         token: data.token,
         expiresAt: data.expiresAt,
-        acceptUrl: `${FRONTEND_URL}/join?token=${data.token}`
+        acceptUrl: `${FRONTEND_URL}/join?token=${encodeURIComponent(data.token)}`
       }
     }
 

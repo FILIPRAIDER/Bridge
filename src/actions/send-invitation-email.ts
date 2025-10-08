@@ -2,33 +2,32 @@
 
 import { Resend } from 'resend'
 
+// --- helpers ---
+const norm = (url?: string) => (url ?? '').replace(/\/+$/, '');
+const safeName = (v?: string | null) => (v && v.trim()) ? v.trim() : undefined;
+const pickName = (o: any) =>
+  safeName(o?.name) ||
+  safeName(o?.fullName) ||
+  safeName(o?.displayName) ||
+  safeName(o?.username) ||
+  (typeof o?.email === 'string' ? o.email.split('@')[0] : undefined);
+
 // Validar que la API key esté presente
 if (!process.env.RESEND_API_KEY) {
   console.warn('⚠️ RESEND_API_KEY no está configurada')
 }
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'https://cresia-app.vercel.app'
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001'
+const FRONTEND_URL = norm(process.env.NEXT_PUBLIC_APP_BASE_URL) || 'https://cresia-app.vercel.app'
+const API_BASE_URL = norm(process.env.NEXT_PUBLIC_API_BASE_URL) || 'http://localhost:4001'
 
 interface SendInvitationEmailParams {
   email: string
   token: string
   teamId: string
   invitedByUserId: string
-  inviterName?: string // 🔥 NUEVO: Nombre del invitador desde la sesión
-  teamName?: string    // 🔥 NUEVO: Nombre del equipo si ya lo tenemos
-}
-
-interface TeamData {
-  id: string
-  name: string
-}
-
-interface InviterData {
-  id: string
-  name: string
-  email: string
+  inviterName?: string
+  teamName?: string
 }
 
 /**
@@ -41,72 +40,41 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams) {
   try {
     const { email, token, teamId, invitedByUserId, inviterName: inviterNameParam, teamName: teamNameParam } = params
 
-    console.log('📧 [sendInvitationEmail] Iniciando envío de email')
-    console.log('   - Email destino:', email)
-    console.log('   - Token:', token.substring(0, 10) + '...')
-    console.log('   - Invitador (desde param):', inviterNameParam)
-    console.log('   - Team (desde param):', teamNameParam)
+    let finalInviterName = safeName(inviterNameParam)
+    let finalTeamName = safeName(teamNameParam)
 
-    let finalInviterName = inviterNameParam
-    let finalTeamName = teamNameParam
-
-    // 1️⃣ Si no tenemos el nombre del equipo, obtenerlo del backend
+    // Obtener nombre del equipo si falta
     if (!finalTeamName) {
       try {
-        const teamResponse = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store'
-        })
-
-        if (teamResponse.ok) {
-          const teamData: TeamData = await teamResponse.json()
-          finalTeamName = teamData.name
-          console.log('   - Equipo (desde backend):', finalTeamName)
+        const r = await fetch(`${API_BASE_URL}/teams/${teamId}`, { cache: 'no-store' })
+        if (r.ok) {
+          const team = await r.json()
+          finalTeamName = safeName(team?.name) || 'Equipo'
         }
       } catch (e) {
         console.warn('⚠️ No se pudo obtener info del equipo del backend:', e)
       }
     }
 
-    // 2️⃣ Si no tenemos el nombre del invitador, intentar obtenerlo del backend como fallback
+    // Obtener nombre del invitador si falta
     if (!finalInviterName) {
       try {
-        const inviterResponse = await fetch(`${API_BASE_URL}/users/${invitedByUserId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store'
-        })
-
-        if (inviterResponse.ok) {
-          const inviterData: InviterData = await inviterResponse.json()
-          finalInviterName = inviterData.name
-          console.log('   - Invitador (desde backend):', finalInviterName)
+        const r = await fetch(`${API_BASE_URL}/users/${invitedByUserId}`, { cache: 'no-store' })
+        if (r.ok) {
+          const user = await r.json()
+          finalInviterName = pickName(user) || 'Un miembro del equipo'
         }
       } catch (e) {
         console.warn('⚠️ No se pudo obtener info del invitador del backend:', e)
       }
     }
 
-    // 🔥 Valores por defecto si algo falla
-    if (!finalInviterName) {
-      finalInviterName = 'Un miembro del equipo'
-      console.warn('⚠️ Usando nombre por defecto para invitador')
-    }
-    if (!finalTeamName) {
-      finalTeamName = 'un equipo en Bridge'
-      console.warn('⚠️ Usando nombre por defecto para equipo')
-    }
+    // Defaults finales
+    finalInviterName ||= 'Un miembro del equipo'
+    finalTeamName ||= 'un equipo en Bridge'
 
-    console.log('   ✅ Datos finales:')
-    console.log('      - Invitador:', finalInviterName)
-    console.log('      - Equipo:', finalTeamName)
+    const acceptUrl = `${FRONTEND_URL}/join?token=${encodeURIComponent(token)}`
 
-    // 3️⃣ Construir URL de aceptación (FRONTEND)
-    const acceptUrl = `${FRONTEND_URL}/join?token=${token}`
-    console.log('   - Accept URL:', acceptUrl)
-
-    // 4️⃣ Enviar email con Resend
     const { data, error } = await resend.emails.send({
       from: 'Bridge <onboarding@resend.dev>', // Cambiar cuando tengas dominio verificado
       to: [email],
