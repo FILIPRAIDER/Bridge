@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
-import { toast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
 
 const inviteSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -24,6 +24,7 @@ interface InviteMembersProps {
 export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const { show } = useToast();
 
   const {
     register,
@@ -39,28 +40,78 @@ export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
 
   const onSubmit = async (data: InviteForm) => {
     if (!session?.user?.id) {
-      toast.error("Sesión no válida. Por favor, inicia sesión nuevamente.");
+      show({
+        variant: "error",
+        message: "Sesión no válida. Por favor, inicia sesión nuevamente."
+      });
       return;
     }
 
     try {
       setLoading(true);
       
-      // Agregar byUserId al payload
+      // Normalizar email y preparar payload
       const payload = {
-        ...data,
+        email: data.email.trim().toLowerCase(),
+        role: data.role,
         byUserId: session.user.id,
       };
       
-      console.log("Sending invite with payload:", payload);
-      await api.post(`/teams/${teamId}/invites`, payload);
+      console.log("📧 Enviando invitación:", {
+        email: payload.email,
+        role: payload.role,
+        teamId,
+        byUserId: payload.byUserId,
+      });
+
+      const response = await api.post(`/teams/${teamId}/invites`, payload);
       
-      toast.success("Invitación enviada correctamente");
+      console.log("✅ Invitación creada:", response);
+      
+      show({
+        variant: "success",
+        message: `Invitación enviada a ${payload.email}`
+      });
+      
       reset();
       onInviteSent();
     } catch (error: any) {
-      console.error("Error sending invite:", error);
-      toast.error(error.message || "Error al enviar invitación");
+      console.error("❌ Error al enviar invitación:", error);
+      console.error("Error details:", {
+        status: error.status,
+        message: error.message,
+        data: error.data
+      });
+      
+      // Mensajes de error más específicos basados en el código de estado
+      let errorMessage = "Error al enviar invitación";
+      
+      if (error.status === 400) {
+        if (error.message.includes("ya existe") || error.message.includes("pendiente")) {
+          errorMessage = "Ya existe una invitación pendiente para este email";
+        } else if (error.message.includes("miembro")) {
+          errorMessage = "Este usuario ya es miembro del equipo";
+        } else if (error.message.includes("validación")) {
+          errorMessage = "Error de validación. Verifica que eres líder del equipo y que el usuario exista.";
+        } else if (error.message.includes("lider") || error.message.includes("líder")) {
+          errorMessage = "No tienes permisos de líder para enviar invitaciones";
+        } else {
+          errorMessage = error.message || "Datos de invitación inválidos";
+        }
+      } else if (error.status === 403) {
+        errorMessage = "No tienes permisos para enviar invitaciones a este equipo";
+      } else if (error.status === 404) {
+        errorMessage = "Equipo no encontrado";
+      } else if (error.status === 401) {
+        errorMessage = "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      show({
+        variant: "error",
+        message: errorMessage
+      });
     } finally {
       setLoading(false);
     }

@@ -112,11 +112,13 @@ export function ProfileCard({ profile }: ProfileCardProps) {
                 
                 {/* Badges */}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                    {getSeniorityLabel(profile?.seniority)}
-                  </span>
+                  {profile?.seniority && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                      {getSeniorityLabel(profile.seniority)}
+                    </span>
+                  )}
                   {profile?.sector && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                       {typeof profile.sector === 'object' 
                         ? `${profile.sector.icon || ''} ${profile.sector.nameEs}`
                         : profile.sector}
@@ -127,10 +129,14 @@ export function ProfileCard({ profile }: ProfileCardProps) {
 
               {/* Contact info aligned to right */}
               <div className="hidden md:flex flex-col items-end gap-2 text-sm text-gray-600">
-                {profile?.location && (
+                {(profile?.city || profile?.country || profile?.location) && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    <span>{profile.location}</span>
+                    <span>
+                      {profile.city 
+                        ? `${profile.city}${profile.country ? ', ' + profile.country : ''}`
+                        : profile.location || profile.country}
+                    </span>
                   </div>
                 )}
                 {profile?.availability && (
@@ -144,10 +150,14 @@ export function ProfileCard({ profile }: ProfileCardProps) {
 
             {/* Mobile contact info */}
             <div className="md:hidden flex flex-wrap gap-3 mt-3 text-sm text-gray-600">
-              {profile?.location && (
+              {(profile?.city || profile?.country || profile?.location) && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  <span>{profile.location}</span>
+                  <span>
+                    {profile.city 
+                      ? `${profile.city}${profile.country ? ', ' + profile.country : ''}`
+                      : profile.location || profile.country}
+                  </span>
                 </div>
               )}
               {profile?.availability && (
@@ -163,9 +173,37 @@ export function ProfileCard({ profile }: ProfileCardProps) {
         {/* Bio */}
         {profile?.bio && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Sobre mí</h4>
             <p className="text-sm text-gray-700 leading-relaxed">
               {profile.bio}
             </p>
+          </div>
+        )}
+
+        {/* Additional Details */}
+        {(profile?.stack || profile?.phone || profile?.address) && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Información Adicional</h4>
+            <div className="space-y-2">
+              {profile.stack && (
+                <div>
+                  <span className="text-xs font-medium text-gray-500">Stack Tecnológico:</span>
+                  <p className="text-sm text-gray-900 mt-0.5">{profile.stack}</p>
+                </div>
+              )}
+              {profile.phone && (
+                <div>
+                  <span className="text-xs font-medium text-gray-500">Teléfono:</span>
+                  <p className="text-sm text-gray-900 mt-0.5">{profile.phone}</p>
+                </div>
+              )}
+              {profile.address && (
+                <div>
+                  <span className="text-xs font-medium text-gray-500">Dirección:</span>
+                  <p className="text-sm text-gray-900 mt-0.5">{profile.address}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
