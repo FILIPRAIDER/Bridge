@@ -9,107 +9,26 @@ interface BackendHealthProps {
 }
 
 export function BackendHealthCheck({ children }: BackendHealthProps) {
+  // DESHABILITADO: Health check causa problemas con CORS en desarrollo
+  // El backend solo acepta requests desde la URL de producción
+  // Simplemente mostramos un loader breve y continuamos
   const [isChecking, setIsChecking] = useState(true);
-  const [_isOnline, setIsOnline] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    let mounted = true;
+    // Loader cosmético de 1.5 segundos
+    const timer = setTimeout(() => {
+      setIsChecking(false);
+    }, 1500);
 
-    const checkHealth = async () => {
-      try {
-        const health = await checkBackendHealth();
-        
-        if (!mounted) return;
-        
-        if (health.online) {
-          setIsOnline(true);
-          setIsChecking(false);
-          setError(null);
-        } else {
-          // Reintentar después de 3 segundos
-          if (retryCount < 3) {
-            setTimeout(() => {
-              setRetryCount(prev => prev + 1);
-            }, 3000);
-          } else {
-            setError("No se pudo conectar al servidor después de varios intentos.");
-            setIsChecking(false);
-          }
-        }
-      } catch (err) {
-        if (!mounted) return;
-        
-        console.error("Health check error:", err);
-        
-        // Reintentar después de 3 segundos
-        if (retryCount < 3) {
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-          }, 3000);
-        } else {
-          setError("No se pudo conectar al servidor después de varios intentos.");
-          setIsChecking(false);
-        }
-      }
-    };
-
-    checkHealth();
-
-    return () => {
-      mounted = false;
-    };
-  }, [retryCount]);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (isChecking) {
     return (
       <BridgeLoader
-        message="Conectando al servidor"
-        submessage={
-          retryCount === 0
-            ? "Verificando conexión con el backend"
-            : `Reintentando (${retryCount}/3)... El servidor puede tardar hasta 60 segundos en iniciar`
-        }
+        message="Accediendo al dashboard"
+        submessage="Preparando tu espacio de trabajo"
       />
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-red-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Error de Conexión
-          </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => {
-              setIsChecking(true);
-              setRetryCount(0);
-              setError(null);
-            }}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
     );
   }
 

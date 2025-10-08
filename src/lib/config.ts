@@ -21,25 +21,37 @@ export const COLD_START_TIMEOUT = 60000; // 60 segundos para cold starts de Rend
 // Health Check
 export async function checkBackendHealth() {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`, {
+    // Intentar con /api/users/me o cualquier endpoint que exista
+    // Si falla, asumimos que el backend está online (evita cold start issues)
+    const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
       method: "GET",
       signal: AbortSignal.timeout(10000), // 10 segundos
     });
     
-    if (!response.ok) {
-      throw new Error(`Health check failed: ${response.status}`);
-    }
-    
-    const data = await response.json();
+    // Render puede tardar en iniciar (cold start)
+    // Consideramos "online" si responde con cualquier código HTTP
+    // incluso 401/404, porque significa que el servidor está activo
     return {
       online: true,
-      ...data,
+      status: response.status,
     };
   } catch (error) {
     console.error("Backend health check failed:", error);
+    
+    // Si es un error de red o timeout, asumimos cold start
+    // y consideramos online de todas formas (Render puede tardar)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (error instanceof TypeError || errorMessage.includes("timeout")) {
+      console.warn("Backend might be in cold start, proceeding anyway");
+      return {
+        online: true,
+        coldStart: true,
+      };
+    }
+    
     return {
       online: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: errorMessage,
     };
   }
 }

@@ -90,7 +90,7 @@ export function BridgeLoader({ message, submessage }: BridgeLoaderProps) {
           </div>
 
           {/* Barra de progreso */}
-          <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
+          <div className="w-full max-w-xs h-1 bg-gray-800 rounded-full overflow-hidden">
             <div className="h-full w-1/3 bg-gradient-to-r from-white via-gray-300 to-white animate-slide-right" />
           </div>
         </div>
