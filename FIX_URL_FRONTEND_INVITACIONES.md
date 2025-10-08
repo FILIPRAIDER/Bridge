@@ -24,21 +24,62 @@ const FRONTEND_HARDCODED = "https://tu-app-real.vercel.app"; // ← Cambiar por 
 
 ## ✅ Solución Completa
 
-### **Archivo: `src/routes/teams.js` - Línea ~30**
+### **EL PROBLEMA REAL**
 
-Cambiar esta línea:
+La URL del frontend **SÍ está correcta** (`https://cresia-app.vercel.app`), pero el código está usando el **backend** en lugar del frontend porque la lógica del `if` está invertida.
+
+### **Archivo: `src/routes/teams.js` - Función `buildAcceptUrl`**
+
+**REEMPLAZAR TODA LA FUNCIÓN por este código:**
+
 ```javascript
-// ❌ INCORRECTO
-const FRONTEND_HARDCODED = "https://cresia-app.vercel.app";
+function buildAcceptUrl({ token, target }) {
+  // 🎯 SIEMPRE usar frontend (la URL ya es correcta)
+  const FRONTEND_URL = "https://cresia-app.vercel.app";
+  
+  console.log("📧 [buildAcceptUrl] Generando URL de aceptación");
+  console.log("  - Token:", token.substring(0, 10) + "...");
+  console.log("  - Target solicitado:", target);
+  console.log("  - URL frontend:", FRONTEND_URL);
+  
+  // 🔥 FIX: SIEMPRE usar frontend para invitaciones de usuarios
+  // El parámetro "target" ya no importa - siempre frontend
+  const url = new URL("/join", FRONTEND_URL);
+  url.searchParams.set("token", token);
+  const finalUrl = url.toString();
+  
+  console.log("  ✅ Accept URL generado:", finalUrl);
+  return finalUrl;
+}
 ```
 
-Por esta (con la URL REAL de tu frontend):
-```javascript
-// ✅ CORRECTO
-const FRONTEND_HARDCODED = "https://your-actual-frontend.vercel.app";
+**O si quieres mantener la opción de backend (para testing):**
 
-// O si prefieres usar variable de entorno:
-const FRONTEND_HARDCODED = process.env.FRONTEND_URL || "https://your-actual-frontend.vercel.app";
+```javascript
+function buildAcceptUrl({ token, target }) {
+  const FRONTEND_URL = "https://cresia-app.vercel.app";
+  
+  console.log("📧 [buildAcceptUrl] Generando URL de aceptación");
+  console.log("  - Token:", token.substring(0, 10) + "...");
+  console.log("  - Target:", target);
+  
+  // 🔥 INVERTIR LÓGICA: Por defecto frontend, backend solo si se pide explícitamente
+  // Y SOLO si viene desde query params (no desde body)
+  const useBackend = target === "backend" && process.env.NODE_ENV === "development";
+  
+  if (useBackend) {
+    const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:4001";
+    console.log("  - [DEV] Usando backend URL:", API_BASE_URL);
+    return `${API_BASE_URL}/teams/invites/${token}/accept`;
+  }
+  
+  // 🎯 DEFAULT: SIEMPRE frontend
+  const url = new URL("/join", FRONTEND_URL);
+  url.searchParams.set("token", token);
+  const finalUrl = url.toString();
+  console.log("  ✅ Accept URL generado:", finalUrl);
+  return finalUrl;
+}
 ```
 
 ---
