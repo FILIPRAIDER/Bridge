@@ -10,9 +10,19 @@ interface MemberWithProfile extends TeamMember {
   profile?: {
     headline?: string;
     bio?: string;
-    location?: string;
+    // Ubicación - Nuevo formato
+    country?: string;
+    city?: string;
+    address?: string;
+    location?: string; // Fallback antiguo
     stack?: string;
-    sector?: string;
+    // Sector - Puede ser objeto o string (para retrocompatibilidad)
+    sector?: {
+      id: string;
+      nameEs: string;
+      icon?: string;
+    } | string;
+    sectorId?: string;
     seniority?: string;
     availability?: number;
     phone?: string;
@@ -65,21 +75,46 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
       const membersWithProfiles = await Promise.all(
         membersData.map(async (member) => {
           try {
+            // Cargar datos completos del usuario
             const userData = await api.get<any>(`/users/${member.userId}`);
+            
+            // Cargar skills del usuario específicamente
+            let userSkills = [];
+            try {
+              const skillsData = await api.get<any>(`/users/${member.userId}/skills`);
+              // El backend puede devolver { skills: [...] } o directamente [...]
+              userSkills = skillsData?.skills || skillsData || [];
+            } catch (skillError) {
+              console.error(`Error loading skills for user ${member.userId}:`, skillError);
+            }
+
+            console.log(`Usuario ${member.user?.name}:`, {
+              profile: userData.profile,
+              skills: userSkills,
+              experiences: userData.experiences,
+            });
+
             return {
               ...member,
               profile: userData.profile || {},
               experiences: userData.experiences || [],
               certifications: userData.certifications || [],
-              skills: userData.userSkills || [],
+              skills: userSkills,
             };
           } catch (error) {
             console.error(`Error loading profile for user ${member.userId}:`, error);
-            return member;
+            return {
+              ...member,
+              profile: {},
+              experiences: [],
+              certifications: [],
+              skills: [],
+            };
           }
         })
       );
       
+      console.log("Miembros cargados con perfiles:", membersWithProfiles);
       setMembers(membersWithProfiles);
     } catch (error) {
       console.error("Error loading members:", error);
@@ -171,16 +206,32 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
 
               {/* Quick Info */}
               <div className="space-y-2 mb-4">
-                {displayedMember.profile?.location && (
+                {/* Ubicación - Nuevo formato o fallback al antiguo */}
+                {(displayedMember.profile?.city || displayedMember.profile?.location) && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span>{displayedMember.profile.location}</span>
+                    <span>
+                      {displayedMember.profile.city 
+                        ? `${displayedMember.profile.city}${displayedMember.profile.country ? ', ' + displayedMember.profile.country : ''}`
+                        : displayedMember.profile.location}
+                    </span>
                   </div>
                 )}
                 {displayedMember.profile?.availability && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Clock className="h-4 w-4 text-gray-400" />
                     <span>{displayedMember.profile.availability} hrs/semana</span>
+                  </div>
+                )}
+                {/* Sector - Nuevo formato con relación o fallback */}
+                {displayedMember.profile?.sector && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Briefcase className="h-4 w-4 text-gray-400" />
+                    <span>
+                      {typeof displayedMember.profile.sector === 'object' 
+                        ? `${displayedMember.profile.sector.icon || ''} ${displayedMember.profile.sector.nameEs}`
+                        : displayedMember.profile.sector}
+                    </span>
                   </div>
                 )}
                 {displayedMember.skills && displayedMember.skills.length > 0 && (
@@ -193,10 +244,66 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
 
               {/* Bio */}
               {displayedMember.profile?.bio && (
-                <div>
+                <div className="mb-4">
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {displayedMember.profile.bio}
                   </p>
+                </div>
+              )}
+
+              {/* Stack Tecnológico */}
+              {displayedMember.profile?.stack && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <h4 className="text-xs font-semibold text-gray-700 mb-1">Stack Tecnológico</h4>
+                  <p className="text-sm text-gray-900">{displayedMember.profile.stack}</p>
+                </div>
+              )}
+
+              {/* Skills Section */}
+              {displayedMember.skills && displayedMember.skills.length > 0 && (
+                <div className="border-t border-gray-200 pt-4">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-sm">Skills</h3>
+                  <div className="space-y-2">
+                    {displayedMember.skills.slice(0, 5).map((userSkill, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {userSkill.skill?.name || "Skill"}
+                          </p>
+                          {userSkill.skill?.category && (
+                            <p className="text-xs text-gray-500">
+                              {userSkill.skill.category}
+                            </p>
+                          )}
+                        </div>
+                        <div className="ml-3 flex-shrink-0">
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg
+                                key={star}
+                                className={`h-3 w-3 ${
+                                  star <= userSkill.level
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "fill-gray-200 text-gray-200"
+                                }`}
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {displayedMember.skills.length > 5 && (
+                      <p className="text-xs text-gray-500 text-center pt-2 font-medium">
+                        +{displayedMember.skills.length - 5} más
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

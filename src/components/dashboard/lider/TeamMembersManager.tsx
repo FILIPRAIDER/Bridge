@@ -219,13 +219,30 @@ export function TeamMembersManager({
     return email.substring(0, 2).toUpperCase();
   };
 
-  const getTimeSinceJoined = (joinedAt: string) => {
-    const joined = new Date(joinedAt);
+  const getTimeSinceJoined = (member: ExtendedTeamMember) => {
+    // Intentar usar joinedAt primero, luego createdAt como fallback
+    const dateString = member.joinedAt || (member as any).createdAt;
+    
+    if (!dateString) {
+      return "Fecha no disponible";
+    }
+    
+    const joined = new Date(dateString);
+    
+    // Verificar si la fecha es válida
+    if (isNaN(joined.getTime())) {
+      return "Fecha inválida";
+    }
+    
     const now = new Date();
     const diffMs = now.getTime() - joined.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 30) {
+    if (diffDays < 0) {
+      return "Recientemente";
+    } else if (diffDays < 1) {
+      return "Hoy";
+    } else if (diffDays < 30) {
       return `Hace ${diffDays} día${diffDays !== 1 ? "s" : ""}`;
     } else if (diffDays < 365) {
       const months = Math.floor(diffDays / 30);
@@ -395,7 +412,7 @@ export function TeamMembersManager({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <Calendar className="h-4 w-4" />
-                          {getTimeSinceJoined(member.joinedAt)}
+                          {getTimeSinceJoined(member)}
                         </div>
                       </td>
 
@@ -492,7 +509,7 @@ export function TeamMembersManager({
                       {member.role === "LIDER" ? "Líder" : "Miembro"}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {getTimeSinceJoined(member.joinedAt)}
+                      {getTimeSinceJoined(member)}
                     </span>
                   </div>
 

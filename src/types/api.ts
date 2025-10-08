@@ -10,6 +10,31 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Sector {
+  id: string;
+  name: string; // slug: "technology", "finance", etc.
+  nameEs: string; // "Tecnología", "Finanzas", etc.
+  nameEn: string; // "Technology", "Finance", etc.
+  description?: string;
+  icon?: string; // emoji: "💻", "💰", etc.
+  order: number;
+  active: boolean;
+}
+
+export interface Country {
+  code: string; // ISO alpha-2: "CO", "US", "MX", etc.
+  name: string;
+  dialCode: string;
+  flag: string; // emoji
+}
+
+export interface CitiesResponse {
+  ok: boolean;
+  countryCode: string;
+  cities: string[];
+  total: number;
+}
+
 export interface Company {
   id: string;
   name: string;
@@ -27,10 +52,20 @@ export interface MemberProfile {
   headline?: string;
   bio?: string;
   seniority?: string;
-  location?: string;
+  
+  // UBICACIÓN (NUEVO)
+  country?: string; // Código ISO: "CO", "US", "MX", etc.
+  city?: string; // Ciudad desde lista predefinida
+  address?: string; // Dirección completa (opcional)
+  location?: string; // ⚠️ DEPRECATED (mantener temporalmente)
+  
   availability?: number; // Días disponibles (1-60)
   stack?: string;
-  sector?: string;
+  
+  // SECTOR (ACTUALIZADO)
+  sectorId?: string; // FK a tabla Sector
+  sector?: Sector; // Relación poblada
+  
   phone?: string;
   phoneE164?: string; // Formato E.164 (+573001234567)
   phoneCountry?: string; // ISO alpha-2 (CO, US, etc.)

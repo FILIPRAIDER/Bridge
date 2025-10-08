@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Camera, Upload, Loader2, X } from "lucide-react";
+import { Camera, Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/toast";
 
@@ -20,7 +20,9 @@ export function AvatarUploader({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(currentAvatarUrl || null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   // Cargar avatar existente desde la sesión
   useEffect(() => {
@@ -29,17 +31,14 @@ export function AvatarUploader({
     }
   }, [session?.user?.avatarUrl]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const validateAndProcessFile = (file: File) => {
     // Validar tipo de archivo
     if (!file.type.startsWith("image/")) {
       show({
         message: "Por favor selecciona un archivo de imagen válido",
         variant: "error",
       });
-      return;
+      return false;
     }
 
     // Validar tamaño (máx 5MB)
@@ -48,7 +47,7 @@ export function AvatarUploader({
         message: "La imagen no debe superar 5MB",
         variant: "error",
       });
-      return;
+      return false;
     }
 
     setSelectedFile(file);
@@ -59,6 +58,45 @@ export function AvatarUploader({
       setPreviewUrl(reader.result as string);
     };
     reader.readAsDataURL(file);
+    
+    return true;
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    validateAndProcessFile(file);
+  };
+
+  // Drag and Drop Handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget === dropZoneRef.current) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      validateAndProcessFile(files[0]);
+    }
   };
 
   const handleUpload = async () => {
@@ -137,9 +175,9 @@ export function AvatarUploader({
   const displayUrl = previewUrl || avatarUrl;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col lg:flex-row items-center gap-6">
       {/* Avatar Preview */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <div className="h-32 w-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden ring-4 ring-gray-300">
           {displayUrl ? (
             <img
@@ -173,44 +211,70 @@ export function AvatarUploader({
         className="hidden"
       />
 
-      {/* Actions when file selected */}
-      {previewUrl && (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleUpload}
-            disabled={isUploading}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Subiendo...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4" />
-                Subir Foto
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={handleCancel}
-            disabled={isUploading}
-            className="p-2 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
-          >
-            <X className="h-5 w-5" />
-          </button>
+      {/* Drag & Drop Zone */}
+      <div className="flex-1 w-full">
+        <div
+          ref={dropZoneRef}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => !previewUrl && fileInputRef.current?.click()}
+          className={`relative border-2 border-dashed rounded-xl p-8 transition-all cursor-pointer ${
+            isDragging
+              ? "border-gray-900 bg-gray-50 scale-105"
+              : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+          } ${previewUrl ? "opacity-50 pointer-events-none" : ""}`}
+        >
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className={`p-3 rounded-full mb-3 transition-colors ${
+              isDragging ? "bg-gray-900" : "bg-gray-100"
+            }`}>
+              <ImageIcon className={`h-8 w-8 ${
+                isDragging ? "text-white" : "text-gray-400"
+              }`} />
+            </div>
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {isDragging ? "¡Suelta la imagen aquí!" : "Arrastra una imagen o haz clic"}
+            </p>
+            <p className="text-xs text-gray-500">
+              PNG, JPG, GIF hasta 5MB
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Upload Instructions */}
-      {!previewUrl && (
-        <p className="text-xs text-gray-500 text-center max-w-xs">
-          Haz clic en el ícono de la cámara para subir una foto de perfil. Máx
-          5MB.
-        </p>
-      )}
+        {/* Actions when file selected */}
+        {previewUrl && (
+          <div className="flex items-center gap-2 mt-4">
+            <button
+              onClick={handleUpload}
+              disabled={isUploading}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Subiendo...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-5 w-5" />
+                  {avatarUrl ? "Reemplazar Foto" : "Subir Foto"}
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={handleCancel}
+              disabled={isUploading}
+              className="p-3 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Cancelar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { ManageSkills } from "@/components/dashboard/lider/ManageSkills";
 import { ViewInvites } from "@/components/dashboard/lider/ViewInvites";
 import { TeamManagement } from "@/components/dashboard/lider/TeamManagement";
 import { TeamMembersManager } from "@/components/dashboard/lider/TeamMembersManager";
-import { ProfileManager } from "@/components/dashboard/shared/ProfileManager";
+import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
@@ -77,8 +77,8 @@ export default function LiderDashboard() {
   const loadProfile = async () => {
     if (!session?.user?.id) return;
     try {
-      const data = await api.get<MemberProfile>(`/users/${session.user.id}`);
-      setProfile(data);
+      const userData = await api.get<any>(`/users/${session.user.id}`);
+      setProfile(userData.profile || userData);
     } catch (error) {
       console.error("Error loading profile:", error);
     }

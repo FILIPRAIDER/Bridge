@@ -20,7 +20,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
   const [teamName, setTeamName] = useState("");
   const [saving, setSaving] = useState(false);
   
-  const activeMembers = members.filter((m) => m.role === "MIEMBRO").length;
+  const regularMembers = members.filter((m) => m.role === "MIEMBRO").length;
   const leaders = members.filter((m) => m.role === "LIDER").length;
 
   const handleEditDescription = () => {
@@ -86,9 +86,9 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
         <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Miembros Activos</p>
+              <p className="text-sm text-gray-600">Miembros Regulares</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">
-                {activeMembers}
+                {regularMembers}
               </p>
             </div>
             <div className="h-12 w-12 bg-green-50 rounded-lg flex items-center justify-center">
@@ -272,10 +272,12 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                   </span>
                   <span className="text-sm text-gray-500">
                     Desde{" "}
-                    {new Date(member.joinedAt).toLocaleDateString("es-ES", {
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {member.joinedAt && !isNaN(new Date(member.joinedAt).getTime())
+                      ? new Date(member.joinedAt).toLocaleDateString("es-ES", {
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "Fecha no disponible"}
                   </span>
                 </div>
               </div>

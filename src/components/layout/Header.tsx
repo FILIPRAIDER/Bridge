@@ -41,14 +41,14 @@ export default function Header() {
   const role: UserRole = (session?.user?.role ?? "ANON") as UserRole;
 
   const navBtn =
-    "inline-flex items-center justify-center rounded-full " +
-    "border border-gray-300 bg-white text-black px-5 py-2.5 font-semibold shadow-sm " +
-    "transition-transform duration-150 transform-gpu hover:scale-105 active:scale-95 hover:border-gray-400";
+    "inline-flex items-center justify-center rounded-xl " +
+    "bg-gray-100 text-gray-900 px-5 py-2.5 font-semibold " +
+    "transition-all duration-150 hover:bg-gray-200";
 
   const navBtnDark =
-    "inline-flex items-center justify-center rounded-full " +
+    "inline-flex items-center justify-center rounded-xl " +
     "bg-[#0b0f19] text-white px-5 py-2.5 font-semibold shadow-sm " +
-    "transition-transform duration-150 transform-gpu hover:scale-105 active:scale-95 hover:bg-[#111827]";
+    "transition-all duration-150 hover:bg-[#111827]";
 
   const itemBase = "px-3 py-2 rounded-lg text-sm transition-colors";
   const itemIdle = "text-gray-600 hover:bg-gray-100";

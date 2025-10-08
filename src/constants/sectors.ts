@@ -1,0 +1,31 @@
+// Lista de sectores predefinidos
+export const SECTORS = [
+  "Tecnología",
+  "Finanzas",
+  "Salud",
+  "Educación",
+  "E-commerce",
+  "Marketing",
+  "Retail",
+  "Manufactura",
+  "Logística",
+  "Telecomunicaciones",
+  "Energía",
+  "Construcción",
+  "Agricultura",
+  "Turismo",
+  "Entretenimiento",
+  "Medios",
+  "Consultoría",
+  "Legal",
+  "Inmobiliaria",
+  "Automotriz",
+  "Alimentación",
+  "Transporte",
+  "Gobierno",
+  "ONGs",
+  "Startup",
+  "Otro",
+] as const;
+
+export type Sector = typeof SECTORS[number];

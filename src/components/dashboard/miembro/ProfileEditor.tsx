@@ -9,16 +9,21 @@ import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { PhoneInput } from "@/components/auth/register/PhoneInput";
+import { useSectors } from "@/hooks/useSectors";
+import { useCountries } from "@/hooks/useCountries";
+import { useCities } from "@/hooks/useCities";
 import type { MemberProfile } from "@/types/api";
 
 const profileSchema = z.object({
   headline: z.string().optional(),
   bio: z.string().optional(),
   seniority: z.string().optional(),
-  location: z.string().optional(),
+  country: z.string().optional(),
+  city: z.string().optional(),
+  address: z.string().optional(),
   availability: z.number().optional(),
   stack: z.string().optional(),
-  sector: z.string().optional(),
+  sectorId: z.string().optional(),
   phone: z.string().optional(),
 });
 
@@ -41,6 +46,12 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+
+  // Hooks para datos del backend
+  const { data: sectorsData, loading: sectorsLoading } = useSectors();
+  const { data: countries, loading: countriesLoading } = useCountries();
+  const { data: citiesData, loading: citiesLoading } = useCities(selectedCountry);
 
   const {
     register,
@@ -55,10 +66,12 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
       headline: "",
       bio: "",
       seniority: "",
-      location: "",
+      country: "",
+      city: "",
+      address: "",
       availability: undefined,
       stack: "",
-      sector: "",
+      sectorId: "",
       phone: "",
     },
   });
@@ -76,17 +89,24 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
   // Prellenar campos cuando el perfil se carga
   useEffect(() => {
     if (profile) {
+      // Cargar país actual para activar las ciudades
+      if (profile.country) {
+        setSelectedCountry(profile.country);
+      }
+      
       // Usar reset para cargar todos los valores de una vez
       reset({
         headline: profile.headline || "",
         bio: profile.bio || "",
         seniority: profile.seniority || "",
-        location: profile.location || "",
+        country: profile.country || "",
+        city: profile.city || "",
+        address: profile.address || "",
         availability: profile.availability !== undefined && profile.availability !== null 
           ? profile.availability 
           : undefined,
         stack: profile.stack || "",
-        sector: profile.sector || "",
+        sectorId: profile.sectorId || "",
         phone: profile.phone || "",
       });
     }
@@ -235,20 +255,6 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
           </div>
 
           <div>
-            <label htmlFor="location" className="label">
-              Ubicación
-            </label>
-            <input
-              {...register("location")}
-              id="location"
-              className="input"
-              placeholder="Ciudad, País"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
             <label htmlFor="availability" className="label">
               Disponibilidad (horas/semana)
             </label>
@@ -262,18 +268,104 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
               placeholder="Ej: 40"
             />
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="sector" className="label">
-              Sector
-            </label>
-            <input
-              {...register("sector")}
-              id="sector"
-              className="input"
-              placeholder="Ej: Tecnología"
-            />
-          </div>
+        {/* Sector - Desde API */}
+        <div>
+          <label htmlFor="sectorId" className="label">
+            Sector Profesional
+          </label>
+          <select
+            {...register("sectorId")}
+            id="sectorId"
+            className="input appearance-none cursor-pointer"
+            disabled={sectorsLoading}
+          >
+            <option value="">
+              {sectorsLoading ? "Cargando sectores..." : "Selecciona un sector"}
+            </option>
+            {sectorsData?.sectors.map((sector) => (
+              <option key={sector.id} value={sector.id}>
+                {sector.icon} {sector.nameEs}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Ubicación - País */}
+        <div>
+          <label htmlFor="country" className="label">
+            País <span className="text-red-500">*</span>
+          </label>
+          <select
+            {...register("country")}
+            id="country"
+            className="input appearance-none cursor-pointer"
+            disabled={countriesLoading}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSelectedCountry(value);
+              setValue("country", value);
+              // Reset city when country changes
+              setValue("city", "");
+            }}
+          >
+            <option value="">
+              {countriesLoading ? "Cargando países..." : "Selecciona un país"}
+            </option>
+            {countries?.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.flag} {country.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Ubicación - Ciudad */}
+        <div>
+          <label htmlFor="city" className="label">
+            Ciudad <span className="text-red-500">*</span>
+          </label>
+          <select
+            {...register("city")}
+            id="city"
+            className="input appearance-none cursor-pointer"
+            disabled={!selectedCountry || citiesLoading}
+          >
+            <option value="">
+              {!selectedCountry
+                ? "Primero selecciona un país"
+                : citiesLoading
+                ? "Cargando ciudades..."
+                : "Selecciona una ciudad"}
+            </option>
+            {citiesData?.cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+          {!selectedCountry && (
+            <p className="mt-1 text-xs text-gray-500">
+              💡 Primero selecciona un país para ver las ciudades disponibles
+            </p>
+          )}
+        </div>
+
+        {/* Ubicación - Dirección (opcional) */}
+        <div>
+          <label htmlFor="address" className="label">
+            Dirección <span className="text-gray-400 text-sm">(Opcional)</span>
+          </label>
+          <input
+            {...register("address")}
+            id="address"
+            className="input"
+            placeholder="Ej: Calle 123 #45-67, Apartamento 102"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Agrega más detalles de tu ubicación si lo deseas
+          </p>
         </div>
 
         <div>

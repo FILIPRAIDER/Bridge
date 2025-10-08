@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { User, Briefcase, Award, Camera } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { ProfileCard } from "./ProfileCard";
 import { ProfileEditor } from "./ProfileEditor";
 import { ExperiencesManager } from "./ExperiencesManager";
 import { CertificationsManager } from "./CertificationsManager";
@@ -32,6 +33,9 @@ export function ProfileManager({ profile, onUpdate }: ProfileManagerProps) {
 
   return (
     <div className="space-y-6">
+      {/* Profile Card Preview */}
+      <ProfileCard profile={profile} />
+
       {/* Avatar Section */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
