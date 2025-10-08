@@ -16,10 +16,10 @@ type CenterLink = {
 };
 
 const centerLinks: CenterLink[] = [
-  { href: "/",        label: "Inicio",  showFor: ["EMPRESARIO", "ESTUDIANTE", "LIDER", "ADMIN", "ANON"] },
-  { href: "/empresa", label: "Empresa", showFor: ["EMPRESARIO", "ADMIN"] },
-  { href: "/chat",    label: "Chat",    showFor: ["EMPRESARIO", "ADMIN"] },
-  { href: "/equipos", label: "Equipos", showFor: ["ESTUDIANTE", "LIDER", "ADMIN", "ANON"] },
+  { href: "/",                       label: "Inicio",    showFor: ["EMPRESARIO", "ESTUDIANTE", "LIDER", "ADMIN", "ANON"] },
+  { href: "/dashboard/empresario",   label: "Dashboard", showFor: ["EMPRESARIO"] },
+  { href: "/dashboard/lider",        label: "Dashboard", showFor: ["LIDER"] },
+  { href: "/dashboard/miembro",      label: "Dashboard", showFor: ["ESTUDIANTE"] },
 ];
 
 export default function Header() {

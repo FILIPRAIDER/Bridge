@@ -18,12 +18,14 @@ export default function DashboardHome() {
 
     const role = session.user?.role;
     
-    if (role === "LIDER" || role === "ADMIN") {
+    if (role === "LIDER") {
       router.replace("/dashboard/lider");
     } else if (role === "ESTUDIANTE") {
       router.replace("/dashboard/miembro");
     } else if (role === "EMPRESARIO") {
-      router.replace("/empresa");
+      router.replace("/dashboard/empresario");
+    } else if (role === "ADMIN") {
+      router.replace("/dashboard/lider"); // o ruta específica de admin
     } else {
       router.replace("/dashboard/miembro");
     }

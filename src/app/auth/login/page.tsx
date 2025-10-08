@@ -78,12 +78,14 @@ function LoginForm() {
       // Determinar el destino según el rol
       let destination = "/dashboard/miembro"; // Default
       
-      if (role === "LIDER" || role === "ADMIN") {
+      if (role === "LIDER") {
         destination = "/dashboard/lider";
       } else if (role === "EMPRESARIO") {
-        destination = "/empresa";
+        destination = "/dashboard/empresario";
       } else if (role === "ESTUDIANTE") {
         destination = "/dashboard/miembro";
+      } else if (role === "ADMIN") {
+        destination = "/dashboard/lider"; // o ruta específica de admin
       }
       
       // Redirigir directamente al dashboard correcto (sin pasar por /dashboard)

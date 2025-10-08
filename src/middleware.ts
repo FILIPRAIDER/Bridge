@@ -11,10 +11,10 @@ const PUBLIC_ROUTES = [
 
 // Mapa de permisos por prefijo de ruta
 const ACCESS: Record<string, Array<"EMPRESARIO" | "ESTUDIANTE" | "LIDER" | "ADMIN">> = {
-  "/empresa": ["EMPRESARIO", "ADMIN"],
-  "/chat": ["EMPRESARIO", "ADMIN"],
-  "/equipos": ["ESTUDIANTE", "LIDER", "ADMIN"],
-  "/dashboard": ["ESTUDIANTE", "LIDER", "ADMIN"], // Dashboard para estudiantes y líderes
+  "/dashboard/empresario": ["EMPRESARIO", "ADMIN"],
+  "/dashboard/lider": ["LIDER", "ADMIN"],
+  "/dashboard/miembro": ["ESTUDIANTE", "ADMIN"],
+  "/dashboard": ["ESTUDIANTE", "LIDER", "EMPRESARIO", "ADMIN"], // Dashboard general
 };
 
 function matchPrefix(pathname: string) {
@@ -53,11 +53,13 @@ export async function middleware(req: NextRequest) {
     let redirectTo = "/dashboard";
     
     if (role === "EMPRESARIO") {
-      redirectTo = "/empresa";
-    } else if (role === "LIDER" || role === "ADMIN") {
+      redirectTo = "/dashboard/empresario";
+    } else if (role === "LIDER") {
       redirectTo = "/dashboard/lider";
     } else if (role === "ESTUDIANTE") {
       redirectTo = "/dashboard/miembro";
+    } else if (role === "ADMIN") {
+      redirectTo = "/dashboard/lider"; // o una ruta específica de admin
     }
     
     return NextResponse.redirect(new URL(redirectTo, req.url));
@@ -69,9 +71,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
   // protege estas rutas con el middleware
   matcher: [
-    "/empresa/:path*",
-    "/equipos/:path*",
     "/dashboard/:path*",
-    "/chat/:path*",
   ],
 };
