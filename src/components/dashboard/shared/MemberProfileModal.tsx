@@ -114,7 +114,7 @@ export function MemberProfileModal({ isOpen, onClose, member }: MemberProfileMod
               {/* Avatar positioned over header */}
               <div className="flex items-start gap-6 -mt-16 mb-4">
                 {/* Avatar */}
-                <div className="relative flex-shrink-0">
+                <div className="relative flex-shrink-0 z-10">
                   {member.user?.avatarUrl ? (
                     <img
                       src={member.user.avatarUrl}
