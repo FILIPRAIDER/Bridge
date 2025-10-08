@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession as useNextAuthSession } from "next-auth/react";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
@@ -16,7 +16,7 @@ import {
 
 type Step = "account" | "profile" | "experience" | "certifications" | "skills";
 
-export default function RegisterWizard() {
+function RegisterWizardContent() {
   const searchParams = useSearchParams();
   const urlStep = searchParams.get("step") as Step | null;
   
@@ -254,5 +254,23 @@ export default function RegisterWizard() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function RegisterWizard() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen grid place-items-center px-4">
+        <div className="w-full max-w-md text-center">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto"></div>
+          </div>
+          <p className="text-gray-600 mt-4">Cargando...</p>
+        </div>
+      </main>
+    }>
+      <RegisterWizardContent />
+    </Suspense>
   );
 }
