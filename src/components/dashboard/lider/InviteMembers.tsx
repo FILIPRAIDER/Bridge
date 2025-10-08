@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Send, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 import { toast } from "@/components/ui/toast";
 
@@ -21,6 +22,7 @@ interface InviteMembersProps {
 }
 
 export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -36,13 +38,28 @@ export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
   });
 
   const onSubmit = async (data: InviteForm) => {
+    if (!session?.user?.id) {
+      toast.error("Sesión no válida. Por favor, inicia sesión nuevamente.");
+      return;
+    }
+
     try {
       setLoading(true);
-      await api.post(`/teams/${teamId}/invites`, data);
+      
+      // Agregar byUserId al payload
+      const payload = {
+        ...data,
+        byUserId: session.user.id,
+      };
+      
+      console.log("Sending invite with payload:", payload);
+      await api.post(`/teams/${teamId}/invites`, payload);
+      
       toast.success("Invitación enviada correctamente");
       reset();
       onInviteSent();
     } catch (error: any) {
+      console.error("Error sending invite:", error);
       toast.error(error.message || "Error al enviar invitación");
     } finally {
       setLoading(false);
