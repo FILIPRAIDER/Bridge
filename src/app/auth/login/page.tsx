@@ -86,10 +86,9 @@ function LoginForm() {
         destination = "/dashboard/miembro";
       }
       
-      toast({ variant: "success", title: "¡Bienvenido!", message: "Accediendo a tu espacio..." });
-      
       // Redirigir directamente al dashboard correcto (sin pasar por /dashboard)
-      window.location.href = destination;
+      // No mostramos toast porque la transición es muy rápida
+      router.push(destination);
     } catch (e: any) {
       console.error("Login error:", e);
       
@@ -117,12 +116,14 @@ function LoginForm() {
     }
   }
 
-  // Mostrar loader cuando está haciendo login o verificando sesión
-  if (status === "loading" || (status === "authenticated" && session) || loading) {
+  // Mostrar loader cuando está haciendo login o redirigiendo
+  const authenticated = status === "authenticated" && session;
+  
+  if (status === "loading" || authenticated || loading) {
     return (
       <BridgeLoader
-        message={loading ? "Iniciando sesión" : "Verificando credenciales"}
-        submessage={loading ? "Accediendo a tu espacio de trabajo" : "Un momento por favor"}
+        message={authenticated ? "Accediendo al dashboard" : loading ? "Iniciando sesión" : "Verificando credenciales"}
+        submessage={authenticated ? "Preparando tu espacio de trabajo" : loading ? "Un momento por favor" : "Cargando"}
       />
     );
   }

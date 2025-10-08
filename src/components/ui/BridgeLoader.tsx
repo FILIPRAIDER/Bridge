@@ -91,7 +91,7 @@ export function BridgeLoader({ message, submessage }: BridgeLoaderProps) {
 
           {/* Barra de progreso */}
           <div className="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-white via-gray-300 to-white animate-slide-right" />
+            <div className="h-full w-1/3 bg-gradient-to-r from-white via-gray-300 to-white animate-slide-right" />
           </div>
         </div>
 
@@ -114,10 +114,13 @@ export function BridgeLoader({ message, submessage }: BridgeLoaderProps) {
 
         @keyframes slide-right {
           0% {
-            transform: translateX(-100%);
+            transform: translateX(0);
+          }
+          50% {
+            transform: translateX(200%);
           }
           100% {
-            transform: translateX(200%);
+            transform: translateX(0);
           }
         }
 

@@ -2,18 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { MapPin, Clock, Target, Loader2 } from "lucide-react";
+import { MapPin, Clock, Target, Loader2, Camera } from "lucide-react";
 import { api } from "@/lib/api";
+import { useCountries } from "@/hooks/useCountries";
+import { AvatarUploadModal } from "./AvatarUploadModal";
 import type { MemberProfile, UserSkill } from "@/types/api";
 
 interface ProfileCardProps {
   profile: MemberProfile | null;
+  onUpdate?: () => void;
 }
 
-export function ProfileCard({ profile }: ProfileCardProps) {
+export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
   const { data: session } = useSession();
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const { data: countries } = useCountries();
 
   const loadSkills = async () => {
     if (!session?.user?.id) return;
@@ -28,6 +33,13 @@ export function ProfileCard({ profile }: ProfileCardProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get country name from country code
+  const getCountryName = (countryCode?: string) => {
+    if (!countryCode || !countries) return null;
+    const country = countries.find(c => c.code === countryCode);
+    return country ? country.name : countryCode;
   };
 
   useEffect(() => {
@@ -87,8 +99,8 @@ export function ProfileCard({ profile }: ProfileCardProps) {
       <div className="relative px-6 pb-6">
         {/* Avatar positioned over header */}
         <div className="flex items-start gap-6 -mt-16">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
+          {/* Avatar with Camera Button */}
+          <div className="relative flex-shrink-0 group">
             <img
               src={session?.user?.avatarUrl || "/default-avatar.png"}
               alt={session?.user?.name || "Usuario"}
@@ -97,6 +109,15 @@ export function ProfileCard({ profile }: ProfileCardProps) {
                 (e.target as HTMLImageElement).src = "/default-avatar.png";
               }}
             />
+            
+            {/* Camera button overlay */}
+            <button
+              onClick={() => setIsAvatarModalOpen(true)}
+              className="absolute bottom-2 right-2 p-2.5 bg-gray-900 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-800 hover:scale-110 transform"
+              title="Cambiar foto de perfil"
+            >
+              <Camera className="h-4 w-4" />
+            </button>
           </div>
 
           {/* Info next to avatar */}
@@ -114,6 +135,7 @@ export function ProfileCard({ profile }: ProfileCardProps) {
                 <div className="flex flex-wrap gap-2 mt-3">
                   {profile?.seniority && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                      <Target className="h-3 w-3" />
                       {getSeniorityLabel(profile.seniority)}
                     </span>
                   )}
@@ -129,13 +151,19 @@ export function ProfileCard({ profile }: ProfileCardProps) {
 
               {/* Contact info aligned to right */}
               <div className="hidden md:flex flex-col items-end gap-2 text-sm text-gray-600">
+                {profile?.seniority && (
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    <span className="font-medium">{getSeniorityLabel(profile.seniority)}</span>
+                  </div>
+                )}
                 {(profile?.city || profile?.country || profile?.location) && (
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     <span>
-                      {profile.city 
-                        ? `${profile.city}${profile.country ? ', ' + profile.country : ''}`
-                        : profile.location || profile.country}
+                      {profile.city && profile.country
+                        ? `${profile.city}, ${getCountryName(profile.country)}`
+                        : profile.city || getCountryName(profile.country) || profile.location}
                     </span>
                   </div>
                 )}
@@ -150,13 +178,19 @@ export function ProfileCard({ profile }: ProfileCardProps) {
 
             {/* Mobile contact info */}
             <div className="md:hidden flex flex-wrap gap-3 mt-3 text-sm text-gray-600">
+              {profile?.seniority && (
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  <span className="font-medium">{getSeniorityLabel(profile.seniority)}</span>
+                </div>
+              )}
               {(profile?.city || profile?.country || profile?.location) && (
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
                   <span>
-                    {profile.city 
-                      ? `${profile.city}${profile.country ? ', ' + profile.country : ''}`
-                      : profile.location || profile.country}
+                    {profile.city && profile.country
+                      ? `${profile.city}, ${getCountryName(profile.country)}`
+                      : profile.city || getCountryName(profile.country) || profile.location}
                   </span>
                 </div>
               )}
@@ -258,6 +292,17 @@ export function ProfileCard({ profile }: ProfileCardProps) {
           )}
         </div>
       </div>
+
+      {/* Avatar Upload Modal */}
+      <AvatarUploadModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentAvatarUrl={session?.user?.avatarUrl}
+        onUploadSuccess={(newUrl) => {
+          if (onUpdate) onUpdate();
+          setIsAvatarModalOpen(false);
+        }}
+      />
     </div>
   );
 }

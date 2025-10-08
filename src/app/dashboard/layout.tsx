@@ -24,6 +24,10 @@ export default function DashboardLayout({
       return;
     }
 
+    // Solo validar si NO estamos en la página de redirección principal
+    // Esto evita el bucle de redirecciones
+    if (pathname === "/dashboard") return;
+
     const role = session.user?.role;
 
     // Si es LIDER/ADMIN pero está en /miembro, redirigir

@@ -31,7 +31,8 @@ const LIDER_TABS = [
   { id: "manage-members", label: "Gestionar Miembros", icon: Settings },
   { id: "manage", label: "Gestionar Equipo", icon: Settings },
   { id: "invite", label: "Invitar Miembros", icon: UserPlus },
-  { id: "skills", label: "Gestionar Skills", icon: Target },
+  { id: "my-skills", label: "Mis Skills", icon: Award },
+  { id: "team-skills", label: "Gestionar Skills del Equipo", icon: Target },
   { id: "invites", label: "Ver Invitaciones", icon: Mail },
 ];
 

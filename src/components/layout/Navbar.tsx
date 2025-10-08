@@ -45,18 +45,8 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         {/* Notification Bell */}
         <NotificationBell />
 
-        {/* User Info */}
-        <div className="text-right hidden sm:block">
-          <p className="text-sm font-medium text-gray-900">
-            {session?.user?.name || "Usuario"}
-          </p>
-          <p className="text-xs text-gray-500">
-            {roleLabels[session?.user?.role || ""] || session?.user?.role}
-          </p>
-        </div>
-        
-        {/* User Avatar */}
-        <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center ring-2 ring-gray-200 overflow-hidden">
+            {/* User Avatar */}
+        <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center ring-2 ring-gray-200 overflow-hidden">
           {session?.user?.avatarUrl ? (
             <img
               src={session.user.avatarUrl}
@@ -67,6 +57,18 @@ export function Navbar({ onMenuClick }: NavbarProps) {
             <User className="h-5 w-5 text-gray-500" />
           )}
         </div>
+
+        {/* User Info */}
+        <div className="text-left hidden sm:block">
+          <p className="text-sm font-medium text-gray-900">
+            {session?.user?.name || "Usuario"}
+          </p>
+          <p className="text-xs text-gray-500">
+            {roleLabels[session?.user?.role || ""] || session?.user?.role}
+          </p>
+        </div>
+        
+    
       </div>
     </nav>
   );

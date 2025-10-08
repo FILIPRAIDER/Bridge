@@ -13,11 +13,12 @@ import { TeamManagement } from "@/components/dashboard/lider/TeamManagement";
 import { TeamMembersManager } from "@/components/dashboard/lider/TeamMembersManager";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
+import { MySkills } from "@/components/dashboard/miembro/MySkills";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
-type TabType = "overview" | "profile" | "members" | "manage-members" | "manage" | "invite" | "skills" | "invites";
+type TabType = "overview" | "profile" | "members" | "manage-members" | "manage" | "invite" | "my-skills" | "team-skills" | "invites";
 
 export default function LiderDashboard() {
   const { data: session } = useNextAuthSession();
@@ -134,7 +135,10 @@ export default function LiderDashboard() {
                 {activeTab === "invite" && teamId && (
                   <InviteMembers teamId={teamId} onInviteSent={loadTeamData} />
                 )}
-                {activeTab === "skills" && teamId && (
+                {activeTab === "my-skills" && session?.user?.id && (
+                  <MySkills userId={session.user.id} />
+                )}
+                {activeTab === "team-skills" && teamId && (
                   <ManageSkills teamId={teamId} members={members} />
                 )}
                 {activeTab === "invites" && teamId && <ViewInvites teamId={teamId} />}

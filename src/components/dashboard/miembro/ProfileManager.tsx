@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { User, Briefcase, Award, Camera } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { User, Briefcase, Award } from "lucide-react";
 import { ProfileCard } from "./ProfileCard";
 import { ProfileEditor } from "./ProfileEditor";
 import { ExperiencesManager } from "./ExperiencesManager";
 import { CertificationsManager } from "./CertificationsManager";
-import { AvatarUploader } from "./AvatarUploader";
 import type { MemberProfile } from "@/types/api";
 
 interface ProfileManagerProps {
@@ -18,7 +16,6 @@ interface ProfileManagerProps {
 type SubTab = "info" | "experience" | "certifications";
 
 export function ProfileManager({ profile, onUpdate }: ProfileManagerProps) {
-  const { data: session } = useSession();
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("info");
 
   const subTabs = [
@@ -33,20 +30,8 @@ export function ProfileManager({ profile, onUpdate }: ProfileManagerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Profile Card Preview */}
-      <ProfileCard profile={profile} />
-
-      {/* Avatar Section */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Camera className="h-5 w-5" />
-          Foto de Perfil
-        </h2>
-        <AvatarUploader
-          currentAvatarUrl={session?.user?.avatarUrl}
-          onUploadSuccess={onUpdate}
-        />
-      </div>
+      {/* Profile Card Preview with integrated avatar uploader */}
+      <ProfileCard profile={profile} onUpdate={onUpdate} />
 
       {/* Sub-navigation */}
       <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
