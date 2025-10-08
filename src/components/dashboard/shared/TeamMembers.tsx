@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Briefcase, MapPin, Clock, Award } from "lucide-react";
+import { Briefcase, MapPin, Clock, Award, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { Loader } from "@/components/ui";
 import type { TeamMember } from "@/types/api";
@@ -58,6 +58,8 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
   const [loading, setLoading] = useState(true);
   const [hoveredMember, setHoveredMember] = useState<MemberWithProfile | null>(null);
   const [pinnedMember, setPinnedMember] = useState<MemberWithProfile | null>(null);
+  const [mobileModalOpen, setMobileModalOpen] = useState(false);
+  const [selectedMobileMember, setSelectedMobileMember] = useState<MemberWithProfile | null>(null);
 
   // Miembro que se muestra en el panel (hover o pinned)
   const displayedMember = hoveredMember || pinnedMember;
@@ -139,6 +141,23 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
     return "??";
   };
 
+  const handleMemberClick = (member: MemberWithProfile) => {
+    // En desktop, solo actualizar el hover/pin
+    if (window.innerWidth >= 1024) {
+      setHoveredMember(member);
+      setPinnedMember(member);
+    } else {
+      // En móvil, abrir modal
+      setSelectedMobileMember(member);
+      setMobileModalOpen(true);
+    }
+  };
+
+  const closeMobileModal = () => {
+    setMobileModalOpen(false);
+    setTimeout(() => setSelectedMobileMember(null), 300); // Delay para animación
+  };
+
   if (loading) {
     return <Loader message="Cargando miembros del equipo..." />;
   }
@@ -153,178 +172,224 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
     );
   }
 
-  return (
-    <div className="flex flex-col lg:flex-row gap-6 min-h-[600px]">
-      {/* Left Panel - Member Info (Desktop only) */}
-      <div className="hidden lg:block lg:w-1/3 xl:w-1/4">
-        <div className="sticky top-6 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          {displayedMember ? (
-            <div className="p-6">
-              {/* Avatar */}
-              <div className="flex justify-center mb-4">
-                {displayedMember.user?.avatarUrl ? (
-                  <img
-                    src={displayedMember.user.avatarUrl}
-                    alt={displayedMember.user?.name || "Avatar"}
-                    className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
-                  />
-                ) : (
-                  <div className="h-24 w-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border-2 border-gray-200">
-                    <span className="text-white font-bold text-2xl">
-                      {getInitials(displayedMember.user?.name, displayedMember.user?.email)}
-                    </span>
-                  </div>
-                )}
-              </div>
+  // Componente de perfil reutilizable
+  const MemberProfile = ({ member, className = "" }: { member: MemberWithProfile; className?: string }) => (
+    <div className={className}>
+      {/* Avatar */}
+      <div className="flex justify-center mb-4">
+        {member.user?.avatarUrl ? (
+          <img
+            src={member.user.avatarUrl}
+            alt={member.user?.name || "Avatar"}
+            className="h-24 w-24 rounded-full object-cover border-2 border-gray-200"
+          />
+        ) : (
+          <div className="h-24 w-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border-2 border-gray-200">
+            <span className="text-white font-bold text-2xl">
+              {getInitials(member.user?.name, member.user?.email)}
+            </span>
+          </div>
+        )}
+      </div>
 
-              {/* Name & Role */}
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {displayedMember.user?.name || "Usuario"}
-                </h2>
-                {displayedMember.profile?.headline && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    {displayedMember.profile.headline}
-                  </p>
-                )}
-                <div className="flex items-center justify-center gap-2 mt-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      displayedMember.role === "LIDER"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-gray-200 text-gray-800"
-                    }`}
-                  >
-                    {displayedMember.role}
-                  </span>
-                  {displayedMember.profile?.seniority && (
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                      {displayedMember.profile.seniority}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Info */}
-              <div className="space-y-2 mb-4">
-                {/* Ubicación - Nuevo formato o fallback al antiguo */}
-                {(displayedMember.profile?.city || displayedMember.profile?.location) && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <span>
-                      {displayedMember.profile.city 
-                        ? `${displayedMember.profile.city}${displayedMember.profile.country ? ', ' + displayedMember.profile.country : ''}`
-                        : displayedMember.profile.location}
-                    </span>
-                  </div>
-                )}
-                {displayedMember.profile?.availability && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span>{displayedMember.profile.availability} hrs/semana</span>
-                  </div>
-                )}
-                {/* Sector - Nuevo formato con relación o fallback */}
-                {displayedMember.profile?.sector && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Briefcase className="h-4 w-4 text-gray-400" />
-                    <span>
-                      {typeof displayedMember.profile.sector === 'object' 
-                        ? `${displayedMember.profile.sector.icon || ''} ${displayedMember.profile.sector.nameEs}`
-                        : displayedMember.profile.sector}
-                    </span>
-                  </div>
-                )}
-                {displayedMember.skills && displayedMember.skills.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Award className="h-4 w-4 text-gray-400" />
-                    <span>{displayedMember.skills.length} skills</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Bio */}
-              {displayedMember.profile?.bio && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {displayedMember.profile.bio}
-                  </p>
-                </div>
-              )}
-
-              {/* Stack Tecnológico */}
-              {displayedMember.profile?.stack && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <h4 className="text-xs font-semibold text-gray-700 mb-1">Stack Tecnológico</h4>
-                  <p className="text-sm text-gray-900">{displayedMember.profile.stack}</p>
-                </div>
-              )}
-
-              {/* Skills Section */}
-              {displayedMember.skills && displayedMember.skills.length > 0 && (
-                <div className="border-t border-gray-200 pt-4">
-                  <h3 className="font-semibold text-gray-900 mb-3 text-sm">Skills</h3>
-                  <div className="space-y-2">
-                    {displayedMember.skills.slice(0, 5).map((userSkill, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {userSkill.skill?.name || "Skill"}
-                          </p>
-                          {userSkill.skill?.category && (
-                            <p className="text-xs text-gray-500">
-                              {userSkill.skill.category}
-                            </p>
-                          )}
-                        </div>
-                        <div className="ml-3 flex-shrink-0">
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <svg
-                                key={star}
-                                className={`h-3 w-3 ${
-                                  star <= userSkill.level
-                                    ? "fill-yellow-400 text-yellow-400"
-                                    : "fill-gray-200 text-gray-200"
-                                }`}
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {displayedMember.skills.length > 5 && (
-                      <p className="text-xs text-gray-500 text-center pt-2 font-medium">
-                        +{displayedMember.skills.length - 5} más
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-6 h-full flex items-center justify-center min-h-[400px]">
-              <div className="text-center text-gray-400">
-                <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">
-                  Pasa el mouse sobre un miembro
-                  <br />
-                  para ver su información
-                </p>
-              </div>
-            </div>
+      {/* Name & Role */}
+      <div className="text-center mb-4">
+        <h2 className="text-xl font-bold text-gray-900">
+          {member.user?.name || "Usuario"}
+        </h2>
+        {member.profile?.headline && (
+          <p className="text-sm text-gray-600 mt-1">
+            {member.profile.headline}
+          </p>
+        )}
+        <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              member.role === "LIDER"
+                ? "bg-purple-100 text-purple-700"
+                : "bg-gray-200 text-gray-800"
+            }`}
+          >
+            {member.role}
+          </span>
+          {member.profile?.seniority && (
+            <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+              {member.profile.seniority}
+            </span>
           )}
         </div>
       </div>
 
+      {/* Quick Info */}
+      <div className="space-y-2 mb-4">
+        {(member.profile?.city || member.profile?.location) && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <span>
+              {member.profile.city 
+                ? `${member.profile.city}${member.profile.country ? ', ' + member.profile.country : ''}`
+                : member.profile.location}
+            </span>
+          </div>
+        )}
+        {member.profile?.availability && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <span>{member.profile.availability} hrs/semana</span>
+          </div>
+        )}
+        {member.profile?.sector && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Briefcase className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <span>
+              {typeof member.profile.sector === 'object' 
+                ? `${member.profile.sector.icon || ''} ${member.profile.sector.nameEs}`
+                : member.profile.sector}
+            </span>
+          </div>
+        )}
+        {member.skills && member.skills.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Award className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <span>{member.skills.length} skills</span>
+          </div>
+        )}
+      </div>
+
+      {/* Bio */}
+      {member.profile?.bio && (
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 leading-relaxed">
+            {member.profile.bio}
+          </p>
+        </div>
+      )}
+
+      {/* Stack Tecnológico */}
+      {member.profile?.stack && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 className="text-xs font-semibold text-gray-700 mb-1">Stack Tecnológico</h4>
+          <p className="text-sm text-gray-900">{member.profile.stack}</p>
+        </div>
+      )}
+
+      {/* Skills Section */}
+      {member.skills && member.skills.length > 0 && (
+        <div className="border-t border-gray-200 pt-4">
+          <h3 className="font-semibold text-gray-900 mb-3 text-sm">Skills</h3>
+          <div className="space-y-2">
+            {member.skills.slice(0, 5).map((userSkill, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {userSkill.skill?.name || "Skill"}
+                  </p>
+                  {userSkill.skill?.category && (
+                    <p className="text-xs text-gray-500">
+                      {userSkill.skill.category}
+                    </p>
+                  )}
+                </div>
+                <div className="ml-3 flex-shrink-0">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        className={`h-3 w-3 ${
+                          star <= userSkill.level
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-gray-200 text-gray-200"
+                        }`}
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {member.skills.length > 5 && (
+              <p className="text-xs text-gray-500 text-center pt-2 font-medium">
+                +{member.skills.length - 5} más
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Modal */}
+      {mobileModalOpen && selectedMobileMember && (
+        <div 
+          className="lg:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={closeMobileModal}
+        >
+          <div 
+            className="bg-white w-full max-h-[85vh] rounded-t-2xl shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle visual (iOS style) */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            {/* Header con botón cerrar */}
+            <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl">
+              <h3 className="text-lg font-semibold text-gray-900">Perfil del Miembro</h3>
+              <button
+                onClick={closeMobileModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Contenido scrolleable */}
+            <div className="overflow-y-auto p-6 flex-1">
+              <MemberProfile member={selectedMobileMember} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-6 min-h-[600px]">
+        {/* Left Panel - Member Info (Desktop only) */}
+        <div className="hidden lg:block lg:w-1/3 xl:w-1/4">
+          <div className="sticky top-6 bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            {displayedMember ? (
+              <div className="p-6">
+                <MemberProfile member={displayedMember} />
+              </div>
+            ) : (
+              <div className="p-6 h-full flex items-center justify-center min-h-[400px]">
+                <div className="text-center text-gray-400">
+                  <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm">
+                    Pasa el mouse sobre un miembro
+                    <br />
+                    para ver su información
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
       {/* Right Panel - Members Grid */}
       <div className="flex-1">
+        {/* Hint para móvil */}
+        <p className="lg:hidden text-sm text-gray-500 mb-4 text-center">
+          Toca un miembro para ver su perfil completo
+        </p>
+        
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {members.map((member) => {
             const isCurrentUser = member.userId === currentUserId;
@@ -334,12 +399,13 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
             return (
               <div
                 key={member.id}
+                onClick={() => handleMemberClick(member)}
                 onMouseEnter={() => {
                   setHoveredMember(member);
                   setPinnedMember(member);
                 }}
                 onMouseLeave={() => setHoveredMember(null)}
-                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-300 group ${
+                className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-300 group active:scale-95 ${
                   isActive
                     ? "ring-4 ring-gray-900 scale-105 shadow-2xl z-10"
                     : "hover:ring-2 hover:ring-gray-400 hover:scale-102 hover:shadow-lg"
@@ -400,5 +466,6 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
