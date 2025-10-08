@@ -46,7 +46,7 @@ export default function Header() {
     "transition-all duration-150 hover:bg-gray-200";
 
   const navBtnDark =
-    "inline-flex items-center justify-center rounded-xl cursor-pointer" +
+    "inline-flex items-center justify-center rounded-xl cursor-pointer " +
     "bg-[#0b0f19] text-white px-5 py-2.5 font-semibold shadow-sm " +
     "transition-all duration-150 hover:bg-[#111827]";
 

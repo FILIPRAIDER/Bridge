@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@prisma/client": "^6.17.0",
     "clsx": "^2.1.1",
     "libphonenumber-js": "^1.12.23",
     "lucide-react": "^0.545.0",
@@ -18,6 +19,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.64.0",
+    "resend": "^6.1.2",
     "zod": "^4.1.11",
     "zustand": "^5.0.8"
   },
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
+    "prisma": "^6.17.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
