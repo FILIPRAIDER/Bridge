@@ -34,8 +34,10 @@ interface NotificationStore {
   unreadCount: number;
   loading: boolean;
   error: string | null;
+  userId: string | null;
 
   // Actions
+  setUserId: (userId: string | null) => void;
   fetchNotifications: () => Promise<void>;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -49,18 +51,31 @@ const initialState = {
   unreadCount: 0,
   loading: false,
   error: null,
+  userId: null,
 };
 
 export const useNotificationStore = create<NotificationStore>((set, get) => ({
   ...initialState,
 
+  setUserId: (userId: string | null) => {
+    set({ userId });
+  },
+
   fetchNotifications: async () => {
+    const { userId } = get();
+    
+    // No hacer request si no hay userId
+    if (!userId) {
+      set({ loading: false, error: null, notifications: [], unreadCount: 0 });
+      return;
+    }
+
     set({ loading: true, error: null });
     try {
       const response = await api.get<{
         notifications: Notification[];
         unreadCount: number;
-      }>("/notifications?limit=20");
+      }>(`/notifications?limit=20&userId=${userId}`);
 
       set({
         notifications: response.notifications,
@@ -68,17 +83,26 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
         loading: false,
       });
     } catch (error: any) {
-      console.error("Error fetching notifications:", error);
+      // Solo logear errores que no sean de autenticación (401)
+      if (error.status !== 401) {
+        console.error("Error fetching notifications:", error);
+      }
+      // En caso de error, resetear silenciosamente
       set({
-        error: error.message || "Error al cargar notificaciones",
+        error: error.status === 401 ? null : error.message,
         loading: false,
+        notifications: [],
+        unreadCount: 0,
       });
     }
   },
 
   markAsRead: async (id: string) => {
+    const { userId } = get();
+    if (!userId) return;
+
     try {
-      await api.patch(`/notifications/${id}/read`, { read: true });
+      await api.patch(`/notifications/${id}/read?userId=${userId}`, { read: true });
 
       set((state) => ({
         notifications: state.notifications.map((n) =>
@@ -92,8 +116,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   },
 
   markAllAsRead: async () => {
+    const { userId } = get();
+    if (!userId) return;
+
     try {
-      await api.post("/notifications/mark-all-read");
+      await api.post(`/notifications/mark-all-read?userId=${userId}`);
 
       set((state) => ({
         notifications: state.notifications.map((n) => ({ ...n, read: true })),

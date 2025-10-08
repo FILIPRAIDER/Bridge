@@ -2,16 +2,30 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { NotificationDropdown } from "./NotificationDropdown";
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { unreadCount, fetchNotifications } = useNotificationStore();
+  const { data: session, status } = useSession();
+  const { unreadCount, fetchNotifications, setUserId } = useNotificationStore();
 
-  // Polling cada 30 segundos
+  // Establecer userId cuando la sesión esté disponible
   useEffect(() => {
+    if (status === "authenticated" && session?.user?.id) {
+      setUserId(session.user.id);
+    } else {
+      setUserId(null);
+    }
+  }, [status, session?.user?.id, setUserId]);
+
+  // Polling cada 30 segundos solo si está autenticado
+  useEffect(() => {
+    // Solo cargar si el usuario está autenticado
+    if (status !== "authenticated" || !session?.user?.id) return;
+
     fetchNotifications();
 
     const interval = setInterval(() => {
@@ -19,7 +33,7 @@ export function NotificationBell() {
     }, 30000); // 30 segundos
 
     return () => clearInterval(interval);
-  }, [fetchNotifications]);
+  }, [fetchNotifications, status, session?.user?.id]);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {

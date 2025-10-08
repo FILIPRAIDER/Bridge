@@ -25,6 +25,7 @@ async function request<T = any>(
     const res = await fetch(url, {
       ...init,
       signal: controller.signal,
+      credentials: 'include', // Incluir cookies de autenticación
       headers: {
         "Content-Type": "application/json",
         ...(init?.headers || {}),
