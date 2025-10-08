@@ -75,10 +75,19 @@ async function request<T = any>(
     
     // Manejar errores de red
     if (error instanceof TypeError) {
-      throw new ApiError(
-        0,
-        "No se pudo conectar al servidor. Verifica tu conexión a internet."
-      );
+      const isDev = process.env.NODE_ENV === 'development';
+      const message = isDev
+        ? `No se pudo conectar al servidor en ${API_BASE_URL}. ¿Está corriendo el backend? Error: ${error.message}`
+        : "No se pudo conectar al servidor. Verifica tu conexión a internet.";
+      
+      console.error("🔴 Network Error:", {
+        url,
+        apiBaseUrl: API_BASE_URL,
+        error: error.message,
+        tip: isDev ? "Asegúrate de que el backend esté corriendo (npm run dev en el proyecto backend)" : "Verifica tu conexión"
+      });
+      
+      throw new ApiError(0, message);
     }
     
     // Re-lanzar otros errores
