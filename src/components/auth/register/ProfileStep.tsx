@@ -13,7 +13,6 @@ import { Loader2 } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
 import { useCities } from "@/hooks/useCities";
 import { useSectors } from "@/hooks/useSectors";
-import type { MemberProfile } from "@/types/api";
 
 const ProfileSchema = z.object({
   headline: z.string().min(2, "Muy corto").max(120, "Máximo 120 caracteres"),

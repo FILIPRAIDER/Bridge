@@ -10,7 +10,7 @@ interface BackendHealthProps {
 
 export function BackendHealthCheck({ children }: BackendHealthProps) {
   const [isChecking, setIsChecking] = useState(true);
-  const [isOnline, setIsOnline] = useState(false);
+  const [_isOnline, setIsOnline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 

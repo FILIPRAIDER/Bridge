@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Edit2, Check, X, Loader2 } from "lucide-react";
+import { Edit2, Check, X, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import type { Team } from "@/types/api";
