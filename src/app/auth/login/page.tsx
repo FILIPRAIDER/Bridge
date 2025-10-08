@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { BridgeLoader } from "@/components/ui/BridgeLoader";
 
 function LoginForm() {
   const [err, setErr] = useState<string | null>(null);
@@ -116,18 +117,13 @@ function LoginForm() {
     }
   }
 
-  // Mostrar loading mientras verifica la sesión
-  if (status === "loading" || (status === "authenticated" && session)) {
+  // Mostrar loader cuando está haciendo login o verificando sesión
+  if (status === "loading" || (status === "authenticated" && session) || loading) {
     return (
-      <main className="min-h-[80dvh] grid place-items-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto"></div>
-          </div>
-          <p className="text-gray-600 mt-4">Redirigiendo...</p>
-        </div>
-      </main>
+      <BridgeLoader
+        message={loading ? "Iniciando sesión" : "Verificando credenciales"}
+        submessage={loading ? "Accediendo a tu espacio de trabajo" : "Un momento por favor"}
+      />
     );
   }
 

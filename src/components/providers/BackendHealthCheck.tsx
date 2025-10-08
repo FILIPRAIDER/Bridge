@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { checkBackendHealth } from "@/lib/config";
-import { Loader2 } from "lucide-react";
+import { BridgeLoader } from "@/components/ui/BridgeLoader";
 
 interface BackendHealthProps {
   children: React.ReactNode;
@@ -64,25 +64,14 @@ export function BackendHealthCheck({ children }: BackendHealthProps) {
 
   if (isChecking) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-gray-900 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Conectando al servidor...
-          </h2>
-          <p className="text-gray-600 max-w-md">
-            {retryCount === 0
-              ? "Verificando conexión con el backend..."
-              : `Reintentando (${retryCount}/3)... El servidor puede estar iniciando.`}
-          </p>
-          {retryCount > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
-              El servidor en Render puede tardar hasta 60 segundos en iniciar
-              si estaba inactivo.
-            </p>
-          )}
-        </div>
-      </div>
+      <BridgeLoader
+        message="Conectando al servidor"
+        submessage={
+          retryCount === 0
+            ? "Verificando conexión con el backend"
+            : `Reintentando (${retryCount}/3)... El servidor puede tardar hasta 60 segundos en iniciar`
+        }
+      />
     );
   }
 

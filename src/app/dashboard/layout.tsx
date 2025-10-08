@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { BackendHealthCheck } from "@/components/providers/BackendHealthCheck";
+import { BridgeLoader } from "@/components/ui/BridgeLoader";
 
 export default function DashboardLayout({
   children,
@@ -39,7 +40,12 @@ export default function DashboardLayout({
   }, [session, status, pathname, router]);
 
   if (status === "loading") {
-    return null;
+    return (
+      <BridgeLoader
+        message="Accediendo al dashboard"
+        submessage="Preparando tu espacio de trabajo"
+      />
+    );
   }
 
   return (
