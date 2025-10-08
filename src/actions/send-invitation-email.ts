@@ -2,6 +2,11 @@
 
 import { Resend } from 'resend'
 
+// Validar que la API key esté presente
+if (!process.env.RESEND_API_KEY) {
+  console.warn('⚠️ RESEND_API_KEY no está configurada')
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'https://cresia-app.vercel.app'
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001'
