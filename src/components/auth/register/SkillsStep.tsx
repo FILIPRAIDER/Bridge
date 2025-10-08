@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
-import { Loader2, Plus, Trash2, Star, Search } from "lucide-react";
+import { Loader2, Plus, Trash2, Star, Search, X } from "lucide-react";
 import type { Skill, UserSkill } from "@/types/api";
 
 interface SkillsStepProps {
@@ -17,32 +17,30 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [showAdd, setShowAdd] = useState(false);
-  const [selectedSkillId, setSelectedSkillId] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [selectedLevel, setSelectedLevel] = useState(3);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [searchLoading, setSearchLoading] = useState(false);
+  
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const { user } = useSession();
   const { show } = useToast();
 
-  // Cargar skills del usuario y catálogo completo
+  // Cargar skills del usuario al inicio
   useEffect(() => {
     const loadData = async () => {
       if (!user?.id) return;
 
       try {
-        const [userSkillsData, allSkillsData] = await Promise.all([
-          api.get<UserSkill[]>(`/users/${user.id}/skills`),
-          api.get<Skill[]>("/skills"),
-        ]);
-        
-        // 🔥 FIX: Asegurarnos que sean arrays
+        const userSkillsData = await api.get<UserSkill[]>(`/users/${user.id}/skills`);
         setUserSkills(Array.isArray(userSkillsData) ? userSkillsData : []);
-        setAllSkills(Array.isArray(allSkillsData) ? allSkillsData : []);
       } catch (e) {
         console.error("Error cargando skills:", e);
-        // En caso de error, asegurar que sean arrays vacíos
         setUserSkills([]);
-        setAllSkills([]);
       } finally {
         setInitialLoading(false);
       }
@@ -51,29 +49,70 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
     loadData();
   }, [user?.id]);
 
-  // 🔥 FIX: Verificar que allSkills sea array antes de filtrar
-  const filteredSkills = Array.isArray(allSkills) ? allSkills.filter((skill) => {
-    const matchesSearch = skill.name.toLowerCase().includes(search.toLowerCase());
-    const notAlreadyAdded = !userSkills.some((us) => us.skillId === skill.id);
-    return matchesSearch && notAlreadyAdded;
-  }) : [];
+  // Cerrar dropdown cuando se hace click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // 🔥 Buscar skills en tiempo real con debounce
+  useEffect(() => {
+    const searchSkills = async () => {
+      if (searchTerm.length < 2) {
+        setAllSkills([]);
+        setIsDropdownOpen(false);
+        return;
+      }
+
+      try {
+        setSearchLoading(true);
+        const response = await api.get<{ skills: Skill[]; pagination: any }>(
+          `/skills?search=${encodeURIComponent(searchTerm)}&simple=true&limit=50`
+        );
+        const skillsData = response?.skills || response;
+        setAllSkills(Array.isArray(skillsData) ? skillsData : []);
+        setIsDropdownOpen(true);
+        setHighlightedIndex(0);
+      } catch (error) {
+        console.error("Error searching skills:", error);
+        setAllSkills([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchSkills, 300); // Debounce 300ms
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Filtrar skills que el usuario ya tiene
+  const filteredSkills = Array.isArray(allSkills)
+    ? allSkills.filter((skill) => !userSkills.some((us) => us.skillId === skill.id))
+    : [];
 
   const handleAddSkill = async () => {
-    if (!user?.id || !selectedSkillId) return;
+    if (!user?.id || !selectedSkill) {
+      show({ message: "Selecciona un skill", variant: "warning" });
+      return;
+    }
 
     setLoading(true);
     try {
-      const newUserSkill = await api.post<UserSkill>(
-        `/users/${user.id}/skills`,
-        {
-          skillId: selectedSkillId,
-          level: selectedLevel,
-        }
-      );
-
-      // Enriquecer con datos del skill
-      const skill = allSkills.find((s) => s.id === selectedSkillId);
-      setUserSkills((prev) => [...prev, { ...newUserSkill, skill }]);
+      await api.post(`/users/${user.id}/skills`, {
+        skillId: selectedSkill.id,
+        level: selectedLevel,
+      });
 
       show({
         variant: "success",
@@ -81,10 +120,11 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
         message: "",
       });
 
-      setSelectedSkillId("");
+      // Limpiar y recargar
+      setSelectedSkill(null);
+      setSearchTerm("");
       setSelectedLevel(3);
-      setShowAdd(false);
-      setSearch("");
+      loadUserSkills();
     } catch (e) {
       const error = e as Error;
       show({
@@ -94,6 +134,16 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserSkills = async () => {
+    if (!user?.id) return;
+    try {
+      const userSkillsData = await api.get<UserSkill[]>(`/users/${user.id}/skills`);
+      setUserSkills(Array.isArray(userSkillsData) ? userSkillsData : []);
+    } catch (e) {
+      console.error("Error cargando skills:", e);
     }
   };
 
@@ -169,134 +219,141 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Tus habilidades</h1>
-          <p className="text-gray-600">
-            Selecciona tus skills y define tu nivel de dominio (opcional).
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowAdd(!showAdd)}
-          className="btn btn-outline flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Agregar
-        </button>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-1">Tus habilidades</h1>
+        <p className="text-gray-600">
+          Selecciona tus skills y define tu nivel de dominio (opcional).
+        </p>
       </div>
 
-      {/* Formulario de agregar skill */}
-      {showAdd && (
-        <div className="card p-6 space-y-4 mb-6">
-          <h3 className="font-semibold text-lg">Agregar skill</h3>
+      {/* 🔥 Formulario de agregar skill - Siempre visible */}
+      <div className="card p-6 space-y-4 mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Plus className="w-5 h-5 text-gray-700" />
+          <h3 className="font-semibold text-lg">Agregar Skill</h3>
+        </div>
 
-          <div>
-            <label className="label">Buscar skill</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="input pl-10"
-                placeholder="ej. React, Python, Figma..."
-              />
-            </div>
-
-            {search && filteredSkills.length > 0 && (
-              <div className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-xl">
-                {filteredSkills.map((skill) => (
-                  <button
-                    key={skill.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedSkillId(skill.id);
-                      setSearch(skill.name);
-                    }}
-                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition ${
-                      selectedSkillId === skill.id ? "bg-blue-50" : ""
-                    }`}
-                  >
-                    <span className="font-medium">{skill.name}</span>
-                    {skill.category && (
-                      <span className="text-sm text-gray-500 ml-2">
-                        • {skill.category}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
+        {/* Buscar y Seleccionar Skill */}
+        <div>
+          <label className="label">Buscar y Seleccionar Skill</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => searchTerm.length >= 2 && setIsDropdownOpen(true)}
+              className="input pl-10 pr-10"
+              placeholder="Escribe para buscar skills..."
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedSkill(null);
+                  setIsDropdownOpen(false);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
             )}
-
-            {search && filteredSkills.length === 0 && (
-              <p className="text-sm text-gray-500 mt-2">
-                No se encontraron skills. Contacta al administrador para agregarlo.
-              </p>
+            {searchLoading && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
             )}
           </div>
 
-          {selectedSkillId && (
-            <div>
-              <label className="label">Nivel (1-5)</label>
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((level) => (
-                  <button
-                    key={level}
-                    type="button"
-                    onClick={() => setSelectedLevel(level)}
-                    className={`p-3 rounded-xl border-2 transition ${
-                      selectedLevel >= level
-                        ? "border-yellow-400 bg-yellow-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <Star
-                      className={`w-6 h-6 ${
-                        selectedLevel >= level
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                1 = Básico, 3 = Intermedio, 5 = Experto
-              </p>
+          {searchTerm.length > 0 && searchTerm.length < 2 && (
+            <p className="text-xs text-yellow-600 mt-1 flex items-center gap-1">
+              💡 Escribe al menos 2 caracteres para buscar
+            </p>
+          )}
+
+          {/* Dropdown de resultados */}
+          {isDropdownOpen && filteredSkills.length > 0 && (
+            <div
+              ref={dropdownRef}
+              className="mt-2 max-h-60 overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-lg"
+            >
+              {filteredSkills.map((skill, index) => (
+                <button
+                  key={skill.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedSkill(skill);
+                    setSearchTerm(skill.name);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 last:border-0 ${
+                    index === highlightedIndex ? "bg-blue-50" : ""
+                  } ${selectedSkill?.id === skill.id ? "bg-blue-50 font-medium" : ""}`}
+                >
+                  <span className="text-gray-900">{skill.name}</span>
+                  {skill.category && (
+                    <span className="text-sm text-gray-500 ml-2">• {skill.category}</span>
+                  )}
+                </button>
+              ))}
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleAddSkill}
-              disabled={!selectedSkillId || loading}
-              className="btn btn-dark flex-1 disabled:opacity-60"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Agregando...
-                </>
-              ) : (
-                "Agregar skill"
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAdd(false);
-                setSelectedSkillId("");
-                setSearch("");
-              }}
-              className="btn btn-outline"
-            >
-              Cancelar
-            </button>
-          </div>
+          {searchTerm.length >= 2 && !searchLoading && filteredSkills.length === 0 && (
+            <p className="text-sm text-gray-500 mt-2">
+              No se encontraron skills. Contacta al administrador para agregarlo.
+            </p>
+          )}
         </div>
-      )}
+
+        {/* Nivel de Dominio: 3/5 */}
+        {selectedSkill && (
+          <div>
+            <label className="label">Nivel de Dominio: {selectedLevel}/5</label>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setSelectedLevel(level)}
+                  className="hover:scale-110 transition-transform"
+                >
+                  <Star
+                    className={`w-8 h-8 ${
+                      selectedLevel >= level
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Niveles: 1=Básico • 2=Intermedio • 3=Bueno • 4=Avanzado • 5=Experto
+            </p>
+          </div>
+        )}
+
+        {/* Botón Agregar */}
+        <button
+          type="button"
+          onClick={handleAddSkill}
+          disabled={!selectedSkill || loading}
+          className="btn btn-dark w-full disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              Agregando...
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 mr-2" />
+              Agregar Skill
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Lista de skills del usuario */}
       {userSkills.length > 0 ? (

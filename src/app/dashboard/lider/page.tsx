@@ -138,7 +138,11 @@ export default function LiderDashboard() {
                   <TeamManagement team={team} onUpdate={loadTeamData} />
                 )}
                 {activeTab === "invite" && teamId && (
-                  <InviteMembers teamId={teamId} onInviteSent={loadTeamData} />
+                  <InviteMembers 
+                    teamId={teamId} 
+                    onInviteSent={loadTeamData}
+                    teamName={team?.name} // 🔥 Pasar nombre del equipo
+                  />
                 )}
                 {activeTab === "my-skills" && session?.user?.id && (
                   <MySkills userId={session.user.id} />

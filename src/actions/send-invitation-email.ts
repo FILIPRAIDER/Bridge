@@ -16,6 +16,8 @@ interface SendInvitationEmailParams {
   token: string
   teamId: string
   invitedByUserId: string
+  inviterName?: string // 🔥 NUEVO: Nombre del invitador desde la sesión
+  teamName?: string    // 🔥 NUEVO: Nombre del equipo si ya lo tenemos
 }
 
 interface TeamData {
@@ -37,39 +39,68 @@ interface InviterData {
  */
 export async function sendInvitationEmail(params: SendInvitationEmailParams) {
   try {
-    const { email, token, teamId, invitedByUserId } = params
+    const { email, token, teamId, invitedByUserId, inviterName: inviterNameParam, teamName: teamNameParam } = params
 
     console.log('📧 [sendInvitationEmail] Iniciando envío de email')
     console.log('   - Email destino:', email)
     console.log('   - Token:', token.substring(0, 10) + '...')
+    console.log('   - Invitador (desde param):', inviterNameParam)
+    console.log('   - Team (desde param):', teamNameParam)
 
-    // 1️⃣ Obtener datos del equipo desde el backend
-    const teamResponse = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store'
-    })
+    let finalInviterName = inviterNameParam
+    let finalTeamName = teamNameParam
 
-    if (!teamResponse.ok) {
-      throw new Error('No se pudo obtener información del equipo')
+    // 1️⃣ Si no tenemos el nombre del equipo, obtenerlo del backend
+    if (!finalTeamName) {
+      try {
+        const teamResponse = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
+        })
+
+        if (teamResponse.ok) {
+          const teamData: TeamData = await teamResponse.json()
+          finalTeamName = teamData.name
+          console.log('   - Equipo (desde backend):', finalTeamName)
+        }
+      } catch (e) {
+        console.warn('⚠️ No se pudo obtener info del equipo del backend:', e)
+      }
     }
 
-    const teamData: TeamData = await teamResponse.json()
-    console.log('   - Equipo:', teamData.name)
+    // 2️⃣ Si no tenemos el nombre del invitador, intentar obtenerlo del backend como fallback
+    if (!finalInviterName) {
+      try {
+        const inviterResponse = await fetch(`${API_BASE_URL}/users/${invitedByUserId}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
+        })
 
-    // 2️⃣ Obtener datos del invitador desde el backend
-    const inviterResponse = await fetch(`${API_BASE_URL}/users/${invitedByUserId}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store'
-    })
-
-    if (!inviterResponse.ok) {
-      throw new Error('No se pudo obtener información del invitador')
+        if (inviterResponse.ok) {
+          const inviterData: InviterData = await inviterResponse.json()
+          finalInviterName = inviterData.name
+          console.log('   - Invitador (desde backend):', finalInviterName)
+        }
+      } catch (e) {
+        console.warn('⚠️ No se pudo obtener info del invitador del backend:', e)
+      }
     }
 
-    const inviterData: InviterData = await inviterResponse.json()
-    console.log('   - Invitador:', inviterData.name)
+    // 🔥 Valores por defecto si algo falla
+    if (!finalInviterName) {
+      finalInviterName = 'Un miembro del equipo'
+      console.warn('⚠️ Usando nombre por defecto para invitador')
+    }
+    if (!finalTeamName) {
+      finalTeamName = 'un equipo en Bridge'
+      console.warn('⚠️ Usando nombre por defecto para equipo')
+    }
+
+    console.log('   ✅ Datos finales:')
+    console.log('      - Invitador:', finalInviterName)
+    console.log('      - Equipo:', finalTeamName)
 
     // 3️⃣ Construir URL de aceptación (FRONTEND)
     const acceptUrl = `${FRONTEND_URL}/join?token=${token}`
@@ -79,10 +110,10 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams) {
     const { data, error } = await resend.emails.send({
       from: 'Bridge <onboarding@resend.dev>', // Cambiar cuando tengas dominio verificado
       to: [email],
-      subject: `${inviterData.name} te invitó a unirte a ${teamData.name} en Bridge`,
+      subject: `${finalInviterName} te invitó a unirte a ${finalTeamName} en Bridge`,
       html: generateInvitationEmailHTML({
-        inviterName: inviterData.name,
-        teamName: teamData.name,
+        inviterName: finalInviterName,
+        teamName: finalTeamName,
         inviteeEmail: email,
         acceptUrl
       })

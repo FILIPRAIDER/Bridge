@@ -14,6 +14,8 @@ interface SendInvitationParams {
   byUserId: string
   message?: string
   expiresInDays?: number
+  inviterName?: string // 🔥 NUEVO: Nombre del invitador desde sesión
+  teamName?: string    // 🔥 NUEVO: Nombre del equipo si lo tenemos
 }
 
 interface InvitationResult {
@@ -45,7 +47,9 @@ export async function sendTeamInvitation(
       role = 'MIEMBRO',
       byUserId,
       message,
-      expiresInDays = 7
+      expiresInDays = 7,
+      inviterName, // 🔥 NUEVO
+      teamName     // 🔥 NUEVO
     } = params
 
     // 🔍 Validaciones básicas del lado del servidor
@@ -100,7 +104,9 @@ export async function sendTeamInvitation(
       email: data.email,
       token: data.token,
       teamId,
-      invitedByUserId: byUserId
+      invitedByUserId: byUserId,
+      inviterName, // 🔥 Pasar nombre del invitador
+      teamName     // 🔥 Pasar nombre del equipo
     })
 
     if (!emailResult.success) {

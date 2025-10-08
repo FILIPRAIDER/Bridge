@@ -27,9 +27,10 @@ interface UserSuggestion {
 interface InviteMembersProps {
   teamId: string;
   onInviteSent: () => void;
+  teamName?: string; // 🔥 NUEVO: Nombre del equipo opcional
 }
 
-export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
+export function InviteMembers({ teamId, onInviteSent, teamName }: InviteMembersProps) {
   const { data: session } = useSession();
   const [isPending, startTransition] = useTransition();
   const { show } = useToast();
@@ -164,13 +165,15 @@ export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
     }
 
     startTransition(async () => {
-      // ✅ Usar Server Action en lugar de fetch directo
+      // ✅ Usar Server Action con datos de la sesión
       const result = await sendTeamInvitation({
         teamId,
         email,
         role: "MIEMBRO",
         byUserId: session.user.id,
-        expiresInDays: 7
+        expiresInDays: 7,
+        inviterName: session.user.name || undefined, // 🔥 Pasar nombre desde sesión
+        teamName: teamName || undefined               // 🔥 Pasar nombre del equipo
       });
 
       if (result.success) {
