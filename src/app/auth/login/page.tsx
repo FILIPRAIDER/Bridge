@@ -73,6 +73,13 @@ function LoginForm() {
       // Obtener la sesión actualizada para saber el rol
       const response = await fetch("/api/auth/session");
       const sessionData = await response.json();
+      
+      console.log("🔍 [LOGIN] Session after signIn:", {
+        user: sessionData?.user,
+        role: sessionData?.user?.role,
+        email: sessionData?.user?.email
+      });
+      
       const role = sessionData?.user?.role;
       
       // Determinar el destino según el rol

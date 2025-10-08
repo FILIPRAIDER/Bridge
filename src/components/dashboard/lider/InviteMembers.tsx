@@ -7,7 +7,6 @@ import { z } from "zod";
 import { Send, Loader2, Search, User, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/toast";
-import { sendTeamInvitation } from "@/actions/team-invitations";
 import { api } from "@/lib/api";
 
 const inviteSchema = z.object({
@@ -165,32 +164,69 @@ export function InviteMembers({ teamId, onInviteSent, teamName }: InviteMembersP
     }
 
     startTransition(async () => {
-      // ✅ Usar Server Action con datos de la sesión
-      const result = await sendTeamInvitation({
-        teamId,
-        email,
-        role: "MIEMBRO",
-        byUserId: session.user.id,
-        expiresInDays: 7,
-        inviterName: session.user.name || undefined, // 🔥 Pasar nombre desde sesión
-        teamName: teamName || undefined               // 🔥 Pasar nombre del equipo
-      });
-
-      if (result.success) {
-        show({
-          variant: "success",
-          message: `✅ Invitación enviada exitosamente a ${email}`
+      try {
+        // 1️⃣ Crear invitación en el backend
+        const invitationResponse = await api.post<{
+          id: string;
+          email: string;
+          token: string;
+          teamId: string;
+          invitedByUserId: string;
+        }>(`/invitations`, {
+          teamId,
+          email,
+          role: "MIEMBRO",
+          byUserId: session.user.id,
+          expiresInDays: 7,
         });
-        
+
+        if (!invitationResponse || !invitationResponse.token) {
+          throw new Error("No se pudo crear la invitación");
+        }
+
+        // 2️⃣ Enviar email usando el endpoint API
+        const emailResponse = await fetch("/api/invitations/send-email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: invitationResponse.email,
+            token: invitationResponse.token,
+            teamId: invitationResponse.teamId,
+            invitedByUserId: invitationResponse.invitedByUserId,
+            inviterName: session.user.name || undefined,
+            teamName: teamName || undefined,
+          }),
+        });
+
+        const emailResult = await emailResponse.json();
+
+        if (!emailResponse.ok || !emailResult.success) {
+          console.error("Error al enviar email:", emailResult.error);
+          show({
+            variant: "warning",
+            message: `⚠️ Invitación creada pero no se pudo enviar el email: ${emailResult.error || "Error desconocido"}`
+          });
+        } else {
+          show({
+            variant: "success",
+            message: `✅ Invitación enviada exitosamente a ${email}`
+          });
+        }
+
         // Limpiar formulario
         setEmailInput("");
         setSelectedUser(null);
         setValue("email", "");
         reset();
         onInviteSent();
-      } else {
+
+      } catch (error: any) {
+        console.error("Error al enviar invitación:", error);
+        
         // Mensajes de error más específicos
-        let errorMessage = result.error || "Error al enviar invitación";
+        let errorMessage = error?.message || error?.error || "Error al enviar invitación";
         
         if (errorMessage.includes("ya existe") || errorMessage.includes("pendiente")) {
           errorMessage = "Ya existe una invitación pendiente para este email";

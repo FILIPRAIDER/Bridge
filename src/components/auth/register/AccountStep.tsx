@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
 import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
@@ -35,13 +36,13 @@ const AccountSchema = z
   })
   .refine(
     (d) => {
-      if (d.role === "EMPRESARIO" && !d.companyName) return false;
+      // EMPRESARIO ya no requiere companyName aquí (se pide en onboarding personalizado)
       if (d.role === "LIDER" && !d.teamName) return false;
       return true;
     },
     {
       message: "Campo requerido",
-      path: ["companyName"],
+      path: ["teamName"],
     }
   );
 
@@ -117,17 +118,36 @@ export function AccountStep({ onNext }: AccountStepProps) {
         role: data.role as any, // EMPRESARIO | ESTUDIANTE | LIDER
       });
 
-      // 3. Si es empresa, crear compañía
-      if (data.role === "EMPRESARIO" && data.companyName) {
-        try {
-          const company = await api.post<Company>("/companies", {
-            name: data.companyName,
+      // 3. Si es EMPRESARIO → hacer login automático y redirigir a onboarding personalizado
+      if (data.role === "EMPRESARIO") {
+        // Hacer login automático
+        const loginResult = await signIn("credentials", {
+          redirect: false,
+          email: data.email,
+          password: data.password,
+        });
+
+        if (loginResult?.error) {
+          console.error("Error al hacer login automático:", loginResult.error);
+          show({
+            variant: "error",
+            message: "Error al iniciar sesión. Por favor, inicia sesión manualmente.",
           });
-          setCompanyId(company.id);
-        } catch (companyError) {
-          const err = companyError as Error;
-          console.warn("No se pudo crear la empresa:", err.message);
+          return;
         }
+
+        show({
+          variant: "success",
+          title: "Cuenta creada",
+          message: "Completa tu perfil empresarial",
+        });
+        
+        // Esperar un momento para que se vea el toast
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Redirigir al onboarding de empresario
+        window.location.href = "/auth/register/empresario";
+        return;
       }
 
       // 4. Si es líder, crear equipo
@@ -241,20 +261,6 @@ export function AccountStep({ onNext }: AccountStepProps) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <input type="hidden" {...register("role")} />
-
-        {role === "EMPRESARIO" && (
-          <div>
-            <label className="label">Nombre de la empresa *</label>
-            <input
-              {...register("companyName")}
-              className={`input ${errors.companyName ? "border-red-500" : ""}`}
-              placeholder="Mi Empresa S.A.S."
-            />
-            {errors.companyName && (
-              <p className="text-red-600 text-sm mt-1">{errors.companyName.message}</p>
-            )}
-          </div>
-        )}
 
         {role === "LIDER" && (
           <div>

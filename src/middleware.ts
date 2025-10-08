@@ -38,6 +38,14 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
+  console.log("🔍 [MIDDLEWARE]", {
+    pathname,
+    section,
+    tokenRole: token?.role,
+    tokenEmail: token?.email,
+    tokenSub: token?.sub,
+  });
+
   // Si no hay sesión → ir a login
   if (!token) {
     const loginUrl = new URL("/auth/login", req.url);
@@ -48,6 +56,13 @@ export async function middleware(req: NextRequest) {
   // Chequeo de rol
   const role = (token.role as string) || "ESTUDIANTE";
   const allowed = ACCESS[section];
+  
+  console.log("🔍 [MIDDLEWARE] Checking access:", {
+    role,
+    allowed,
+    isAllowed: allowed.includes(role as any)
+  });
+  
   if (!allowed.includes(role as any)) {
     // Redirecciones por rol según tipo de usuario
     let redirectTo = "/dashboard";
@@ -62,9 +77,11 @@ export async function middleware(req: NextRequest) {
       redirectTo = "/dashboard/lider"; // o una ruta específica de admin
     }
     
+    console.log("❌ [MIDDLEWARE] Not allowed, redirecting to:", redirectTo);
     return NextResponse.redirect(new URL(redirectTo, req.url));
   }
 
+  console.log("✅ [MIDDLEWARE] Access granted");
   return NextResponse.next();
 }
 
