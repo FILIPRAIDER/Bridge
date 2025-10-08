@@ -91,11 +91,11 @@ export function MemberProfileModal({ isOpen, onClose, member }: MemberProfileMod
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] animate-in zoom-in-95 duration-200 flex flex-col"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header with gradient background */}
-          <div className="relative h-32 bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 rounded-t-2xl">
+          <div className="relative h-32 bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800">
             <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
             
             {/* Close button */}
@@ -109,12 +109,12 @@ export function MemberProfileModal({ isOpen, onClose, member }: MemberProfileMod
           </div>
 
           {/* Scrollable content */}
-          <div className="overflow-y-auto flex-1 relative rounded-b-2xl">
-            <div className="px-6 pb-6">
-              {/* Avatar positioned over header */}
+          <div className="overflow-y-auto flex-1 pt-16">
+            {/* Avatar section - outside scrollable area visually with negative margin */}
+            <div className="px-6 pb-6 -mt-16">
               <div className="flex items-start gap-6 -mt-16 mb-4">
                 {/* Avatar */}
-                <div className="relative flex-shrink-0 z-10">
+                <div className="relative flex-shrink-0">
                   {member.user?.avatarUrl ? (
                     <img
                       src={member.user.avatarUrl}
