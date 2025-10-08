@@ -1,0 +1,224 @@
+"use client";
+
+import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+import { Briefcase, Users, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
+import ChatIA from '@/components/chat/ChatIA';
+import Link from 'next/link';
+
+export default function EmpresarioDashboard() {
+  const { data: session, status } = useSession();
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'projects' | 'teams'>('overview');
+
+  // Redirigir si no está autenticado o no es empresario
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!session || session.user.role !== 'EMPRESARIO') {
+    redirect('/login');
+  }
+
+  const handleProjectCreated = (projectId: string) => {
+    console.log('Proyecto creado:', projectId);
+    // Aquí puedes agregar lógica para actualizar la lista de proyectos
+    // Por ejemplo, revalidar datos o mostrar una notificación
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-900 text-white flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+              <Briefcase className="h-5 w-5 text-gray-900" />
+            </div>
+            <div>
+              <h1 className="font-bold text-lg">Bridge</h1>
+              <p className="text-xs text-gray-400">Panel Empresario</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <Link
+            href="/dashboard/empresario"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white"
+          >
+            <Sparkles className="h-5 w-5" />
+            <span className="font-medium">Chat IA</span>
+          </Link>
+
+          <Link
+            href="/dashboard/empresario/proyectos"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <Briefcase className="h-5 w-5" />
+            <span className="font-medium">Mis Proyectos</span>
+          </Link>
+
+          <Link
+            href="/dashboard/empresario/equipos"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <Users className="h-5 w-5" />
+            <span className="font-medium">Buscar Equipos</span>
+          </Link>
+
+          <Link
+            href="/dashboard/empresario/stats"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <TrendingUp className="h-5 w-5" />
+            <span className="font-medium">Estadísticas</span>
+          </Link>
+
+          <Link
+            href="/perfil"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <User className="h-5 w-5" />
+            <span className="font-medium">Mi Perfil</span>
+          </Link>
+        </nav>
+
+        {/* User Info + Logout */}
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
+              <User className="h-5 w-5 text-gray-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{session.user.name}</p>
+              <p className="text-xs text-gray-400 truncate">{session.user.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
+          >
+            <LogOut className="h-4 w-4" />
+            Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* Left Sidebar - Stats & Navigation */}
+          <div className="lg:col-span-1 space-y-6 overflow-y-auto">
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-500">Proyectos Activos</h3>
+                  <Briefcase className="h-5 w-5 text-gray-400" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">3</p>
+                <p className="text-xs text-green-600 mt-1">+2 este mes</p>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-500">Equipos Conectados</h3>
+                  <Users className="h-5 w-5 text-gray-400" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">12</p>
+                <p className="text-xs text-blue-600 mt-1">4 disponibles</p>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 col-span-2 lg:col-span-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-500">Crecimiento</h3>
+                  <TrendingUp className="h-5 w-5 text-gray-400" />
+                </div>
+                <p className="text-3xl font-bold text-gray-900">+24%</p>
+                <p className="text-xs text-gray-500 mt-1">vs. mes anterior</p>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
+              <div className="space-y-2">
+                <Link
+                  href="/dashboard/empresario/proyectos"
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                    <Briefcase className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">Mis Proyectos</p>
+                    <p className="text-xs text-gray-500">Ver y gestionar</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/dashboard/empresario/equipos"
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                    <Users className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">Equipos</p>
+                    <p className="text-xs text-gray-500">Buscar talento</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/perfil"
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors group"
+                >
+                  <div className="w-10 h-10 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                    <svg className="h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">Mi Perfil</p>
+                    <p className="text-xs text-gray-500">Editar información</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* AI Helper Tip */}
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 text-white shadow-lg">
+              <div className="flex items-start gap-3 mb-3">
+                <Sparkles className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold mb-1">Consejo del Asistente</h3>
+                  <p className="text-sm text-gray-300">
+                    Usa el chat para crear proyectos detallados y encontrar los mejores equipos para tus necesidades.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - AI Chat */}
+          <div className="lg:col-span-2 h-full">
+            <ChatIA
+              userId={session.user.id}
+              companyId={(session.user as any).companyId}
+              onProjectCreated={handleProjectCreated}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}

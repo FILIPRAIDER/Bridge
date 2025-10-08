@@ -2,14 +2,14 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import { Briefcase, Users, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
-import ChatIA from '@/components/chat/ChatIA';
+import { Briefcase, Users, TrendingUp, Sparkles, User, LogOut, Search, Filter, MapPin, Star } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
-export default function EmpresarioDashboard() {
+export default function EquiposPage() {
   const { data: session, status } = useSession();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Redirigir si no está autenticado o no es empresario
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -21,12 +21,6 @@ export default function EmpresarioDashboard() {
   if (!session || session.user.role !== 'EMPRESARIO') {
     redirect('/login');
   }
-
-  const handleProjectCreated = (projectId: string) => {
-    console.log('Proyecto creado:', projectId);
-    // Aquí puedes agregar lógica para actualizar la lista de proyectos
-    // Por ejemplo, revalidar datos o mostrar una notificación
-  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -49,7 +43,7 @@ export default function EmpresarioDashboard() {
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <Link
             href="/dashboard/empresario"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
           >
             <Sparkles className="h-5 w-5" />
             <span className="font-medium">Chat IA</span>
@@ -65,7 +59,7 @@ export default function EmpresarioDashboard() {
 
           <Link
             href="/dashboard/empresario/equipos"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white"
           >
             <Users className="h-5 w-5" />
             <span className="font-medium">Buscar Equipos</span>
@@ -109,13 +103,65 @@ export default function EmpresarioDashboard() {
         </div>
       </aside>
 
-      {/* Main Content - Full Width Chat */}
+      {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        <ChatIA
-          userId={session.user.id}
-          companyId={(session.user as any).companyId}
-          onProjectCreated={handleProjectCreated}
-        />
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-8 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Buscar Equipos</h1>
+              <p className="text-gray-500 mt-1">Encuentra el talento perfecto para tus proyectos</p>
+            </div>
+            <Link
+              href="/dashboard/empresario"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              <Sparkles className="h-5 w-5" />
+              Buscar con IA
+            </Link>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Buscar equipos por habilidades, sector..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <Filter className="h-5 w-5" />
+              Filtros
+            </button>
+          </div>
+        </div>
+
+        {/* Teams List */}
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Empty State */}
+            <div className="text-center py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                <Users className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Encuentra equipos con IA</h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                Usa nuestro asistente inteligente para describir tu proyecto y encontrar los equipos más adecuados según tus necesidades específicas.
+              </p>
+              <Link
+                href="/dashboard/empresario"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <Sparkles className="h-5 w-5" />
+                Buscar con Asistente IA
+              </Link>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
