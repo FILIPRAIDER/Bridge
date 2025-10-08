@@ -97,6 +97,7 @@ export default function LiderDashboard() {
         role="LIDER"
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        hasTeam={true} // Líderes siempre tienen equipo
       />
 
       {/* Contenedor de navbar + contenido */}

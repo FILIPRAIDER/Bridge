@@ -70,6 +70,7 @@ export default function MiembroDashboard() {
         role="ESTUDIANTE"
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        hasTeam={!!teamId} // 🔥 Pasar si tiene equipo
       />
 
       {/* Contenedor de navbar + contenido */}
@@ -86,6 +87,15 @@ export default function MiembroDashboard() {
               <p className="mt-2 text-sm lg:text-base text-gray-600">
                 Hola, {session?.user?.name || session?.user?.email}
               </p>
+              
+              {/* 🔥 Mensaje cuando no tiene equipo */}
+              {!isLoading && !teamId && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <p className="text-sm text-blue-800">
+                    ℹ️ Aún no formas parte de ningún equipo. Espera a que un líder te invite o contacta al administrador.
+                  </p>
+                </div>
+              )}
             </div>
 
             {isLoading ? (

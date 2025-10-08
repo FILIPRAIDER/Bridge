@@ -24,6 +24,7 @@ interface SidebarProps {
   role: "LIDER" | "ESTUDIANTE";
   isOpen?: boolean;
   onClose?: () => void;
+  hasTeam?: boolean; // 🔥 NUEVO: Indicar si el usuario tiene equipo
 }
 
 const LIDER_TABS = [
@@ -54,10 +55,18 @@ export function Sidebar({
   role,
   isOpen = false,
   onClose,
+  hasTeam = true, // Por defecto true para no romper compatibilidad
 }: SidebarProps) {
   const router = useRouter();
   const { clear } = useSession();
-  const tabs = role === "LIDER" ? LIDER_TABS : MIEMBRO_TABS;
+  
+  // 🔥 FIX: Filtrar tabs que requieren equipo si no tiene equipo
+  const allTabs = role === "LIDER" ? LIDER_TABS : MIEMBRO_TABS;
+  const teamRequiredTabs = ["team", "members", "manage-members", "manage", "invite", "team-skills", "invites"];
+  
+  const tabs = hasTeam 
+    ? allTabs 
+    : allTabs.filter(tab => !teamRequiredTabs.includes(tab.id));
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
