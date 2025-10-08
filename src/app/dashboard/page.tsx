@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { BridgeLoader } from "@/components/ui/BridgeLoader";
 
 export default function DashboardHome() {
   const { data: session, status } = useSession();
@@ -30,11 +29,6 @@ export default function DashboardHome() {
     }
   }, [session, status, router]);
 
-  // Mostrar loader mientras redirige (evita pantalla blanca)
-  return (
-    <BridgeLoader
-      message="Redirigiendo"
-      submessage="Accediendo a tu dashboard"
-    />
-  );
+  // No mostrar nada mientras redirige (la página de destino mostrará su propio loader)
+  return null;
 }
