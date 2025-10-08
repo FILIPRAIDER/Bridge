@@ -118,19 +118,19 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header con filtros y export */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+      <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
             Invitaciones Enviadas
           </h2>
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer text-sm w-full sm:w-auto justify-center"
           >
             <Download className="h-4 w-4" />
-            Exportar CSV
+            <span className="whitespace-nowrap">Exportar CSV</span>
           </button>
         </div>
 
@@ -142,7 +142,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
               onClick={() =>
                 setFilter(f as typeof filter)
               }
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
                 filter === f
                   ? "bg-gray-900 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -157,15 +157,15 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
       </div>
 
       {/* Lista de invitaciones */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+      <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200 shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-gray-500">Cargando invitaciones...</div>
+            <div className="text-sm text-gray-500">Cargando invitaciones...</div>
           </div>
         ) : invites.length === 0 ? (
           <div className="text-center py-12">
             <Mail className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">
+            <p className="text-sm text-gray-500">
               No hay invitaciones con este filtro
             </p>
           </div>
@@ -174,13 +174,16 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
             {invites.map((invite) => (
               <div
                 key={invite.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  {getStatusIcon(invite.status)}
-                  <div>
-                    <p className="font-medium text-gray-900">{invite.email}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                {/* Info principal */}
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                  <div className="flex-shrink-0 mt-0.5">
+                    {getStatusIcon(invite.status)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 text-sm sm:text-base break-all">{invite.email}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                           invite.status
@@ -189,7 +192,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                         {invite.status}
                       </span>
                       {invite.sentAt && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
                           Enviada:{" "}
                           {new Date(invite.sentAt).toLocaleDateString("es-ES", {
                             day: "2-digit",
@@ -199,7 +202,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                         </span>
                       )}
                       {invite.expiresAt && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">
                           Expira:{" "}
                           {new Date(invite.expiresAt).toLocaleDateString(
                             "es-ES",
@@ -215,7 +218,8 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                {/* Acciones */}
+                <div className="flex items-center gap-2 justify-end sm:justify-start flex-shrink-0">
                   {invite.status === "PENDING" && (
                     <>
                       <button
@@ -242,7 +246,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                     </>
                   )}
                   {invite.status === "ACCEPTED" && invite.acceptedAt && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
                       Aceptada:{" "}
                       {new Date(invite.acceptedAt).toLocaleDateString("es-ES", {
                         day: "2-digit",
@@ -251,7 +255,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                     </span>
                   )}
                   {invite.status === "CANCELED" && invite.cancelledAt && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
                       Cancelada:{" "}
                       {new Date(invite.cancelledAt).toLocaleDateString(
                         "es-ES",

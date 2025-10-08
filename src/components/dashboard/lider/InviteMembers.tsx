@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
@@ -50,23 +50,17 @@ export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
     try {
       setLoading(true);
       
-      // Normalizar email y preparar payload
+      // ✅ Preparar payload EXACTO que espera el backend (sin campos extra)
       const payload = {
         email: data.email.trim().toLowerCase(),
         role: data.role,
         byUserId: session.user.id,
+        // NO incluir teamId - ya va en la URL
+        // NO incluir expiresInDays - backend usa default de 7 días
+        // NO incluir target - backend usa default "frontend"
       };
-      
-      console.log("📧 Enviando invitación:", {
-        email: payload.email,
-        role: payload.role,
-        teamId,
-        byUserId: payload.byUserId,
-      });
 
-      const response = await api.post(`/teams/${teamId}/invites`, payload);
-      
-      console.log("✅ Invitación creada:", response);
+      await api.post(`/teams/${teamId}/invites`, payload);
       
       show({
         variant: "success",
@@ -76,13 +70,6 @@ export function InviteMembers({ teamId, onInviteSent }: InviteMembersProps) {
       reset();
       onInviteSent();
     } catch (error: any) {
-      console.error("❌ Error al enviar invitación:", error);
-      console.error("Error details:", {
-        status: error.status,
-        message: error.message,
-        data: error.data
-      });
-      
       // Mensajes de error más específicos basados en el código de estado
       let errorMessage = "Error al enviar invitación";
       

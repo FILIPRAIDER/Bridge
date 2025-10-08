@@ -27,7 +27,6 @@ export default function RegisterWizard() {
   // Redirigir si ya está autenticado con NextAuth
   useEffect(() => {
     if (status === "authenticated" && session) {
-      console.log("🔒 Usuario ya autenticado, redirigiendo a dashboard...");
       router.replace("/dashboard");
     }
   }, [session, status, router]);

@@ -18,7 +18,6 @@ function LoginForm() {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (status === "authenticated" && session) {
-      console.log("🔒 Usuario ya autenticado, redirigiendo a dashboard...");
       router.replace("/dashboard");
     }
   }, [session, status, router]);
@@ -43,10 +42,7 @@ function LoginForm() {
     const password = String(fd.get("password") || "");
 
     try {
-      console.log("🔐 Attempting login for:", email);
       const res = await signIn("credentials", { redirect: false, email, password });
-      
-      console.log("Login response:", res);
       
       if (res?.error) {
         // Mapear errores comunes de NextAuth
@@ -73,14 +69,10 @@ function LoginForm() {
         throw new Error("Error al iniciar sesión. Intenta nuevamente.");
       }
       
-      console.log("✅ Login successful, redirecting...");
-      
       // Obtener la sesión actualizada para saber el rol
       const response = await fetch("/api/auth/session");
       const sessionData = await response.json();
       const role = sessionData?.user?.role;
-      
-      console.log("👤 User role:", role);
       
       // Determinar el destino según el rol
       let destination = "/dashboard/miembro"; // Default
@@ -93,7 +85,6 @@ function LoginForm() {
         destination = "/dashboard/miembro";
       }
       
-      console.log("🎯 Redirecting to:", destination);
       toast({ variant: "success", title: "¡Bienvenido!", message: "Accediendo a tu espacio..." });
       
       // Redirigir directamente al dashboard correcto (sin pasar por /dashboard)

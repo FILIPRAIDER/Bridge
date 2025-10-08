@@ -60,7 +60,6 @@ export async function middleware(req: NextRequest) {
       redirectTo = "/dashboard/miembro";
     }
     
-    console.log(`🔒 Middleware: Access denied. Role: ${role}, Section: ${section}, Redirecting to: ${redirectTo}`);
     return NextResponse.redirect(new URL(redirectTo, req.url));
   }
 

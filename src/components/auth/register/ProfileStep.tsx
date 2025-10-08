@@ -143,7 +143,6 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
       }
 
       // El backend usa upsert en POST, así que solo POST es suficiente
-      console.log("Enviando payload al backend:", cleanPayload);
       await api.post(`/users/${user.id}/profile`, cleanPayload);
 
       show({

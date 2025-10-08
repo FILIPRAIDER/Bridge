@@ -91,12 +91,6 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
               console.error(`Error loading skills for user ${member.userId}:`, skillError);
             }
 
-            console.log(`Usuario ${member.user?.name}:`, {
-              profile: userData.profile,
-              skills: userSkills,
-              experiences: userData.experiences,
-            });
-
             return {
               ...member,
               profile: userData.profile || {},
@@ -117,7 +111,6 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
         })
       );
       
-      console.log("Miembros cargados con perfiles:", membersWithProfiles);
       setMembers(membersWithProfiles);
     } catch (error) {
       console.error("Error loading members:", error);
