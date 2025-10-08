@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
-import { Building2, Globe, MapPin, FileText, User, Phone, CreditCard, Calendar, ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { Building2, Globe, MapPin, FileText, Phone, CreditCard, Calendar, ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useCountries } from "@/hooks/useCountries";
+import { useCities } from "@/hooks/useCities";
 
 // Onboarding personalizado para empresarios
 
@@ -13,6 +15,7 @@ interface CompanyData {
   name: string;
   sector: string;
   website: string;
+  country: string;
   city: string;
   about: string;
 }
@@ -31,20 +34,26 @@ export default function EmpresarioOnboarding() {
   
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+
+  // Hooks para países y ciudades
+  const { data: countries, loading: countriesLoading } = useCountries();
+  const { data: citiesData, loading: citiesLoading } = useCities(selectedCountry);
 
   // Datos de la compañía
   const [companyData, setCompanyData] = useState<CompanyData>({
     name: "",
     sector: "",
     website: "",
+    country: "",
     city: "",
     about: "",
   });
 
-  // Datos del perfil personal
+  // Datos del perfil personal (empresario siempre usa NIT)
   const [profileData, setProfileData] = useState<ProfileData>({
     phone: "",
-    identityType: "NIT",
+    identityType: "NIT", // Siempre NIT para empresarios
     documentNumber: "",
     birthdate: "",
   });
@@ -66,8 +75,14 @@ export default function EmpresarioOnboarding() {
 
   if (status === "loading" || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl mb-6">
+            <Building2 className="h-8 w-8 text-white" />
+          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Cargando tu perfil empresarial...</p>
+        </div>
       </div>
     );
   }
@@ -81,7 +96,12 @@ export default function EmpresarioOnboarding() {
       return;
     }
 
-    if (!companyData.city.trim()) {
+    if (!companyData.country) {
+      show({ variant: "error", message: "El país es requerido" });
+      return;
+    }
+
+    if (!companyData.city) {
       show({ variant: "error", message: "La ciudad es requerida" });
       return;
     }
@@ -95,18 +115,23 @@ export default function EmpresarioOnboarding() {
     setIsLoading(true);
 
     try {
-      // 1. Crear la compañía
-      const companyResponse = await api.post<{ id: string }>("/companies", companyData);
+      // 1. Crear la compañía (enviar website como null si está vacío)
+      const companyPayload = {
+        ...companyData,
+        website: companyData.website.trim() || null, // null si está vacío
+      };
+
+      const companyResponse = await api.post<{ id: string }>("/companies", companyPayload);
       
       if (!companyResponse?.id) {
         throw new Error("No se pudo crear la compañía");
       }
 
-      // 2. Actualizar perfil del usuario
+      // 2. Actualizar perfil del usuario (siempre con identityType = NIT)
       await api.patch(`/users/${session.user.id}/profile`, {
-        phone: profileData.phone,
-        identityType: profileData.identityType,
-        documentNumber: profileData.documentNumber,
+        phone: profileData.phone || null,
+        identityType: "NIT", // Siempre NIT para empresarios
+        documentNumber: profileData.documentNumber || null,
         birthdate: profileData.birthdate ? new Date(profileData.birthdate).toISOString() : null,
       });
 
@@ -231,19 +256,69 @@ export default function EmpresarioOnboarding() {
               </p>
             </div>
 
+            {/* País */}
+            <div>
+              <label className="label">
+                <MapPin className="h-4 w-4 mr-2" />
+                País *
+              </label>
+              {countriesLoading ? (
+                <div className="input flex items-center gap-2 text-gray-400">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando países...
+                </div>
+              ) : (
+                <select
+                  value={companyData.country}
+                  onChange={(e) => {
+                    const country = e.target.value;
+                    setCompanyData({ ...companyData, country, city: "" });
+                    setSelectedCountry(country);
+                  }}
+                  className="input"
+                  required
+                >
+                  <option value="">Selecciona un país</option>
+                  {countries?.map((c: any) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Ciudad */}
             <div>
               <label className="label">
                 <MapPin className="h-4 w-4 mr-2" />
                 Ciudad *
               </label>
-              <input
-                type="text"
-                value={companyData.city}
-                onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
-                className="input"
-                placeholder="Ej: Bogotá"
-                required
-              />
+              {!companyData.country ? (
+                <div className="input bg-gray-50 text-gray-400 cursor-not-allowed">
+                  Primero selecciona un país
+                </div>
+              ) : citiesLoading ? (
+                <div className="input flex items-center gap-2 text-gray-400">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando ciudades...
+                </div>
+              ) : (
+                <select
+                  value={companyData.city}
+                  onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+                  className="input"
+                  required
+                  disabled={!companyData.country}
+                >
+                  <option value="">Selecciona una ciudad</option>
+                  {citiesData?.cities?.map((city: any) => (
+                    <option key={city.id} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
@@ -292,34 +367,21 @@ export default function EmpresarioOnboarding() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="label">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Tipo de Documento
-                </label>
-                <select
-                  value={profileData.identityType}
-                  onChange={(e) => setProfileData({ ...profileData, identityType: e.target.value })}
-                  className="input"
-                >
-                  <option value="NIT">NIT (Empresa)</option>
-                  <option value="CC">Cédula de Ciudadanía</option>
-                  <option value="CE">Cédula de Extranjería</option>
-                  <option value="PASAPORTE">Pasaporte</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="label">Número de Documento</label>
-                <input
-                  type="text"
-                  value={profileData.documentNumber}
-                  onChange={(e) => setProfileData({ ...profileData, documentNumber: e.target.value })}
-                  className="input"
-                  placeholder="123456789"
-                />
-              </div>
+            <div>
+              <label className="label">
+                <CreditCard className="h-4 w-4 mr-2" />
+                NIT de la Empresa
+              </label>
+              <input
+                type="text"
+                value={profileData.documentNumber}
+                onChange={(e) => setProfileData({ ...profileData, documentNumber: e.target.value })}
+                className="input"
+                placeholder="900123456-1"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Número de Identificación Tributaria (NIT)
+              </p>
             </div>
 
             <div>

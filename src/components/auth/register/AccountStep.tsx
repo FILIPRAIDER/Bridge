@@ -120,6 +120,12 @@ export function AccountStep({ onNext }: AccountStepProps) {
 
       // 3. Si es EMPRESARIO → hacer login automático y redirigir a onboarding personalizado
       if (data.role === "EMPRESARIO") {
+        show({
+          variant: "success",
+          title: "Cuenta creada",
+          message: "Iniciando sesión...",
+        });
+
         // Hacer login automático
         const loginResult = await signIn("credentials", {
           redirect: false,
@@ -133,19 +139,21 @@ export function AccountStep({ onNext }: AccountStepProps) {
             variant: "error",
             message: "Error al iniciar sesión. Por favor, inicia sesión manualmente.",
           });
+          setLoading(false);
           return;
         }
 
+        // Mostrar mensaje de redirección
         show({
           variant: "success",
-          title: "Cuenta creada",
-          message: "Completa tu perfil empresarial",
+          title: "Sesión iniciada",
+          message: "Redirigiendo a tu perfil empresarial...",
         });
         
-        // Esperar un momento para que se vea el toast
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Esperar un momento para que se complete el login
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Redirigir al onboarding de empresario
+        // Redirigir al onboarding de empresario (mantener loading activo)
         window.location.href = "/auth/register/empresario";
         return;
       }
