@@ -11,6 +11,8 @@ import {
   Award,
   LogOut,
   X,
+  Settings,
+  UsersRound,
 } from "lucide-react";
 import { useSession } from "@/store/session/useSession";
 
@@ -25,6 +27,9 @@ interface SidebarProps {
 const LIDER_TABS = [
   { id: "overview", label: "Resumen", icon: Users },
   { id: "profile", label: "Mi Perfil", icon: User },
+  { id: "members", label: "Miembros del Equipo", icon: UsersRound },
+  { id: "manage-members", label: "Gestionar Miembros", icon: Settings },
+  { id: "manage", label: "Gestionar Equipo", icon: Settings },
   { id: "invite", label: "Invitar Miembros", icon: UserPlus },
   { id: "skills", label: "Gestionar Skills", icon: Target },
   { id: "invites", label: "Ver Invitaciones", icon: Mail },
@@ -33,6 +38,7 @@ const LIDER_TABS = [
 const MIEMBRO_TABS = [
   { id: "profile", label: "Mi Perfil", icon: User },
   { id: "team", label: "Mi Equipo", icon: Users },
+  { id: "members", label: "Miembros del Equipo", icon: UsersRound },
   { id: "skills", label: "Mis Skills", icon: Award },
 ];
 

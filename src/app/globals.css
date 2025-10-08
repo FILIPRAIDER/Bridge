@@ -127,5 +127,19 @@ body {
   animation: pulse-dot 2s ease-in-out infinite;
 }
 
+/* ====== Team Members Grid - Smooth transitions ====== */
+.hover\:scale-102:hover {
+  transform: scale(1.02);
+}
+
+/* Smooth grayscale transition */
+.grayscale {
+  filter: grayscale(100%);
+}
+
+.grayscale-0 {
+  filter: grayscale(0%);
+}
+
 /* Botón especial para la navbar: blanco + borde negro + hover scale */
 

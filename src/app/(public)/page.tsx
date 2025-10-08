@@ -24,9 +24,19 @@ export default function HomePage() {
               Encuentra oportunidades o talento para tus proyectos
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
+            <p className="text-base sm:text-lg text-gray-600 mb-6 max-w-2xl mx-auto lg:mx-0">
               Publica proyectos o gestiona tu equipo y aplica. Mobile-first, moderna y sencilla.
             </p>
+
+            {/* Botón Comienza Ahora */}
+            <div className="flex justify-center lg:justify-start">
+              <Link 
+                href="/auth/register"
+                className="inline-flex items-center justify-center rounded-xl bg-[#0b0f19] text-white px-6 sm:px-8 py-3 sm:py-3.5 font-semibold shadow-md hover:shadow-lg hover:bg-[#111827] transition-all transform hover:-translate-y-0.5 text-sm sm:text-base"
+              >
+                Comienza ahora
+              </Link>
+            </div>
           </div>
 
           {/* Derecha: cards centradas */}

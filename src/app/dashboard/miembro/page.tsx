@@ -8,11 +8,12 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamInfo } from "@/components/dashboard/miembro/TeamInfo";
 import { MySkills } from "@/components/dashboard/miembro/MySkills";
+import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
-type TabType = "profile" | "team" | "skills";
+type TabType = "profile" | "team" | "members" | "skills";
 
 export default function MiembroDashboard() {
   const { data: session } = useNextAuthSession();
@@ -30,6 +31,8 @@ export default function MiembroDashboard() {
     }
   }, [session?.user?.id]);
 
+  const [teamId, setTeamId] = useState<string | null>(null);
+
   const loadData = async () => {
     if (!session?.user?.id) return;
     
@@ -40,6 +43,7 @@ export default function MiembroDashboard() {
       
       const membership = userData?.teamMemberships?.[0];
       if (membership?.teamId) {
+        setTeamId(membership.teamId);
         const [teamData, membersData] = await Promise.all([
           api.get<Team>(`/teams/${membership.teamId}`),
           api.get<TeamMember[]>(`/teams/${membership.teamId}/members`),
@@ -90,6 +94,9 @@ export default function MiembroDashboard() {
                 )}
                 {activeTab === "team" && session?.user?.id && (
                   <TeamInfo team={team} members={members} userId={session.user.id} />
+                )}
+                {activeTab === "members" && teamId && session?.user?.id && (
+                  <TeamMembers teamId={teamId} currentUserId={session.user.id} />
                 )}
                 {activeTab === "skills" && session?.user?.id && (
                   <MySkills userId={session.user.id} />

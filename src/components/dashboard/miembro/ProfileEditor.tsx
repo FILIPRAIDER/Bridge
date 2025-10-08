@@ -47,18 +47,19 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      headline: profile?.headline || "",
-      bio: profile?.bio || "",
-      seniority: profile?.seniority || "",
-      location: profile?.location || "",
-      availability: profile?.availability,
-      stack: profile?.stack || "",
-      sector: profile?.sector || "",
-      phone: profile?.phone || "",
+      headline: "",
+      bio: "",
+      seniority: "",
+      location: "",
+      availability: undefined,
+      stack: "",
+      sector: "",
+      phone: "",
     },
   });
 
@@ -72,20 +73,24 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
     }
   }, [session]);
 
+  // Prellenar campos cuando el perfil se carga
   useEffect(() => {
     if (profile) {
-      setValue("headline", profile.headline || "");
-      setValue("bio", profile.bio || "");
-      setValue("seniority", profile.seniority || "");
-      setValue("location", profile.location || "");
-      if (profile.availability !== undefined) {
-        setValue("availability", profile.availability);
-      }
-      setValue("stack", profile.stack || "");
-      setValue("sector", profile.sector || "");
-      setValue("phone", profile.phone || "");
+      // Usar reset para cargar todos los valores de una vez
+      reset({
+        headline: profile.headline || "",
+        bio: profile.bio || "",
+        seniority: profile.seniority || "",
+        location: profile.location || "",
+        availability: profile.availability !== undefined && profile.availability !== null 
+          ? profile.availability 
+          : undefined,
+        stack: profile.stack || "",
+        sector: profile.sector || "",
+        phone: profile.phone || "",
+      });
     }
-  }, [profile, setValue]);
+  }, [profile, reset]);
 
   const onSubmit = async (data: ProfileForm) => {
     try {

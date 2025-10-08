@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  avatarUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -117,7 +118,7 @@ export interface TeamInvite {
   teamId: string;
   email: string;
   role: "MIEMBRO";
-  status: "PENDING" | "ACCEPTED" | "CANCELLED" | "EXPIRED";
+  status: "PENDING" | "ACCEPTED" | "CANCELED" | "EXPIRED";
   token: string;
   expiresAt: string;
   sentAt: string;

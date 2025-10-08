@@ -23,7 +23,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
   const [invites, setInvites] = useState<TeamInvite[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<
-    "all" | "PENDING" | "ACCEPTED" | "CANCELLED" | "EXPIRED"
+    "all" | "PENDING" | "ACCEPTED" | "CANCELED" | "EXPIRED"
   >("all");
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
         return <Clock className="h-5 w-5 text-yellow-600" />;
       case "ACCEPTED":
         return <CheckCircle className="h-5 w-5 text-green-600" />;
-      case "CANCELLED":
+      case "CANCELED":
         return <XCircle className="h-5 w-5 text-red-600" />;
       case "EXPIRED":
         return <MailX className="h-5 w-5 text-gray-600" />;
@@ -110,7 +110,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
         return "bg-yellow-100 text-yellow-700";
       case "ACCEPTED":
         return "bg-green-100 text-green-700";
-      case "CANCELLED":
+      case "CANCELED":
         return "bg-red-100 text-red-700";
       case "EXPIRED":
         return "bg-gray-100 text-gray-700";
@@ -136,7 +136,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
 
         {/* Filtros */}
         <div className="flex flex-wrap gap-2">
-          {["all", "PENDING", "ACCEPTED", "CANCELLED", "EXPIRED"].map((f) => (
+          {["all", "PENDING", "ACCEPTED", "CANCELED", "EXPIRED"].map((f) => (
             <button
               key={f}
               onClick={() =>
@@ -188,25 +188,29 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                       >
                         {invite.status}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        Enviada:{" "}
-                        {new Date(invite.sentAt).toLocaleDateString("es-ES", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        Expira:{" "}
-                        {new Date(invite.expiresAt).toLocaleDateString(
-                          "es-ES",
-                          {
+                      {invite.sentAt && (
+                        <span className="text-xs text-gray-500">
+                          Enviada:{" "}
+                          {new Date(invite.sentAt).toLocaleDateString("es-ES", {
                             day: "2-digit",
                             month: "short",
                             year: "numeric",
-                          }
-                        )}
-                      </span>
+                          })}
+                        </span>
+                      )}
+                      {invite.expiresAt && (
+                        <span className="text-xs text-gray-500">
+                          Expira:{" "}
+                          {new Date(invite.expiresAt).toLocaleDateString(
+                            "es-ES",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -246,7 +250,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
                       })}
                     </span>
                   )}
-                  {invite.status === "CANCELLED" && invite.cancelledAt && (
+                  {invite.status === "CANCELED" && invite.cancelledAt && (
                     <span className="text-xs text-gray-500">
                       Cancelada:{" "}
                       {new Date(invite.cancelledAt).toLocaleDateString(
