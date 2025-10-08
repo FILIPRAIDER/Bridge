@@ -51,7 +51,7 @@ export function LocationSelector({
     if (countryValue !== selectedCountry) {
       setSelectedCountry(countryValue);
     }
-  }, [countryValue]);
+  }, [countryValue, selectedCountry]);
 
   const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;

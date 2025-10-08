@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Target, Plus, Trash2, Loader2, Search, X, ChevronDown } from "lucide-react";
+import { Target, Plus, Trash2, Loader2, Search, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import type { Skill, UserSkill } from "@/types/api";
@@ -27,6 +27,7 @@ export function MySkills({ userId }: MySkillsProps) {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // Cerrar dropdown cuando se hace click fuera
@@ -267,7 +268,7 @@ export function MySkills({ userId }: MySkillsProps) {
                   <span>✍️ Escribe 1 caracter más...</span>
                 )}
                 {searchTerm.length >= 2 && !searchLoading && filteredSkills.length === 0 && (
-                  <span>❌ No se encontraron skills con "{searchTerm}"</span>
+                  <span>❌ No se encontraron skills con &quot;{searchTerm}&quot;</span>
                 )}
                 {searchTerm.length >= 2 && !searchLoading && filteredSkills.length > 0 && (
                   <span>✅ {filteredSkills.length} skill(s) encontrado(s)</span>

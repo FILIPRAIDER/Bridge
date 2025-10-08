@@ -29,6 +29,7 @@ export default function MiembroDashboard() {
     if (session?.user?.id) {
       loadData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
   const [teamId, setTeamId] = useState<string | null>(null);

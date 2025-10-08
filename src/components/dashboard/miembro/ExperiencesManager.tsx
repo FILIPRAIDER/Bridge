@@ -41,6 +41,7 @@ export function ExperiencesManager() {
 
   useEffect(() => {
     loadExperiences();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const loadExperiences = async () => {

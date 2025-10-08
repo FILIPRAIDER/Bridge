@@ -35,6 +35,7 @@ export default function LiderDashboard() {
       fetchTeamId();
       loadProfile();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
 
   const fetchTeamId = async () => {

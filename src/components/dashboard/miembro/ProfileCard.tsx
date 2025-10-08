@@ -15,12 +15,6 @@ export function ProfileCard({ profile }: ProfileCardProps) {
   const [skills, setSkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      loadSkills();
-    }
-  }, [session?.user?.id]);
-
   const loadSkills = async () => {
     if (!session?.user?.id) return;
     
@@ -35,6 +29,13 @@ export function ProfileCard({ profile }: ProfileCardProps) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadSkills();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   // Get seniority label
   const getSeniorityLabel = (seniority?: string) => {
@@ -116,7 +117,9 @@ export function ProfileCard({ profile }: ProfileCardProps) {
                   </span>
                   {profile?.sector && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                      {profile.sector}
+                      {typeof profile.sector === 'object' 
+                        ? `${profile.sector.icon || ''} ${profile.sector.nameEs}`
+                        : profile.sector}
                     </span>
                   )}
                 </div>

@@ -45,5 +45,6 @@ export function useLoadAvatar() {
     };
 
     loadAvatar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, session?.user?.avatarUrl, status]);
 }

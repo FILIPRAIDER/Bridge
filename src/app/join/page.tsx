@@ -56,6 +56,7 @@ export default function JoinPage() {
     }
 
     fetchInviteInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const fetchInviteInfo = async () => {
@@ -118,7 +119,7 @@ export default function JoinPage() {
         throw new Error(errorData.message || "Error al aceptar invitación");
       }
 
-      const result = await response.json();
+      await response.json();
 
       show({
         message: "¡Te has unido al equipo exitosamente!",
@@ -255,7 +256,7 @@ export default function JoinPage() {
 
             {inviteData.message && (
               <blockquote className="border-l-4 border-gray-900 pl-4 py-2 italic text-gray-700 bg-white rounded-r-lg">
-                "{inviteData.message}"
+                &quot;{inviteData.message}&quot;
               </blockquote>
             )}
           </div>

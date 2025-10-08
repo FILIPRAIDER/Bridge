@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Briefcase, MapPin, Clock, Award, Mail, Phone } from "lucide-react";
+import { Briefcase, MapPin, Clock, Award } from "lucide-react";
 import { api } from "@/lib/api";
 import { Loader } from "@/components/ui";
 import type { TeamMember } from "@/types/api";
@@ -64,6 +64,7 @@ export function TeamMembers({ teamId, currentUserId }: TeamMembersProps) {
 
   useEffect(() => {
     loadMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId]);
 
   const loadMembers = async () => {

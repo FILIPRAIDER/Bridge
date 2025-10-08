@@ -41,6 +41,7 @@ export function CertificationsManager() {
 
   useEffect(() => {
     loadCertifications();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const loadCertifications = async () => {
