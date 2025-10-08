@@ -44,38 +44,12 @@ export default function RegisterWizard() {
     setCurrentStep(nextStep);
   };
 
-  const handleSkipToEnd = async () => {
-    if (!user) {
-      show({
-        variant: "error",
-        title: "Error",
-        message: "No se encontró el usuario",
-      });
-      return;
-    }
-
-    try {
-      show({
-        variant: "success",
-        title: "Perfil guardado",
-        message: "Redirigiendo...",
-      });
-      
-      // Esperar un momento para que se vea el toast
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirigir al login para que inicie sesión
-      // (El usuario tendrá que iniciar sesión manualmente)
-      clear();
-      window.location.href = "/auth/login?registered=true";
-    } catch (e) {
-      const error = e as Error;
-      show({
-        variant: "error",
-        title: "Error",
-        message: error.message || "Error al completar el registro",
-      });
-    }
+  // 🔥 FIX: "Completar más tarde" = SKIP este step y continuar con el siguiente
+  const handleSkipStep = (currentStepToSkip: Step, nextStep: Step) => {
+    // Marcar como completado (aunque se haya skipeado)
+    setCompletedSteps((prev) => new Set(prev).add(currentStepToSkip));
+    // Ir al siguiente step
+    setCurrentStep(nextStep);
   };
 
   const handleFinish = async () => {
@@ -193,26 +167,29 @@ export default function RegisterWizard() {
           {currentStep === "profile" && (
             <ProfileStep
               onNext={() => handleStepComplete("profile", "experience")}
-              onSkip={handleSkipToEnd}
+              onSkip={() => handleSkipStep("profile", "experience")}
             />
           )}
 
           {currentStep === "experience" && (
             <ExperienceStep
               onNext={() => handleStepComplete("experience", "certifications")}
-              onSkip={handleSkipToEnd}
+              onSkip={() => handleSkipStep("experience", "certifications")}
             />
           )}
 
           {currentStep === "certifications" && (
             <CertificationsStep
               onNext={() => handleStepComplete("certifications", "skills")}
-              onSkip={handleSkipToEnd}
+              onSkip={() => handleSkipStep("certifications", "skills")}
             />
           )}
 
           {currentStep === "skills" && (
-            <SkillsStep onNext={handleFinish} onSkip={handleSkipToEnd} />
+            <SkillsStep 
+              onNext={handleFinish} 
+              onSkip={handleFinish} // En el último step, skip = finish
+            />
           )}
         </div>
 
