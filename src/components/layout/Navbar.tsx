@@ -45,8 +45,8 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         {/* Notification Bell */}
         <NotificationBell />
 
-            {/* User Avatar */}
-        <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center ring-2 ring-gray-200 overflow-hidden">
+        {/* User Avatar */}
+        <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center ring-2 ring-gray-200 overflow-hidden">
           {session?.user?.avatarUrl ? (
             <img
               src={session.user.avatarUrl}
@@ -54,7 +54,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <User className="h-5 w-5 text-gray-500" />
+            <User className="h-4 w-4 text-gray-500" />
           )}
         </div>
 

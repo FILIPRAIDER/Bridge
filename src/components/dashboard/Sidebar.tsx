@@ -27,12 +27,11 @@ interface SidebarProps {
 const LIDER_TABS = [
   { id: "overview", label: "Resumen", icon: Users },
   { id: "profile", label: "Mi Perfil", icon: User },
-  { id: "members", label: "Miembros del Equipo", icon: UsersRound },
   { id: "manage-members", label: "Gestionar Miembros", icon: Settings },
   { id: "manage", label: "Gestionar Equipo", icon: Settings },
   { id: "invite", label: "Invitar Miembros", icon: UserPlus },
   { id: "my-skills", label: "Mis Skills", icon: Award },
-  { id: "team-skills", label: "Gestionar Skills del Equipo", icon: Target },
+  { id: "team-skills", label: "Skills del Equipo", icon: Target },
   { id: "invites", label: "Ver Invitaciones", icon: Mail },
 ];
 

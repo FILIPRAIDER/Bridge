@@ -11,9 +11,11 @@ import {
   AlertTriangle,
   Crown,
   Calendar,
+  Eye,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { MemberProfileModal } from "@/components/dashboard/shared/MemberProfileModal";
 import type { TeamMember } from "@/types/api";
 
 interface TeamMembersManagerProps {
@@ -45,6 +47,8 @@ export function TeamMembersManager({
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<ExtendedTeamMember | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     loadMembers();
@@ -60,7 +64,34 @@ export function TeamMembersManager({
       const response = await api.get<ExtendedTeamMember[]>(
         `/teams/${teamId}/members`
       );
-      setMembers(response);
+      
+      // Cargar datos completos incluyendo profile y skills
+      const membersWithFullData = await Promise.all(
+        response.map(async (member) => {
+          try {
+            const userData = await api.get<any>(`/users/${member.userId}`);
+            let userSkills = [];
+            try {
+              const skillsData = await api.get<any>(`/users/${member.userId}/skills`);
+              userSkills = skillsData?.skills || skillsData || [];
+            } catch (skillError) {
+              console.error(`Error loading skills for user ${member.userId}:`, skillError);
+            }
+            return {
+              ...member,
+              profile: userData.profile || {},
+              experiences: userData.experiences || [],
+              certifications: userData.certifications || [],
+              skills: userSkills,
+            };
+          } catch (error) {
+            console.error(`Error loading profile for user ${member.userId}:`, error);
+            return member;
+          }
+        })
+      );
+      
+      setMembers(membersWithFullData);
     } catch (error: any) {
       show({
         message: error.message || "Error al cargar miembros",
@@ -69,6 +100,16 @@ export function TeamMembersManager({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewProfile = (member: any) => {
+    setSelectedMember(member);
+    setIsProfileModalOpen(true);
+  };
+
+  const closeProfileModal = () => {
+    setIsProfileModalOpen(false);
+    setTimeout(() => setSelectedMember(null), 300);
   };
 
   const filterMembers = () => {
@@ -253,7 +294,15 @@ export function TeamMembersManager({
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      {/* Member Profile Modal */}
+      <MemberProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={closeProfileModal}
+        member={selectedMember}
+      />
+
+      <div className="space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between mb-6">
@@ -418,6 +467,15 @@ export function TeamMembersManager({
                       {/* Actions */}
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* View Profile */}
+                          <button
+                            onClick={() => handleViewProfile(member)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Ver perfil"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+
                           {/* Change Role */}
                           {member.userId !== currentUserId && (
                             <button
@@ -513,31 +571,43 @@ export function TeamMembersManager({
                   </div>
 
                   {/* Actions */}
-                  {member.userId !== currentUserId && (
-                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                      <button
-                        onClick={() => handleChangeRole(member)}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-                      >
-                        {member.role === "LIDER" ? (
-                          <User className="h-4 w-4" />
-                        ) : (
-                          <Shield className="h-4 w-4" />
-                        )}
-                        Cambiar rol
-                      </button>
-                      <button
-                        onClick={() => {
-                          setMemberToRemove(member);
-                          setShowRemoveModal(true);
-                        }}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
-                      >
-                        <UserX className="h-4 w-4" />
-                        Expulsar
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                    {/* View Profile - Always show */}
+                    <button
+                      onClick={() => handleViewProfile(member)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Ver perfil
+                    </button>
+
+                    {/* Change Role & Remove - Only for others */}
+                    {member.userId !== currentUserId && (
+                      <>
+                        <button
+                          onClick={() => handleChangeRole(member)}
+                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                        >
+                          {member.role === "LIDER" ? (
+                            <User className="h-4 w-4" />
+                          ) : (
+                            <Shield className="h-4 w-4" />
+                          )}
+                          Cambiar rol
+                        </button>
+                        <button
+                          onClick={() => {
+                            setMemberToRemove(member);
+                            setShowRemoveModal(true);
+                          }}
+                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                        >
+                          <UserX className="h-4 w-4" />
+                          Expulsar
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -618,6 +688,7 @@ export function TeamMembersManager({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
