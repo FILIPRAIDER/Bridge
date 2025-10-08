@@ -8,7 +8,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://bridgeapp.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_BASE_URL || 'https://cresia-app.vercel.app'),
   title: {
     default: "Bridge - Conecta empresas con equipos",
     template: "%s | Bridge",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_ES",
-    url: "https://bridgeapp.vercel.app",
+    url: "https://cresia-app.vercel.app",
     title: "Bridge - Conecta empresas con equipos",
     description: "Plataforma colaborativa para conectar empresas con equipos de trabajo. Gestiona proyectos, invita miembros y colabora eficientemente.",
     siteName: "Bridge",

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession as useNextAuthSession } from "next-auth/react";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   AccountStep,
@@ -17,12 +17,59 @@ import {
 type Step = "account" | "profile" | "experience" | "certifications" | "skills";
 
 export default function RegisterWizard() {
-  const [currentStep, setCurrentStep] = useState<Step>("account");
+  const searchParams = useSearchParams();
+  const urlStep = searchParams.get("step") as Step | null;
+  
+  // Inicializar con el step de la URL o "account" por defecto
+  const [currentStep, setCurrentStep] = useState<Step>(
+    urlStep && ["account", "profile", "experience", "certifications", "skills"].includes(urlStep)
+      ? urlStep
+      : "account"
+  );
   const [completedSteps, setCompletedSteps] = useState<Set<Step>>(new Set());
+  const [isInitialized, setIsInitialized] = useState(false);
   const { user, clear } = useSession();
   const { show } = useToast();
   const router = useRouter();
   const { data: session, status } = useNextAuthSession();
+
+  // Restaurar progreso desde localStorage al montar el componente
+  useEffect(() => {
+    const savedCompletedSteps = localStorage.getItem("register-completed-steps");
+    if (savedCompletedSteps) {
+      try {
+        const parsed = JSON.parse(savedCompletedSteps);
+        if (Array.isArray(parsed)) {
+          setCompletedSteps(new Set(parsed));
+        }
+      } catch (error) {
+        console.error("Error parsing completed steps:", error);
+      }
+    }
+    
+    // Si hay un step en la URL, usarlo
+    if (urlStep && ["account", "profile", "experience", "certifications", "skills"].includes(urlStep)) {
+      setCurrentStep(urlStep);
+    }
+    
+    setIsInitialized(true);
+  }, []);
+
+  // Sincronizar el step con la URL y localStorage
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    params.set("step", currentStep);
+    router.replace(`/auth/register?${params.toString()}`, { scroll: false });
+  }, [currentStep, router, isInitialized]);
+
+  // Guardar completedSteps en localStorage cada vez que cambien
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    localStorage.setItem("register-completed-steps", JSON.stringify(Array.from(completedSteps)));
+  }, [completedSteps, isInitialized]);
 
   // Redirigir si ya está autenticado con NextAuth
   useEffect(() => {
@@ -33,11 +80,11 @@ export default function RegisterWizard() {
 
   // Si ya hay usuario en Zustand, empezar desde profile
   useEffect(() => {
-    if (user && currentStep === "account") {
+    if (user && currentStep === "account" && isInitialized) {
       setCurrentStep("profile");
       setCompletedSteps(new Set(["account"]));
     }
-  }, [user, currentStep]);
+  }, [user, currentStep, isInitialized]);
 
   const handleStepComplete = (step: Step, nextStep: Step) => {
     setCompletedSteps((prev) => new Set(prev).add(step));
@@ -67,6 +114,9 @@ export default function RegisterWizard() {
       title: "¡Registro completado!",
       message: "Bienvenido a Bridge. Redirigiendo...",
     });
+
+    // Limpiar el progreso guardado
+    localStorage.removeItem("register-completed-steps");
 
     // Esperar un momento para que se vea el toast
     await new Promise(resolve => setTimeout(resolve, 1000));
