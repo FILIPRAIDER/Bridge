@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import AuthProvider from "@/components/providers/session-provider";
 import UIProvider from "@/components/providers/ui-provider";
-import { BackendHealthCheck } from "@/components/providers/BackendHealthCheck";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -22,9 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <AuthProvider>
           <UIProvider>
-            <BackendHealthCheck>
-              {children}
-            </BackendHealthCheck>
+            {children}
           </UIProvider>
         </AuthProvider>
       </body>

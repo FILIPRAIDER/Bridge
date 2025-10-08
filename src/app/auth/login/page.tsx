@@ -74,13 +74,30 @@ function LoginForm() {
       }
       
       console.log("✅ Login successful, redirecting...");
-      toast({ variant: "success", title: "¡Bienvenido!", message: "Redirigiendo a tu dashboard..." });
       
-      // Esperar un momento para que se actualice la sesión
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Obtener la sesión actualizada para saber el rol
+      const response = await fetch("/api/auth/session");
+      const sessionData = await response.json();
+      const role = sessionData?.user?.role;
       
-      // Redirigir al dashboard (el page.tsx se encargará de redirigir según el rol)
-      window.location.href = "/dashboard";
+      console.log("👤 User role:", role);
+      
+      // Determinar el destino según el rol
+      let destination = "/dashboard/miembro"; // Default
+      
+      if (role === "LIDER" || role === "ADMIN") {
+        destination = "/dashboard/lider";
+      } else if (role === "EMPRESARIO") {
+        destination = "/empresa";
+      } else if (role === "ESTUDIANTE") {
+        destination = "/dashboard/miembro";
+      }
+      
+      console.log("🎯 Redirecting to:", destination);
+      toast({ variant: "success", title: "¡Bienvenido!", message: "Accediendo a tu espacio..." });
+      
+      // Redirigir directamente al dashboard correcto (sin pasar por /dashboard)
+      window.location.href = destination;
     } catch (e: any) {
       console.error("Login error:", e);
       

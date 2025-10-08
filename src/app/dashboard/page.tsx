@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardHome() {
   const { data: session, status } = useSession();
@@ -29,5 +30,13 @@ export default function DashboardHome() {
     }
   }, [session, status, router]);
 
-  return null; // No mostrar nada, solo redirigir
+  // Mostrar loader mientras redirige (evita pantalla blanca)
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-900 mx-auto mb-3" />
+        <p className="text-sm text-gray-600">Cargando...</p>
+      </div>
+    </div>
+  );
 }

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { BackendHealthCheck } from "@/components/providers/BackendHealthCheck";
 
 export default function DashboardLayout({
   children,
@@ -50,5 +51,9 @@ export default function DashboardLayout({
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <BackendHealthCheck>
+      {children}
+    </BackendHealthCheck>
+  );
 }
