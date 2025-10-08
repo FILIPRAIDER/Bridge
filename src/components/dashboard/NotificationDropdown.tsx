@@ -129,10 +129,10 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
   };
 
   return (
-    <div className="absolute right-0 top-full mt-2 w-96 max-h-[600px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 flex flex-col">
+    <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] sm:max-h-[600px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+      <div className="p-3 sm:p-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="font-semibold text-gray-900 flex items-center gap-2 text-sm sm:text-base">
           Notificaciones
           {unreadCount > 0 && (
             <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
@@ -143,9 +143,9 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium whitespace-nowrap"
           >
-            Marcar todas leídas
+            Marcar leídas
           </button>
         )}
       </div>
@@ -169,13 +169,13 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
           notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+              className={`p-3 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                 !notification.read ? "bg-blue-50/50" : ""
               }`}
             >
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 {/* Icono */}
-                <div className="flex-shrink-0 text-2xl">
+                <div className="flex-shrink-0 text-xl sm:text-2xl">
                   {getNotificationIcon(notification.type)}
                 </div>
 
@@ -183,39 +183,39 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <h4
-                      className={`text-sm font-medium ${
+                      className={`text-xs sm:text-sm font-medium ${
                         !notification.read ? "text-gray-900" : "text-gray-700"
                       }`}
                     >
                       {notification.title}
                     </h4>
-                    <span className="text-xs text-gray-500 whitespace-nowrap flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                    <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                       {getRelativeTime(notification.createdAt)}
                     </span>
                   </div>
 
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     {notification.message}
                   </p>
 
                   {/* Acciones específicas por tipo */}
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-2 sm:mt-3 flex flex-wrap gap-2">
                     {notification.type === "TEAM_INVITATION" &&
                       notification.data?.token && (
                         <>
                           <button
                             onClick={() => handleAcceptInvitation(notification)}
-                            className="text-xs px-3 py-1.5 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors font-medium flex items-center gap-1"
+                            className="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors font-medium flex items-center gap-1"
                           >
-                            <Check className="h-3 w-3" />
+                            <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             Aceptar
                           </button>
                           <button
                             onClick={() => handleRejectInvitation(notification)}
-                            className="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors font-medium flex items-center gap-1"
+                            className="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors font-medium flex items-center gap-1"
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             Rechazar
                           </button>
                         </>
@@ -224,10 +224,10 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
                     {notification.actionUrl && (
                       <button
                         onClick={() => handleNotificationClick(notification)}
-                        className="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors font-medium flex items-center gap-1"
+                        className="text-[10px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors font-medium flex items-center gap-1"
                       >
                         Ver más
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                       </button>
                     )}
                   </div>

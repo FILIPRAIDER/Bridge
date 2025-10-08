@@ -45,10 +45,10 @@ export function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        className="relative p-2 text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors border border-gray-200"
         aria-label="Notificaciones"
       >
-        <Bell className="h-6 w-6" />
+        <Bell className="h-5 w-5" />
 
         {/* Badge con contador */}
         {unreadCount > 0 && (
