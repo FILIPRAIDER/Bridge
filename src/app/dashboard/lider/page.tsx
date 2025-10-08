@@ -14,11 +14,13 @@ import { TeamMembersManager } from "@/components/dashboard/lider/TeamMembersMana
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
 import { MySkills } from "@/components/dashboard/miembro/MySkills";
+import { CertificationsManager } from "@/components/dashboard/miembro/CertificationsManager";
+import { ExperiencesManager } from "@/components/dashboard/miembro/ExperiencesManager";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
-type TabType = "overview" | "profile" | "members" | "manage-members" | "manage" | "invite" | "my-skills" | "team-skills" | "invites";
+type TabType = "overview" | "profile" | "members" | "manage-members" | "manage" | "invite" | "my-skills" | "team-skills" | "invites" | "certifications" | "experiences";
 
 export default function LiderDashboard() {
   const { data: session } = useNextAuthSession();
@@ -123,6 +125,8 @@ export default function LiderDashboard() {
                 {activeTab === "profile" && (
                   <ProfileManager profile={profile} onUpdate={loadProfile} />
                 )}
+                {activeTab === "certifications" && <CertificationsManager />}
+                {activeTab === "experiences" && <ExperiencesManager />}
                 {activeTab === "members" && teamId && session?.user?.id && (
                   <TeamMembers teamId={teamId} currentUserId={session.user.id} />
                 )}

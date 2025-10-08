@@ -9,11 +9,13 @@ import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamInfo } from "@/components/dashboard/miembro/TeamInfo";
 import { MySkills } from "@/components/dashboard/miembro/MySkills";
 import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
+import { CertificationsManager } from "@/components/dashboard/miembro/CertificationsManager";
+import { ExperiencesManager } from "@/components/dashboard/miembro/ExperiencesManager";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
-type TabType = "profile" | "team" | "members" | "skills";
+type TabType = "profile" | "team" | "members" | "skills" | "certifications" | "experiences";
 
 export default function MiembroDashboard() {
   const { data: session } = useNextAuthSession();
@@ -93,6 +95,8 @@ export default function MiembroDashboard() {
                 {activeTab === "profile" && (
                   <ProfileManager profile={profile} onUpdate={loadData} />
                 )}
+                {activeTab === "certifications" && <CertificationsManager />}
+                {activeTab === "experiences" && <ExperiencesManager />}
                 {activeTab === "team" && session?.user?.id && (
                   <TeamInfo team={team} members={members} userId={session.user.id} />
                 )}
