@@ -7,6 +7,8 @@ import { useToast } from "@/components/ui/toast";
 import { Building2, Globe, MapPin, FileText, User, Phone, CreditCard, Calendar, ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { api } from "@/lib/api";
 
+// Onboarding personalizado para empresarios
+
 interface CompanyData {
   name: string;
   sector: string;
@@ -101,7 +103,7 @@ export default function EmpresarioOnboarding() {
       }
 
       // 2. Actualizar perfil del usuario
-      await api.put(`/users/${session.user.id}/profile`, {
+      await api.patch(`/users/${session.user.id}/profile`, {
         phone: profileData.phone,
         identityType: profileData.identityType,
         documentNumber: profileData.documentNumber,
