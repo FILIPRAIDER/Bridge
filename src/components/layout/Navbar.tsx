@@ -2,6 +2,7 @@
 
 import { Menu, User } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { NotificationBell } from "@/components/dashboard/NotificationBell";
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -39,8 +40,12 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         </div>
       </div>
 
-      {/* Right side: User Avatar */}
-      <div className="flex items-center gap-3 ml-auto">
+      {/* Right side: Notifications + User Avatar */}
+      <div className="flex items-center gap-2 ml-auto">
+        {/* Notification Bell */}
+        <NotificationBell />
+
+        {/* User Info */}
         <div className="text-right hidden sm:block">
           <p className="text-sm font-medium text-gray-900">
             {session?.user?.name || "Usuario"}
@@ -49,6 +54,8 @@ export function Navbar({ onMenuClick }: NavbarProps) {
             {roleLabels[session?.user?.role || ""] || session?.user?.role}
           </p>
         </div>
+        
+        {/* User Avatar */}
         <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center ring-2 ring-gray-200 overflow-hidden">
           {session?.user?.avatarUrl ? (
             <img
