@@ -1,8 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { sendInvitationEmail } from './send-invitation-email'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001'
+const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'https://cresia-app.vercel.app'
 
 // Tipos
 interface SendInvitationParams {
@@ -29,8 +31,9 @@ interface InvitationResult {
 /**
  * 📧 Server Action: Enviar Invitación a Equipo
  * 
- * Esta función se ejecuta en el servidor de Next.js y se comunica
- * con tu backend en Express/Render.
+ * NUEVO FLUJO:
+ * 1. Backend crea el registro de invitación (token, expiresAt, etc.)
+ * 2. Frontend envía el email con Resend (control total del template y URL)
  */
 export async function sendTeamInvitation(
   params: SendInvitationParams
@@ -54,13 +57,13 @@ export async function sendTeamInvitation(
       return { success: false, error: 'Datos incompletos' }
     }
 
-    console.log(`📤 [Server Action] Enviando invitación desde Next.js Server`)
+    console.log(`📤 [sendTeamInvitation] Iniciando proceso de invitación`)
     console.log(`   - Backend: ${API_BASE_URL}`)
     console.log(`   - Team: ${teamId}`)
     console.log(`   - Email: ${email}`)
     console.log(`   - Role: ${role}`)
 
-    // Llamar al backend
+    // 1️⃣ Llamar al backend SOLO para crear el registro (NO enviar email)
     const response = await fetch(`${API_BASE_URL}/teams/${teamId}/invites`, {
       method: 'POST',
       headers: {
@@ -71,7 +74,8 @@ export async function sendTeamInvitation(
         role,
         byUserId,
         message: message || undefined,
-        expiresInDays
+        expiresInDays,
+        sendEmail: false // 🔥 IMPORTANTE: No enviar email desde backend
       })
     })
 
@@ -79,14 +83,33 @@ export async function sendTeamInvitation(
     const data = await response.json()
 
     if (!response.ok) {
-      console.error(`❌ [Server Action] Error del backend:`, data)
+      console.error(`❌ [sendTeamInvitation] Error del backend:`, data)
       return {
         success: false,
-        error: data.message || data.error || 'Error enviando invitación'
+        error: data.message || data.error || 'Error creando invitación'
       }
     }
 
-    console.log(`✅ [Server Action] Invitación enviada exitosamente`)
+    console.log(`✅ [sendTeamInvitation] Invitación creada en backend`)
+    console.log(`   - ID: ${data.id}`)
+    console.log(`   - Token: ${data.token?.substring(0, 10)}...`)
+
+    // 2️⃣ Enviar email desde nuestro server action
+    console.log(`📧 [sendTeamInvitation] Enviando email desde frontend...`)
+    const emailResult = await sendInvitationEmail({
+      email: data.email,
+      token: data.token,
+      teamId,
+      invitedByUserId: byUserId
+    })
+
+    if (!emailResult.success) {
+      console.error(`⚠️ [sendTeamInvitation] Email no enviado pero invitación creada:`, emailResult.error)
+      // No fallar la operación completa, la invitación ya está creada
+      // El usuario puede reenviar el email después
+    } else {
+      console.log(`✅ [sendTeamInvitation] Email enviado exitosamente`)
+    }
 
     // Revalidar la página de invitaciones para mostrar la nueva
     revalidatePath(`/dashboard/lider`)
@@ -99,12 +122,12 @@ export async function sendTeamInvitation(
         email: data.email,
         token: data.token,
         expiresAt: data.expiresAt,
-        acceptUrl: data.acceptUrl || `${process.env.NEXT_PUBLIC_APP_BASE_URL}/join?token=${data.token}`
+        acceptUrl: `${FRONTEND_URL}/join?token=${data.token}`
       }
     }
 
   } catch (error) {
-    console.error('❌ [Server Action] Error en sendTeamInvitation:', error)
+    console.error('❌ [sendTeamInvitation] Error:', error)
     
     return {
       success: false,
@@ -188,26 +211,42 @@ export async function cancelInvitation(invitationId: string, teamId: string, byU
  */
 export async function resendInvitation(invitationId: string, teamId: string, byUserId: string) {
   try {
-    console.log(`🔄 [Server Action] Reenviando invitación: ${invitationId}`)
+    console.log(`🔄 [resendInvitation] Reenviando invitación: ${invitationId}`)
 
-    const response = await fetch(`${API_BASE_URL}/teams/${teamId}/invites/${invitationId}/resend`, {
-      method: 'POST',
+    // 1️⃣ Obtener los datos de la invitación desde el backend
+    const invitationResponse = await fetch(`${API_BASE_URL}/teams/${teamId}/invites/${invitationId}`, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ byUserId })
+      cache: 'no-store'
     })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || 'Error reenviando invitación')
+    if (!invitationResponse.ok) {
+      throw new Error('No se encontró la invitación')
     }
 
-    console.log(`✅ [Server Action] Invitación reenviada`)
+    const invitation = await invitationResponse.json()
+    console.log(`   - Email: ${invitation.email}`)
+    console.log(`   - Token: ${invitation.token?.substring(0, 10)}...`)
+
+    // 2️⃣ Enviar email desde nuestro server action
+    const emailResult = await sendInvitationEmail({
+      email: invitation.email,
+      token: invitation.token,
+      teamId,
+      invitedByUserId: byUserId
+    })
+
+    if (!emailResult.success) {
+      throw new Error(emailResult.error || 'Error enviando email')
+    }
+
+    console.log(`✅ [resendInvitation] Email reenviado exitosamente`)
 
     return { success: true }
   } catch (error) {
-    console.error('❌ [Server Action] Error reenviando invitación:', error)
+    console.error('❌ [resendInvitation] Error:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
