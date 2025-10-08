@@ -101,14 +101,30 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
         <div className="flex items-start gap-6 -mt-16">
           {/* Avatar with Camera Button */}
           <div className="relative flex-shrink-0 group">
-            <img
-              src={session?.user?.avatarUrl || "/default-avatar.png"}
-              alt={session?.user?.name || "Usuario"}
-              className="w-32 h-32 rounded-2xl border-4 border-white object-cover bg-white shadow-xl"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/default-avatar.png";
-              }}
-            />
+            {session?.user?.avatarUrl ? (
+              <img
+                src={session.user.avatarUrl}
+                alt={session?.user?.name || "Usuario"}
+                className="w-32 h-32 rounded-2xl border-4 border-white object-cover bg-white shadow-xl"
+                onError={(e) => {
+                  // 🔥 FIX: Ocultar la imagen y mostrar fallback en su lugar
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                  const fallback = img.nextElementSibling;
+                  if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                }}
+              />
+            ) : null}
+            
+            {/* Fallback avatar con iniciales */}
+            <div 
+              className="w-32 h-32 rounded-2xl border-4 border-white bg-gradient-to-br from-gray-700 to-gray-900 shadow-xl flex items-center justify-center"
+              style={{ display: session?.user?.avatarUrl ? 'none' : 'flex' }}
+            >
+              <span className="text-4xl font-bold text-white">
+                {session?.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            </div>
             
             {/* Camera button overlay */}
             <button

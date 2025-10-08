@@ -34,10 +34,15 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
           api.get<UserSkill[]>(`/users/${user.id}/skills`),
           api.get<Skill[]>("/skills"),
         ]);
-        setUserSkills(userSkillsData || []);
-        setAllSkills(allSkillsData || []);
+        
+        // 🔥 FIX: Asegurarnos que sean arrays
+        setUserSkills(Array.isArray(userSkillsData) ? userSkillsData : []);
+        setAllSkills(Array.isArray(allSkillsData) ? allSkillsData : []);
       } catch (e) {
         console.error("Error cargando skills:", e);
+        // En caso de error, asegurar que sean arrays vacíos
+        setUserSkills([]);
+        setAllSkills([]);
       } finally {
         setInitialLoading(false);
       }
@@ -46,11 +51,12 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
     loadData();
   }, [user?.id]);
 
-  const filteredSkills = allSkills.filter((skill) => {
+  // 🔥 FIX: Verificar que allSkills sea array antes de filtrar
+  const filteredSkills = Array.isArray(allSkills) ? allSkills.filter((skill) => {
     const matchesSearch = skill.name.toLowerCase().includes(search.toLowerCase());
     const notAlreadyAdded = !userSkills.some((us) => us.skillId === skill.id);
     return matchesSearch && notAlreadyAdded;
-  });
+  }) : [];
 
   const handleAddSkill = async () => {
     if (!user?.id || !selectedSkillId) return;
