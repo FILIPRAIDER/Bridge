@@ -10,16 +10,21 @@ import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
 import { PhoneInput } from "./PhoneInput";
 import { Loader2 } from "lucide-react";
+import { useCountries } from "@/hooks/useCountries";
+import { useCities } from "@/hooks/useCities";
+import { useSectors } from "@/hooks/useSectors";
 import type { MemberProfile } from "@/types/api";
 
 const ProfileSchema = z.object({
   headline: z.string().min(2, "Muy corto").max(120, "Máximo 120 caracteres"),
   bio: z.string().min(20, "Cuéntanos más (mínimo 20 caracteres)").max(2000, "Máximo 2000 caracteres"),
   seniority: z.string().min(2, "Selecciona tu nivel").max(40),
-  location: z.string().min(2, "¿Dónde estás ubicado?").max(120),
+  country: z.string().min(2, "Selecciona tu país"),
+  city: z.string().min(2, "Selecciona tu ciudad"),
+  address: z.string().max(200).optional(),
   availability: z.number().int().min(1).max(60).optional(), // Días disponibles
   stack: z.string().max(200).optional(),
-  sector: z.string().max(120).optional(),
+  sectorId: z.string().optional(),
   phone: z.string().min(7, "Número de teléfono inválido").max(30),
   phoneE164: z.string().optional(),
   phoneCountry: z.string().length(2).optional(),
@@ -42,8 +47,14 @@ const SENIORITY_OPTIONS = [
 export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
   const { user } = useSession();
   const { show } = useToast();
+
+  // Hooks para datos del backend
+  const { data: sectorsData, loading: sectorsLoading } = useSectors();
+  const { data: countries, loading: countriesLoading } = useCountries();
+  const { data: citiesData, loading: citiesLoading } = useCities(selectedCountry);
 
   const {
     register,
@@ -73,10 +84,13 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
           setValue("headline", profile.headline || "");
           setValue("bio", profile.bio || "");
           setValue("seniority", profile.seniority || "");
-          setValue("location", profile.location || "");
+          setValue("country", profile.country || "");
+          setValue("city", profile.city || "");
+          setValue("address", profile.address || "");
+          if (profile.country) setSelectedCountry(profile.country);
           if (profile.availability) setValue("availability", profile.availability);
           setValue("stack", profile.stack || "");
-          setValue("sector", profile.sector || "");
+          setValue("sectorId", profile.sectorId || "");
           setValue("phone", profile.phone || "");
           if (profile.phoneE164) setValue("phoneE164", profile.phoneE164);
           if (profile.phoneCountry) setValue("phoneCountry", profile.phoneCountry);
@@ -196,36 +210,113 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
           )}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Nivel de experiencia *</label>
-            <select
-              {...register("seniority")}
-              className={`input ${errors.seniority ? "border-red-500" : ""}`}
-            >
-              <option value="">Selecciona...</option>
-              {SENIORITY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.seniority && (
-              <p className="text-red-600 text-sm mt-1">{errors.seniority.message}</p>
-            )}
-          </div>
+        <div>
+          <label className="label">Nivel de experiencia *</label>
+          <select
+            {...register("seniority")}
+            className={`input ${errors.seniority ? "border-red-500" : ""}`}
+          >
+            <option value="">Selecciona...</option>
+            {SENIORITY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {errors.seniority && (
+            <p className="text-red-600 text-sm mt-1">{errors.seniority.message}</p>
+          )}
+        </div>
 
-          <div>
-            <label className="label">Ubicación *</label>
-            <input
-              {...register("location")}
-              className={`input ${errors.location ? "border-red-500" : ""}`}
-              placeholder="ej. Bogotá, Colombia"
-            />
-            {errors.location && (
-              <p className="text-red-600 text-sm mt-1">{errors.location.message}</p>
-            )}
-          </div>
+        {/* Sector Profesional - Desde API */}
+        <div>
+          <label className="label">Sector Profesional (opcional)</label>
+          <select
+            {...register("sectorId")}
+            className="input"
+            disabled={sectorsLoading}
+          >
+            <option value="">
+              {sectorsLoading ? "Cargando sectores..." : "Selecciona un sector"}
+            </option>
+            {sectorsData?.sectors.map((sector) => (
+              <option key={sector.id} value={sector.id}>
+                {sector.icon} {sector.nameEs}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* País */}
+        <div>
+          <label className="label">País *</label>
+          <select
+            {...register("country")}
+            className={`input ${errors.country ? "border-red-500" : ""}`}
+            disabled={countriesLoading}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSelectedCountry(value);
+              setValue("country", value, { shouldValidate: true });
+              setValue("city", ""); // Reset ciudad
+            }}
+          >
+            <option value="">
+              {countriesLoading ? "Cargando países..." : "Selecciona un país"}
+            </option>
+            {countries?.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.flag} {country.name}
+              </option>
+            ))}
+          </select>
+          {errors.country && (
+            <p className="text-red-600 text-sm mt-1">{errors.country.message}</p>
+          )}
+        </div>
+
+        {/* Ciudad */}
+        <div>
+          <label className="label">Ciudad *</label>
+          <select
+            {...register("city")}
+            className={`input ${errors.city ? "border-red-500" : ""}`}
+            disabled={!selectedCountry || citiesLoading}
+          >
+            <option value="">
+              {!selectedCountry
+                ? "Primero selecciona un país"
+                : citiesLoading
+                ? "Cargando ciudades..."
+                : "Selecciona una ciudad"}
+            </option>
+            {citiesData?.cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+          {errors.city && (
+            <p className="text-red-600 text-sm mt-1">{errors.city.message}</p>
+          )}
+          {!selectedCountry && (
+            <p className="text-gray-500 text-sm mt-1">
+              💡 Primero selecciona un país para ver las ciudades
+            </p>
+          )}
+        </div>
+
+        {/* Dirección (opcional) */}
+        <div>
+          <label className="label">Dirección (opcional)</label>
+          <input
+            {...register("address")}
+            className="input"
+            placeholder="ej. Calle 123 #45-67, Apartamento 102"
+          />
+          <p className="text-gray-500 text-sm mt-1">
+            Agrega más detalles de tu ubicación si lo deseas
+          </p>
         </div>
 
         <div>
@@ -259,15 +350,6 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
             {...register("stack")}
             className="input"
             placeholder="ej. React, Node.js, PostgreSQL"
-          />
-        </div>
-
-        <div>
-          <label className="label">Sector de interés (opcional)</label>
-          <input
-            {...register("sector")}
-            className="input"
-            placeholder="ej. Fintech, E-commerce, EdTech"
           />
         </div>
 
