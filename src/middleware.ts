@@ -9,9 +9,9 @@ const PUBLIC_ROUTES = [
   "/auth/register",
   "/auth/register/select",
   "/auth/register/empresario",
+  "/auth/register/empresario/onboarding",
   "/auth/register/estudiante",
   "/auth/register/lider",
-  "/auth/register/miembro",
   "/join", // Para invitaciones
   // agrega otras públicas si hace falta
 ];

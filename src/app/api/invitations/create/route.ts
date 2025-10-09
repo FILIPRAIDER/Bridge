@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         email: email.toLowerCase().trim(),
         role: role || 'MIEMBRO',
+        byUserId,
       }),
     });
 

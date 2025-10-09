@@ -29,6 +29,13 @@ function EstudianteRegisterContent() {
   const { data: session, status } = useNextAuthSession();
 
   useEffect(() => {
+    // Si el usuario ya tiene sesión, limpiar localStorage y redirigir
+    if (session && status === "authenticated") {
+      localStorage.removeItem("register-estudiante-completed");
+      router.replace("/dashboard");
+      return;
+    }
+
     const saved = localStorage.getItem("register-estudiante-completed");
     if (saved) {
       try {
@@ -38,7 +45,7 @@ function EstudianteRegisterContent() {
     }
     if (urlStep) setCurrentStep(urlStep);
     setIsInitialized(true);
-  }, [urlStep]);
+  }, [urlStep, session, status, router]);
 
   useEffect(() => {
     if (!isInitialized) return;

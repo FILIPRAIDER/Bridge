@@ -29,6 +29,13 @@ function LiderRegisterContent() {
   const { data: session, status } = useNextAuthSession();
 
   useEffect(() => {
+    // Si el usuario ya está autenticado, limpiar el localStorage y redirigir
+    if (session && status === "authenticated") {
+      localStorage.removeItem("register-lider-completed");
+      router.replace("/dashboard");
+      return;
+    }
+
     const saved = localStorage.getItem("register-lider-completed");
     if (saved) {
       try {
@@ -38,7 +45,7 @@ function LiderRegisterContent() {
     }
     if (urlStep) setCurrentStep(urlStep);
     setIsInitialized(true);
-  }, [urlStep]);
+  }, [urlStep, session, status, router]);
 
   useEffect(() => {
     if (!isInitialized) return;
