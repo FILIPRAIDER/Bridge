@@ -31,8 +31,8 @@ export function EmpresarioSidebar({ isOpen = false, onClose }: EmpresarioSidebar
   const pathname = usePathname();
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push("/auth/login");
+    // Usar callbackUrl para evitar errores de hooks después del signOut
+    await signOut({ callbackUrl: "/auth/login" });
   };
 
   const handleNavigation = (path: string) => {

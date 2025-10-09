@@ -69,9 +69,8 @@ export function Sidebar({
     : allTabs.filter(tab => !teamRequiredTabs.includes(tab.id));
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    clear();
-    router.push("/auth/login");
+    clear(); // Limpiar Zustand antes
+    await signOut({ callbackUrl: "/auth/login" }); // Usar callbackUrl para evitar errores
   };
 
   const handleTabChange = (tabId: string) => {

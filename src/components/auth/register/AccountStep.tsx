@@ -51,7 +51,8 @@ type AccountFormData = z.infer<typeof AccountSchema>;
 
 interface AccountStepProps {
   onNext: () => void;
-  preselectedRole?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER"; // 🔥 Nuevo: Rol preseleccionado
+  preselectedRole?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER"; // 🔥 Rol preseleccionado
+  disableEmpresarioRedirect?: boolean; // 🔥 Desactivar redirección automática para empresario
 }
 
 type Team = {
@@ -80,7 +81,7 @@ const PERSONAS = [
   },
 ];
 
-export function AccountStep({ onNext, preselectedRole }: AccountStepProps) {
+export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect = false }: AccountStepProps) {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<
     "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | null
@@ -128,8 +129,8 @@ export function AccountStep({ onNext, preselectedRole }: AccountStepProps) {
         role: data.role as any, // EMPRESARIO | ESTUDIANTE | LIDER
       });
 
-      // 3. Si es EMPRESARIO → hacer login automático y redirigir a onboarding personalizado
-      if (data.role === "EMPRESARIO") {
+      // 3. Si es EMPRESARIO → hacer login automático y redirigir a onboarding personalizado (solo si no está deshabilitado)
+      if (data.role === "EMPRESARIO" && !disableEmpresarioRedirect) {
         show({
           variant: "success",
           title: "Cuenta creada",
