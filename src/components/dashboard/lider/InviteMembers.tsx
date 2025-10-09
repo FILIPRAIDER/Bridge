@@ -194,6 +194,16 @@ export function InviteMembers({ teamId, onInviteSent, teamName }: InviteMembersP
           throw new Error("No se pudo crear la invitación");
         }
 
+        // 🔥 LOG: Verificar qué campos devuelve el backend
+        console.log("📧 [InviteMembers] Respuesta de creación de invitación:", {
+          hasEmail: !!invitationResponse.email,
+          hasToken: !!invitationResponse.token,
+          hasTeamId: !!invitationResponse.teamId,
+          hasByUserId: !!invitationResponse.byUserId,
+          hasInvitedByUserId: !!invitationResponse.invitedByUserId,
+          fullResponse: invitationResponse,
+        });
+
         // 2️⃣ Enviar email usando el endpoint API
         const emailResponse = await fetch("/api/invitations/send-email", {
           method: "POST",
@@ -201,10 +211,10 @@ export function InviteMembers({ teamId, onInviteSent, teamName }: InviteMembersP
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: invitationResponse.email,
+            email: invitationResponse.email || email,
             token: invitationResponse.token,
-            teamId: invitationResponse.teamId,
-            invitedByUserId: invitationResponse.invitedByUserId,
+            teamId: invitationResponse.teamId || teamId,
+            invitedByUserId: invitationResponse.invitedByUserId || invitationResponse.byUserId || session.user.id, // 🔥 Fallbacks
             inviterName: session.user.name || undefined,
             teamName: teamName || undefined,
           }),
