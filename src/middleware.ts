@@ -5,7 +5,14 @@ import { getToken } from "next-auth/jwt";
 
 const PUBLIC_ROUTES = [
   "/", "/empresa-info", "/equipos-info",
-  "/auth/login", "/auth/register",
+  "/auth/login", 
+  "/auth/register",
+  "/auth/register/select",
+  "/auth/register/empresario",
+  "/auth/register/estudiante",
+  "/auth/register/lider",
+  "/auth/register/miembro",
+  "/join", // Para invitaciones
   // agrega otras públicas si hace falta
 ];
 

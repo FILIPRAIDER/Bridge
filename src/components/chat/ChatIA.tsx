@@ -4,12 +4,18 @@ import { useState, useEffect, useRef } from 'react';
 import { Loader2, Trash2, Sparkles } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import { ProjectProgressIndicator } from './ProjectProgressIndicator';
 import { sendChatMessage, getChatSession, deleteChatSession } from '@/lib/ai-api';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+}
+
+interface ProjectProgress {
+  flags: any;
+  data: any;
 }
 
 interface ChatIAProps {
@@ -29,6 +35,7 @@ export default function ChatIA({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -113,9 +120,19 @@ export default function ChatIA({
 
       setMessages((prev) => [...prev, assistantMessage]);
 
+      // Actualizar progreso del proyecto si hay banderas
+      if (response.context?.projectFlags && response.context?.projectData) {
+        setProjectProgress({
+          flags: response.context.projectFlags,
+          data: response.context.projectData,
+        });
+      }
+
       // Si se creó un proyecto, notificar al padre
       if (response.context?.lastProjectId && onProjectCreated) {
         onProjectCreated(response.context.lastProjectId);
+        // Limpiar progreso después de crear proyecto
+        setProjectProgress(null);
       }
 
     } catch (error) {
@@ -150,6 +167,7 @@ export default function ChatIA({
     setMessages([]);
     setSessionId(null);
     setError(null);
+    setProjectProgress(null); // Limpiar progreso del proyecto
   };
 
   return (
@@ -182,6 +200,14 @@ export default function ChatIA({
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 bg-gradient-to-b from-gray-50/50 to-white"
       >
+        {/* Project Progress Indicator */}
+        {projectProgress && (
+          <ProjectProgressIndicator 
+            flags={projectProgress.flags}
+            data={projectProgress.data}
+          />
+        )}
+
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
             <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
