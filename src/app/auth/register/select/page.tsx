@@ -13,18 +13,18 @@ const ROLES = [
     route: "/auth/register/empresario",
   },
   {
-    key: "miembro",
+    key: "estudiante",
     title: "Estudiante / Miembro",
     desc: "Aplica a proyectos con tu equipo.",
     icon: GraduationCap,
-    route: "/auth/register?role=ESTUDIANTE",
+    route: "/auth/register/estudiante",
   },
   {
     key: "lider",
     title: "Líder de Equipo",
     desc: "Crea y gestiona tu equipo de trabajo.",
     icon: Users,
-    route: "/auth/register?role=LIDER",
+    route: "/auth/register/lider",
   },
 ];
 
