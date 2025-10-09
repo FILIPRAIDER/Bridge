@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
         email: email.toLowerCase().trim(),
         role: role || 'MIEMBRO',
         byUserId,
+        expiresInDays, // ✅ FIX: Enviar expiresInDays al backend
       }),
     });
 
