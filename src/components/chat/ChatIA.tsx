@@ -43,8 +43,11 @@ export default function ChatIA({
   useEffect(() => {
     const savedSessionId = localStorage.getItem('chatSessionId');
     if (savedSessionId) {
+      console.log('[ChatIA] 📂 Sesión recuperada del localStorage:', savedSessionId);
       setSessionId(savedSessionId);
       loadSession(savedSessionId);
+    } else {
+      console.log('[ChatIA] 🆕 No hay sesión previa, se creará una nueva');
     }
   }, []);
 
@@ -94,6 +97,13 @@ export default function ChatIA({
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
+    // 🔥 LOG: Verificar que sessionId se está enviando
+    console.log('[ChatIA] Enviando mensaje:', {
+      hasSessionId: !!sessionId,
+      sessionId: sessionId,
+      messagePreview: content.trim().substring(0, 50),
+    });
+
     try {
       const response = await sendChatMessage({
         message: content.trim(),
@@ -105,8 +115,20 @@ export default function ChatIA({
         },
       });
 
-      // Guardar sessionId si es nuevo
-      if (!sessionId && response.sessionId) {
+      // 🔥 LOG: Verificar respuesta del backend
+      console.log('[ChatIA] Respuesta recibida:', {
+        sessionId: response.sessionId,
+        sessionChanged: response.sessionId !== sessionId,
+        hasFlags: !!response.context?.projectFlags,
+        flags: response.context?.projectFlags,
+      });
+
+      // Guardar sessionId si es nuevo o cambió
+      if (response.sessionId && response.sessionId !== sessionId) {
+        console.log('[ChatIA] 🔄 Actualizando sessionId:', {
+          old: sessionId,
+          new: response.sessionId,
+        });
         setSessionId(response.sessionId);
         localStorage.setItem('chatSessionId', response.sessionId);
       }
@@ -122,6 +144,7 @@ export default function ChatIA({
 
       // Actualizar progreso del proyecto si hay banderas
       if (response.context?.projectFlags && response.context?.projectData) {
+        console.log('[ChatIA] ✅ Flags actualizados:', response.context.projectFlags);
         setProjectProgress({
           flags: response.context.projectFlags,
           data: response.context.projectData,
@@ -156,6 +179,7 @@ export default function ChatIA({
    * Limpiar chat
    */
   const handleClearChat = async () => {
+    console.log('[ChatIA] 🗑️ Limpiando chat y sesión:', sessionId);
     if (sessionId) {
       try {
         await deleteChatSession(sessionId);
@@ -168,6 +192,7 @@ export default function ChatIA({
     setSessionId(null);
     setError(null);
     setProjectProgress(null); // Limpiar progreso del proyecto
+    console.log('[ChatIA] ✅ Chat limpiado completamente');
   };
 
   return (
@@ -184,6 +209,12 @@ export default function ChatIA({
           <div>
             <h3 className="font-bold text-gray-900">Bridge AI</h3>
             <p className="text-xs text-gray-500">Asistente inteligente</p>
+            {/* 🔥 DEBUG: Mostrar sessionId en desarrollo */}
+            {process.env.NODE_ENV === 'development' && (
+              <p className="text-[10px] text-blue-600 font-mono">
+                Session: {sessionId ? sessionId.substring(0, 20) + '...' : 'Sin sesión'}
+              </p>
+            )}
           </div>
         </div>
         <button
