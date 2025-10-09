@@ -31,8 +31,9 @@ type ProfileForm = z.infer<typeof profileSchema>;
 
 const SENIORITY_OPTIONS = [
   { value: "Junior", label: "Junior (0-2 años)" },
-  { value: "Semi-Senior", label: "Semi-Senior (2-5 años)" },
-  { value: "Senior", label: "Senior (5+ años)" },
+  { value: "Mid-level", label: "Mid-level (2-4 años)" },
+  { value: "Semi-Senior", label: "Semi-Senior (4-6 años)" },
+  { value: "Senior", label: "Senior (6+ años)" },
 ];
 
 interface ProfileEditorProps {
