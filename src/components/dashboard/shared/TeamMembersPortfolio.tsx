@@ -477,7 +477,7 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
                       <p className={`text-xs truncate mt-0.5 ${
                         isSelected ? "text-white/70" : "text-gray-500"
                       }`}>
-                        {member.profile?.headline || member.role === "LIDER" ? "Líder" : "Miembro"}
+                        {member.profile?.headline || (member.role === "LIDER" ? "Líder" : "Miembro")}
                       </p>
                     </div>
 
@@ -542,7 +542,7 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
                   {member.user?.name || "Usuario"}
                 </p>
                 <p className="text-xs truncate text-gray-500 mt-0.5">
-                  {member.profile?.headline || member.role === "LIDER" ? "Líder" : "Miembro"}
+                  {member.profile?.headline || (member.role === "LIDER" ? "Líder" : "Miembro")}
                 </p>
               </div>
 

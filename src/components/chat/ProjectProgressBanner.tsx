@@ -46,6 +46,8 @@ interface ProjectProgressBannerProps {
 export function ProjectProgressBanner({ flags, data, onProjectCreated }: ProjectProgressBannerProps) {
   const [showCelebration, setShowCelebration] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [shouldHide, setShouldHide] = useState(false);
 
   // Trigger de celebración cuando se crea el proyecto
   useEffect(() => {
@@ -54,6 +56,25 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
       setTimeout(() => setShowCelebration(false), 3000);
     }
   }, [onProjectCreated]);
+
+  // Detectar cuando se completa el progreso
+  useEffect(() => {
+    const completed = [
+      flags.hasProjectType,
+      flags.hasIndustry,
+      flags.hasBudget,
+      flags.hasTimeline,
+      flags.hasObjectives
+    ].filter(Boolean).length;
+
+    if (completed === 5 && !isComplete) {
+      setIsComplete(true);
+      // Esperar 2.5 segundos en verde celebrando, luego desaparecer
+      setTimeout(() => {
+        setShouldHide(true);
+      }, 2500);
+    }
+  }, [flags, isComplete]);
 
   // Definir los items principales
   const mainItems = [
@@ -68,8 +89,8 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
   const total = mainItems.length;
   const progress = (completed / total) * 100;
 
-  // Si no hay progreso, no mostrar nada
-  if (completed === 0 && !flags.isComplete) {
+  // Si no hay progreso o ya debe ocultarse, no mostrar nada
+  if ((completed === 0 && !flags.isComplete) || shouldHide) {
     return null;
   }
 
@@ -80,10 +101,26 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
         <motion.div
           key="progress-banner"
           initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.3 }}
-          className="border-b border-gray-200 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 backdrop-blur-sm"
+          animate={{ 
+            opacity: 1, 
+            y: 0,
+            scale: isComplete ? [1, 1.02, 1] : 1,
+          }}
+          exit={{ 
+            opacity: 0, 
+            y: -30, 
+            scale: 0.9,
+            transition: { duration: 0.5, ease: "easeInOut" }
+          }}
+          transition={{ 
+            duration: 0.3,
+            scale: { duration: 0.6, times: [0, 0.5, 1] }
+          }}
+          className={`border-b transition-colors duration-700 backdrop-blur-sm ${
+            isComplete
+              ? 'border-green-200 bg-gradient-to-r from-green-50/80 via-emerald-50/80 to-teal-50/80'
+              : 'border-gray-200 bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80'
+          }`}
         >
           <div className="px-4 lg:px-6 py-3">
             {/* Compact Header */}
@@ -93,40 +130,84 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
             >
               <div className="flex items-center gap-3">
                 <motion.div
-                  animate={{ rotate: flags.isComplete ? 360 : 0 }}
-                  transition={{ duration: 0.5 }}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    flags.isComplete 
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                  animate={{ 
+                    rotate: isComplete ? [0, 360] : 0,
+                    scale: isComplete ? [1, 1.2, 1] : 1
+                  }}
+                  transition={{ 
+                    duration: 0.6,
+                    times: [0, 0.5, 1]
+                  }}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-700 ${
+                    isComplete 
+                      ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30' 
                       : 'bg-gradient-to-br from-blue-500 to-indigo-600'
                   }`}
                 >
-                  {flags.isComplete ? (
-                    <CheckCircle2 className="h-4 w-4 text-white" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 text-white" />
-                  )}
+                  <motion.div
+                    initial={{ scale: 1 }}
+                    animate={{ scale: isComplete ? [1, 1.3, 1] : 1 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                  >
+                    {isComplete ? (
+                      <CheckCircle2 className="h-4 w-4 text-white" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 text-white" />
+                    )}
+                  </motion.div>
                 </motion.div>
                 
                 <div className="text-left">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-gray-900">
+                    <motion.h3 
+                      className="text-sm font-semibold text-gray-900"
+                      animate={{ 
+                        scale: isComplete ? [1, 1.05, 1] : 1 
+                      }}
+                      transition={{ duration: 0.4, delay: 0.1 }}
+                    >
                       Información del Proyecto
-                    </h3>
-                    {flags.isComplete && (
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                        Completo ✓
-                      </span>
-                    )}
+                    </motion.h3>
+                    <AnimatePresence>
+                      {isComplete && (
+                        <motion.span 
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={{ type: "spring", duration: 0.5 }}
+                          className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium"
+                        >
+                          ¡Completo! ✓
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <p className="text-xs text-gray-600">
+                  <motion.p 
+                    className={`text-xs transition-colors duration-500 ${
+                      isComplete ? 'text-green-700 font-medium' : 'text-gray-600'
+                    }`}
+                    animate={{ 
+                      scale: isComplete ? [1, 1.1, 1] : 1 
+                    }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                  >
                     {completed}/{total} completado
-                  </p>
+                  </motion.p>
                 </div>
               </div>
 
               {/* Progress Circle - Mobile/Tablet */}
-              <div className="lg:hidden relative w-12 h-12">
+              <motion.div 
+                className="lg:hidden relative w-12 h-12"
+                animate={{ 
+                  scale: isComplete ? [1, 1.15, 1] : 1,
+                  rotate: isComplete ? [0, 5, -5, 0] : 0
+                }}
+                transition={{ 
+                  duration: 0.6,
+                  times: [0, 0.3, 0.6, 1]
+                }}
+              >
                 <svg className="transform -rotate-90 w-12 h-12">
                   <circle
                     cx="24"
@@ -148,34 +229,92 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
                     initial={{ strokeDashoffset: 2 * Math.PI * 20 }}
                     animate={{ strokeDashoffset: 2 * Math.PI * 20 * (1 - progress / 100) }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className={flags.isComplete ? "text-green-500" : "text-blue-500"}
+                    className={isComplete ? "text-green-500" : "text-blue-500"}
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-900">
+                <motion.span 
+                  className={`absolute inset-0 flex items-center justify-center text-xs font-bold transition-colors duration-500 ${
+                    isComplete ? 'text-green-700' : 'text-gray-900'
+                  }`}
+                  animate={{ 
+                    scale: isComplete ? [1, 1.2, 1] : 1 
+                  }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
                   {Math.round(progress)}%
-                </span>
-              </div>
+                </motion.span>
+              </motion.div>
 
               {/* Progress Bar - Desktop */}
               <div className="hidden lg:flex items-center gap-3 flex-1 max-w-xs ml-4">
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <motion.div 
+                  className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden"
+                  animate={{ 
+                    scale: isComplete ? [1, 1.05, 1] : 1 
+                  }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className={`h-full rounded-full ${
-                      flags.isComplete
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      isComplete
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/20'
                         : 'bg-gradient-to-r from-blue-500 to-indigo-600'
                     }`}
                   />
-                </div>
-                <span className="text-sm font-semibold text-gray-900 min-w-[3rem] text-right">
+                </motion.div>
+                <motion.span 
+                  className={`text-sm font-semibold min-w-[3rem] text-right transition-colors duration-500 ${
+                    isComplete ? 'text-green-700' : 'text-gray-900'
+                  }`}
+                  animate={{ 
+                    scale: isComplete ? [1, 1.2, 1] : 1 
+                  }}
+                  transition={{ duration: 0.4, delay: 0.3 }}
+                >
                   {Math.round(progress)}%
-                </span>
+                </motion.span>
               </div>
             </button>
+
+            {/* Confetti Effect when completed */}
+            <AnimatePresence>
+              {isComplete && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  {[...Array(15)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ 
+                        x: '50%', 
+                        y: '50%',
+                        scale: 0,
+                        opacity: 1
+                      }}
+                      animate={{ 
+                        x: `${20 + Math.random() * 60}%`,
+                        y: `${-30 + Math.random() * 60}%`,
+                        scale: [0, 1.5, 1, 0],
+                        opacity: [1, 1, 1, 0],
+                        rotate: [0, Math.random() * 360]
+                      }}
+                      transition={{ 
+                        duration: 1.2,
+                        delay: i * 0.03,
+                        ease: "easeOut"
+                      }}
+                      className="absolute w-2 h-2 rounded-full"
+                      style={{
+                        background: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'][i % 5],
+                        boxShadow: '0 0 8px currentColor'
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </AnimatePresence>
 
             {/* Expanded Details */}
             <AnimatePresence>

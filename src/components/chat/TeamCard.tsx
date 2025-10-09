@@ -1,5 +1,12 @@
 'use client';
 
+interface MatchedSkill {
+  teamSkill: string;
+  searchSkill: string;
+  matchType: 'exact' | 'partial';
+  score: number;
+}
+
 interface Team {
   teamId: string;
   name: string;
@@ -12,6 +19,7 @@ interface Team {
   matchScore: number;
   explanation?: string;
   experience?: number | null;
+  matchedSkills?: MatchedSkill[]; // 🔥 NUEVO: Skills que matchearon
 }
 
 interface TeamCardProps {
@@ -63,24 +71,53 @@ export default function TeamCard({ team, onViewDetails, onConnect }: TeamCardPro
         </div>
       </div>
 
-      {/* Skills */}
+      {/* Skills con Highlight de Matches */}
       <div className="mb-4">
         <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Habilidades</p>
         <div className="flex flex-wrap gap-2">
-          {team.skills.slice(0, 6).map((skill, idx) => (
-            <span
-              key={idx}
-              className="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md font-medium"
-            >
-              {skill}
-            </span>
-          ))}
+          {team.skills.slice(0, 6).map((skill, idx) => {
+            // 🔥 Verificar si este skill matcheó con la búsqueda
+            const matchedSkill = team.matchedSkills?.find(
+              m => m.teamSkill.toLowerCase() === skill.toLowerCase()
+            );
+            const isMatched = !!matchedSkill;
+            const isExactMatch = matchedSkill?.matchType === 'exact';
+            
+            return (
+              <span
+                key={idx}
+                className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all ${
+                  isMatched
+                    ? isExactMatch
+                      ? 'bg-green-100 text-green-800 ring-2 ring-green-400 shadow-sm' // Match exacto
+                      : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-300' // Match parcial
+                    : 'bg-indigo-50 text-indigo-700' // Sin match
+                }`}
+                title={
+                  matchedSkill
+                    ? `Matchea con "${matchedSkill.searchSkill}" (${Math.round(matchedSkill.score * 100)}%)`
+                    : undefined
+                }
+              >
+                {skill}
+                {isMatched && ' ✓'}
+              </span>
+            );
+          })}
           {team.skills.length > 6 && (
             <span className="text-xs text-gray-500 flex items-center">
               +{team.skills.length - 6} más
             </span>
           )}
         </div>
+        
+        {/* Mostrar qué skills específicos matchearon (resumen) */}
+        {team.matchedSkills && team.matchedSkills.length > 0 && (
+          <div className="mt-2 text-xs text-green-700 bg-green-50 px-2 py-1 rounded inline-block">
+            <span className="font-semibold">✨ {team.matchedSkills.length} skill{team.matchedSkills.length !== 1 ? 's' : ''} relevante{team.matchedSkills.length !== 1 ? 's' : ''}</span>
+            {' para tu búsqueda'}
+          </div>
+        )}
       </div>
 
       {/* Info Grid */}
