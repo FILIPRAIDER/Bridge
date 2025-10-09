@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Building2, Mail, Calendar, MapPin, Globe, Briefcase, Edit2, Save, X } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
+import { api } from '@/lib/api';
 
 interface CompanyData {
   id: string;
@@ -46,32 +47,40 @@ export default function EmpresarioProfilePage() {
 
     try {
       setLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001';
 
-      // Fetch user data with company info
-      const response = await fetch(`${API_URL}/users/${session.user.id}`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) throw new Error('Error cargando datos');
-
-      const data = await response.json();
+      // 🔥 Fetch user data with profile
+      const userData = await api.get<any>(`/users/${session.user.id}`);
       
-      setCompanyData(data.company || null);
-      setProfileData(data.profile || null);
+      setProfileData(userData.profile || null);
 
-      // Set form data
-      setFormData({
-        companyName: data.company?.name || '',
-        sector: data.company?.sector || '',
-        website: data.company?.website || '',
-        about: data.company?.about || '',
-        location: data.profile?.location || '',
-      });
-    } catch (error) {
+      // 🔥 Si el usuario tiene companyId, cargar la empresa
+      if (userData.companyId) {
+        const companyResponse = await api.get<CompanyData>(`/companies/${userData.companyId}`);
+        setCompanyData(companyResponse);
+
+        // Set form data
+        setFormData({
+          companyName: companyResponse.name || '',
+          sector: companyResponse.sector || '',
+          website: companyResponse.website || '',
+          about: companyResponse.about || '',
+          location: userData.profile?.location || '',
+        });
+      } else {
+        // Si no tiene empresa, dejar campos vacíos
+        setCompanyData(null);
+        setFormData({
+          companyName: '',
+          sector: '',
+          website: '',
+          about: '',
+          location: userData.profile?.location || '',
+        });
+      }
+    } catch (error: any) {
       console.error('Error fetching profile:', error);
       show({
-        message: 'Error al cargar el perfil',
+        message: error?.message || 'Error al cargar el perfil',
         variant: 'error',
       });
     } finally {
@@ -80,48 +89,37 @@ export default function EmpresarioProfilePage() {
   };
 
   const handleSave = async () => {
-    if (!session?.user?.id || !companyData?.id) return;
+    if (!session?.user?.id) return;
 
     try {
       setSaving(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001';
 
-      // Update company
-      const companyResponse = await fetch(`${API_URL}/companies/${companyData.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.companyName,
-          sector: formData.sector || null,
-          website: formData.website || null,
-          about: formData.about || null,
-        }),
+      // 🔥 Actualizar empresa (solo si existe)
+      if (companyData?.id) {
+        await api.patch(`/companies/${companyData.id}`, {
+          name: formData.companyName || undefined,
+          sector: formData.sector || undefined,
+          website: formData.website || undefined,
+          about: formData.about || undefined,
+        });
+      }
+
+      // 🔥 Actualizar perfil (location)
+      await api.patch(`/users/${session.user.id}/profile`, {
+        location: formData.location || undefined,
       });
-
-      if (!companyResponse.ok) throw new Error('Error actualizando empresa');
-
-      // Update profile location
-      const profileResponse = await fetch(`${API_URL}/profiles/${session.user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: formData.location || null,
-        }),
-      });
-
-      if (!profileResponse.ok) throw new Error('Error actualizando perfil');
 
       show({
-        message: 'Perfil actualizado exitosamente',
+        message: 'Perfil actualizado exitosamente ✅',
         variant: 'success',
       });
 
       setEditing(false);
       fetchProfileData();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving profile:', error);
       show({
-        message: 'Error al guardar cambios',
+        message: error?.message || 'Error al guardar cambios',
         variant: 'error',
       });
     } finally {
