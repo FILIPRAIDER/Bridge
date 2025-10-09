@@ -17,14 +17,14 @@ const ROLES = [
     title: "Estudiante / Miembro",
     desc: "Aplica a proyectos con tu equipo.",
     icon: GraduationCap,
-    route: "/auth/register/miembro",
+    route: "/auth/register?role=ESTUDIANTE",
   },
   {
     key: "lider",
     title: "Líder de Equipo",
     desc: "Crea y gestiona tu equipo de trabajo.",
     icon: Users,
-    route: "/auth/register/lider",
+    route: "/auth/register?role=LIDER",
   },
 ];
 
