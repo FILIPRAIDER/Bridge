@@ -30,9 +30,9 @@ const profileSchema = z.object({
 type ProfileForm = z.infer<typeof profileSchema>;
 
 const SENIORITY_OPTIONS = [
-  { value: "JUNIOR", label: "Junior (0-2 años)" },
-  { value: "SEMI_SENIOR", label: "Semi-Senior (2-5 años)" },
-  { value: "SENIOR", label: "Senior (5+ años)" },
+  { value: "Junior", label: "Junior (0-2 años)" },
+  { value: "Semi-Senior", label: "Semi-Senior (2-5 años)" },
+  { value: "Senior", label: "Senior (5+ años)" },
 ];
 
 interface ProfileEditorProps {
@@ -91,14 +91,15 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
     if (profile) {
       // 🔍 DEBUG: Ver qué datos tiene el perfil
       console.log('[ProfileEditor] 📊 Profile recibido:', profile);
+      console.log('[ProfileEditor] 🔄 Precargando formulario con datos...');
       
       // Cargar país actual para activar las ciudades
       if (profile.country) {
         setSelectedCountry(profile.country);
       }
       
-      // Usar reset para cargar todos los valores de una vez
-      reset({
+      // Preparar los valores con logs
+      const formValues = {
         headline: profile.headline || "",
         bio: profile.bio || "",
         seniority: profile.seniority || "",
@@ -111,7 +112,15 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
         stack: profile.stack || "",
         sectorId: profile.sectorId || "",
         phone: profile.phone || "",
-      });
+      };
+      
+      console.log('[ProfileEditor] 📝 Valores para reset:', formValues);
+      
+      // Pequeño delay para asegurar que los selects estén renderizados
+      setTimeout(() => {
+        reset(formValues);
+        console.log('[ProfileEditor] ✅ Formulario reseteado con datos');
+      }, 100);
     }
   }, [profile, reset]);
 
@@ -293,6 +302,11 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
               </option>
             ))}
           </select>
+          {profile?.sector && (
+            <p className="mt-1 text-xs text-gray-500">
+              Actual: {profile.sector.icon || "📋"} {profile.sector.nameEs}
+            </p>
+          )}
         </div>
 
         {/* Ubicación - País */}
