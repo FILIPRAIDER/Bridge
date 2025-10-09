@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { User, Sparkles } from 'lucide-react';
+import { User } from 'lucide-react';
+import { BridgeLogo } from '@/components/ui/BridgeLogo';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -66,8 +67,8 @@ export default function ChatMessage({ role, content, timestamp, isLatest = false
       {/* Avatar del asistente */}
       {!isUser && (
         <div className="flex-shrink-0 mr-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-white" />
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-md">
+            <BridgeLogo variant="white" size="sm" />
           </div>
         </div>
       )}

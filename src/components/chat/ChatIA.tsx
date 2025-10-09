@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, Trash2, Sparkles } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { ProjectProgressIndicator } from './ProjectProgressIndicator';
 import { ProjectProgressBanner } from './ProjectProgressBanner';
 import { sendChatMessage, getChatSession, deleteChatSession } from '@/lib/ai-api';
+import { BridgeLogo } from '@/components/ui/BridgeLogo';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -251,7 +252,7 @@ export default function ChatIA({
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center shadow-sm">
-              <Sparkles className="h-5 w-5 text-white" />
+              <BridgeLogo variant="white" size="md" />
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
@@ -293,7 +294,7 @@ export default function ChatIA({
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
             <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-              <Sparkles className="h-10 w-10 text-white" />
+              <BridgeLogo variant="white" size="lg" />
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
               ¡Hola! Soy tu asistente Bridge AI
