@@ -9,6 +9,7 @@ import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamInfo } from "@/components/dashboard/miembro/TeamInfo";
 import { MySkills } from "@/components/dashboard/miembro/MySkills";
 import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
+import { TeamMembersPortfolio } from "@/components/dashboard/shared/TeamMembersPortfolio";
 import { CertificationsManager } from "@/components/dashboard/miembro/CertificationsManager";
 import { ExperiencesManager } from "@/components/dashboard/miembro/ExperiencesManager";
 import { Loader } from "@/components/ui";
@@ -111,7 +112,7 @@ export default function MiembroDashboard() {
                   <TeamInfo team={team} members={members} userId={session.user.id} />
                 )}
                 {activeTab === "members" && teamId && session?.user?.id && (
-                  <TeamMembers teamId={teamId} currentUserId={session.user.id} />
+                  <TeamMembersPortfolio teamId={teamId} currentUserId={session.user.id} />
                 )}
                 {activeTab === "skills" && session?.user?.id && (
                   <MySkills userId={session.user.id} />
