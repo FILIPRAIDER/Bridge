@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
@@ -79,7 +80,8 @@ const PERSONAS = [
 ];
 
 export function AccountStep({ onNext }: AccountStepProps) {
-    const [selectedRole, setSelectedRole] = useState<
+  const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<
     "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | null
   >(null);
   const [loading, setLoading] = useState(false);
@@ -143,18 +145,11 @@ export function AccountStep({ onNext }: AccountStepProps) {
           return;
         }
 
-        // Mostrar mensaje de redirección
-        show({
-          variant: "success",
-          title: "Sesión iniciada",
-          message: "Redirigiendo a tu perfil empresarial...",
-        });
+        // Esperar un breve momento para que se complete el login
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Esperar un momento para que se complete el login
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Redirigir al onboarding de empresario (mantener loading activo)
-        window.location.href = "/auth/register/empresario";
+        // Redirigir al onboarding de empresario usando router (sin parpadeo)
+        router.push("/auth/register/empresario");
         return;
       }
 

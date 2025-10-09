@@ -5,7 +5,8 @@ import { getServerSession } from 'next-auth';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_BASE_URL || 'https://cresia-app.vercel.app';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4001';
-const RESEND_FROM = process.env.RESEND_FROM || 'Bridge <onboarding@resend.dev>';
+// ✅ Usar dominio verificado equipos.online
+const RESEND_FROM = process.env.RESEND_FROM || 'Bridge <invitaciones@equipos.online>';
 
 // Helpers
 const safeName = (v?: string | null) => (v && v.trim()) ? v.trim() : undefined;

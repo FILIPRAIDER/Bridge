@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     siteName: "Bridge",
     images: [
       {
-        url: "/og-image.svg",
+        url: "https://cresia-app.vercel.app/api/og",
         width: 1200,
         height: 630,
         alt: "Bridge - Conecta empresas con equipos",
-        type: "image/svg+xml",
+        type: "image/png",
       },
     ],
   },
@@ -38,7 +38,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Bridge - Conecta empresas con equipos",
     description: "Plataforma colaborativa para conectar empresas con equipos de trabajo.",
-    images: ["/og-image.svg"],
+    images: ["https://cresia-app.vercel.app/api/og"],
+    creator: "@Bridge",
   },
   robots: {
     index: true,
