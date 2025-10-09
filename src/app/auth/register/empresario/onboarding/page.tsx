@@ -159,7 +159,25 @@ export default function EmpresarioOnboarding() {
     setIsLoading(true);
 
     try {
-      // 1. Crear la compañía (backend solo acepta name, sector, website, about)
+      // 🔥 PASO 1: Validar y preparar el perfil PRIMERO (antes de crear la compañía)
+      const profilePayload: any = {
+        phone: profileData.phone || undefined,
+        identityType: "NIT", // Siempre NIT para empresarios
+        documentNumber: profileData.documentNumber || undefined,
+        country: companyData.country, // Guardar país por separado
+        city: companyData.city, // Guardar ciudad por separado
+        location: `${companyData.city}, ${companyData.country}`, // También guardar como string para compatibilidad
+      };
+
+      // Solo incluir birthdate si tiene valor (evitar enviar null)
+      if (profileData.birthdate) {
+        profilePayload.birthdate = new Date(profileData.birthdate).toISOString();
+      }
+
+      // Validar perfil PRIMERO (esto lanzará error si hay problema de validación)
+      await api.patch(`/users/${session.user.id}/profile`, profilePayload);
+
+      // 🔥 PASO 2: Solo si el perfil se guardó correctamente, crear la compañía
       const companyPayload: any = {
         name: companyData.name.trim(),
         sector: companyData.sector || null,
@@ -177,31 +195,20 @@ export default function EmpresarioOnboarding() {
         throw new Error("No se pudo crear la compañía");
       }
 
-      // 2. Actualizar perfil del usuario con location y fecha de fundación
-      await api.patch(`/users/${session.user.id}/profile`, {
-        phone: profileData.phone || null,
-        identityType: "NIT", // Siempre NIT para empresarios
-        documentNumber: profileData.documentNumber || null,
-        country: companyData.country, // Guardar país por separado
-        city: companyData.city, // Guardar ciudad por separado
-        location: `${companyData.city}, ${companyData.country}`, // También guardar como string para compatibilidad
-        birthdate: profileData.birthdate ? new Date(profileData.birthdate).toISOString() : null, // Fecha de fundación
-      });
-
-      // 3. Marcar onboarding como completado
+      // 🔥 PASO 3: Marcar onboarding como completado
       await api.patch(`/users/${session.user.id}`, {
         onboardingStep: "DONE",
       });
 
       show({
         variant: "success",
-        message: "¡Perfil completado exitosamente!",
+        message: "¡Perfil completado exitosamente! 🎉",
       });
 
-      // 4. Limpiar flag de onboarding
+      // Limpiar flag de onboarding
       localStorage.removeItem("empresario_needs_onboarding");
 
-      // 5. Redirigir al dashboard empresario
+      // Redirigir al dashboard empresario
       setTimeout(() => {
         router.push("/dashboard/empresario");
       }, 500);
@@ -368,9 +375,9 @@ export default function EmpresarioOnboarding() {
                   disabled={!companyData.country}
                 >
                   <option value="">Selecciona una ciudad</option>
-                  {citiesData.cities.map((city: any) => (
-                    <option key={city.id} value={city.name}>
-                      {city.name}
+                  {citiesData.cities.map((city: string) => (
+                    <option key={city} value={city}>
+                      {city}
                     </option>
                   ))}
                 </select>
