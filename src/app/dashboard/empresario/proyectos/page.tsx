@@ -38,10 +38,13 @@ export default function ProyectosPage() {
     
     try {
       setLoading(true);
-      const data = await api.get<Project[]>(`/companies/${session.user.companyId}/projects`);
+      // 🔥 FIX: Usar endpoint correcto de proyectos
+      const data = await api.get<Project[]>(`/projects?companyId=${session.user.companyId}`);
       setProjects(data);
     } catch (error) {
       console.error("Error loading projects:", error);
+      // Si falla, dejar array vacío en lugar de crashear
+      setProjects([]);
     } finally {
       setLoading(false);
     }
