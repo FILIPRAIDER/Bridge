@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -51,6 +51,7 @@ type AccountFormData = z.infer<typeof AccountSchema>;
 
 interface AccountStepProps {
   onNext: () => void;
+  preselectedRole?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER"; // 🔥 Nuevo: Rol preseleccionado
 }
 
 type Team = {
@@ -79,11 +80,11 @@ const PERSONAS = [
   },
 ];
 
-export function AccountStep({ onNext }: AccountStepProps) {
+export function AccountStep({ onNext, preselectedRole }: AccountStepProps) {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<
     "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | null
-  >(null);
+  >(preselectedRole || null); // 🔥 Usar rol preseleccionado si existe
   const [loading, setLoading] = useState(false);
   const [passOk, setPassOk] = useState(false);
   const { setUser, setCompanyId, setTeamId } = useSession();
@@ -100,6 +101,13 @@ export function AccountStep({ onNext }: AccountStepProps) {
   });
 
   const role = watch("role");
+
+  // 🔥 Establecer rol preseleccionado en el formulario
+  useEffect(() => {
+    if (preselectedRole) {
+      setValue("role", preselectedRole);
+    }
+  }, [preselectedRole, setValue]);
 
   const onSubmit = async (data: AccountFormData) => {
     setLoading(true);

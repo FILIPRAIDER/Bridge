@@ -122,11 +122,17 @@ export default function EmpresarioOnboarding() {
     setIsLoading(true);
 
     try {
-      // 1. Crear la compañía (enviar website como null si está vacío)
-      const companyPayload = {
-        ...companyData,
-        website: companyData.website.trim() || null, // null si está vacío
+      // 1. Crear la compañía (backend solo acepta name, sector, website, about)
+      const companyPayload: any = {
+        name: companyData.name.trim(),
+        sector: companyData.sector || null,
+        about: companyData.about || null,
       };
+
+      // Solo incluir website si tiene valor
+      if (companyData.website.trim()) {
+        companyPayload.website = companyData.website.trim();
+      }
 
       const companyResponse = await api.post<{ id: string }>("/companies", companyPayload);
       
@@ -134,12 +140,13 @@ export default function EmpresarioOnboarding() {
         throw new Error("No se pudo crear la compañía");
       }
 
-      // 2. Actualizar perfil del usuario (siempre con identityType = NIT)
+      // 2. Actualizar perfil del usuario con location y fecha de fundación
       await api.patch(`/users/${session.user.id}/profile`, {
         phone: profileData.phone || null,
         identityType: "NIT", // Siempre NIT para empresarios
         documentNumber: profileData.documentNumber || null,
-        birthdate: profileData.birthdate ? new Date(profileData.birthdate).toISOString() : null,
+        location: `${companyData.city}, ${companyData.country}`, // Guardar ubicación en profile
+        birthdate: profileData.birthdate ? new Date(profileData.birthdate).toISOString() : null, // Fecha de fundación
       });
 
       // 3. Marcar onboarding como completado
@@ -412,14 +419,18 @@ export default function EmpresarioOnboarding() {
             <div>
               <label className="label">
                 <Calendar className="h-4 w-4 mr-2" />
-                Fecha de Nacimiento (opcional)
+                Fecha de Fundación de la Empresa (opcional)
               </label>
               <input
                 type="date"
                 value={profileData.birthdate}
                 onChange={(e) => setProfileData({ ...profileData, birthdate: e.target.value })}
                 className="input"
+                max={new Date().toISOString().split('T')[0]}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                ¿Cuándo se fundó tu empresa?
+              </p>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
