@@ -165,20 +165,30 @@ export function InviteMembers({ teamId, onInviteSent, teamName }: InviteMembersP
 
     startTransition(async () => {
       try {
-        // 1️⃣ Crear invitación en el backend
-        const invitationResponse = await api.post<{
-          id: string;
-          email: string;
-          token: string;
-          teamId: string;
-          invitedByUserId: string;
-        }>(`/invitations`, {
-          teamId,
-          email,
-          role: "MIEMBRO",
-          byUserId: session.user.id,
-          expiresInDays: 7,
+        // 1️⃣ Crear invitación usando endpoint temporal del frontend
+        // TODO: Cuando el backend implemente POST /invitations, cambiar a:
+        // const invitationResponse = await api.post(`/invitations`, { ... });
+        
+        const invitationRes = await fetch("/api/invitations/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            teamId,
+            email,
+            role: "MIEMBRO",
+            byUserId: session.user.id,
+            expiresInDays: 7,
+          }),
         });
+
+        if (!invitationRes.ok) {
+          const errorData = await invitationRes.json();
+          throw new Error(errorData.error?.message || "No se pudo crear la invitación");
+        }
+
+        const invitationResponse = await invitationRes.json();
 
         if (!invitationResponse || !invitationResponse.token) {
           throw new Error("No se pudo crear la invitación");
