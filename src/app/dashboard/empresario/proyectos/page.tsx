@@ -38,12 +38,31 @@ export default function ProyectosPage() {
     
     try {
       setLoading(true);
-      // 🔥 FIX: Usar endpoint correcto de proyectos
-      const data = await api.get<Project[]>(`/projects?companyId=${session.user.companyId}`);
-      setProjects(data);
+      // 🔥 Intentar múltiples endpoints hasta que backend arregle el error de Prisma
+      try {
+        // Opción 1: Query params con paginación explícita
+        const data = await api.get<Project[]>(
+          `/projects?companyId=${session.user.companyId}&page=1&limit=50&sortBy=createdAt&order=desc`
+        );
+        setProjects(data);
+      } catch (err1) {
+        console.warn("Endpoint /projects falló, intentando alternativa...", err1);
+        
+        try {
+          // Opción 2: Ruta específica de company
+          const data = await api.get<Project[]>(
+            `/companies/${session.user.companyId}/projects`
+          );
+          setProjects(data);
+        } catch (err2) {
+          console.error("Ambos endpoints fallaron:", { err1, err2 });
+          // Si ambos fallan, mostrar estado vacío gracefully
+          setProjects([]);
+        }
+      }
     } catch (error) {
       console.error("Error loading projects:", error);
-      // Si falla, dejar array vacío en lugar de crashear
+      // Graceful degradation: no crashear, mostrar vacío
       setProjects([]);
     } finally {
       setLoading(false);
