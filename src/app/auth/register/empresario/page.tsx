@@ -19,10 +19,7 @@ function EmpresarioRegisterContent() {
   }, [session, status, router]);
 
   const handleNext = () => {
-    // Después de crear la cuenta, AccountStep ya inicia sesión automáticamente
-    // Marcamos que necesita completar onboarding
-    localStorage.setItem("empresario_needs_onboarding", "true");
-    
+    // Después de crear la cuenta, redirigir al onboarding
     show({
       variant: "success",
       title: "¡Cuenta creada!",
@@ -52,7 +49,6 @@ function EmpresarioRegisterContent() {
         <AccountStep
           onNext={handleNext}
           preselectedRole="EMPRESARIO"
-          disableEmpresarioRedirect={true}
         />
       </div>
     </div>

@@ -52,7 +52,6 @@ type AccountFormData = z.infer<typeof AccountSchema>;
 interface AccountStepProps {
   onNext: () => void;
   preselectedRole?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER"; // 🔥 Rol preseleccionado
-  disableEmpresarioRedirect?: boolean; // 🔥 Desactivar redirección automática para empresario
 }
 
 type Team = {
@@ -81,7 +80,7 @@ const PERSONAS = [
   },
 ];
 
-export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect = false }: AccountStepProps) {
+export function AccountStep({ onNext, preselectedRole }: AccountStepProps) {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<
     "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | null
@@ -129,24 +128,21 @@ export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect
         role: data.role as any, // EMPRESARIO | ESTUDIANTE | LIDER
       });
 
-      // 3. Si es EMPRESARIO → hacer login automático y redirigir a onboarding personalizado (solo si no está deshabilitado)
-      if (data.role === "EMPRESARIO" && !disableEmpresarioRedirect) {
-        show({
-          variant: "success",
-          title: "Cuenta creada",
-          message: "Redirigiendo al onboarding...",
-        });
-
-        // Marcar en localStorage ANTES de cualquier cosa
-        localStorage.setItem("empresario_needs_onboarding", "true");
-        
+      // 3. Si es EMPRESARIO → hacer login automático y redirigir a onboarding personalizado
+      if (data.role === "EMPRESARIO") {
         // Guardar credenciales temporalmente para el onboarding
         sessionStorage.setItem("temp_email", data.email);
         sessionStorage.setItem("temp_password", data.password);
+        localStorage.setItem("empresario_needs_onboarding", "true");
 
-        // Redirigir inmediatamente al onboarding
-        // El onboarding hará el login automáticamente
-        router.push("/auth/register/empresario");
+        show({
+          variant: "success",
+          title: "Cuenta creada",
+          message: "Continuemos con el perfil empresarial...",
+        });
+
+        // Llamar a onNext para que la página padre maneje la redirección
+        onNext();
         return;
       }
 
@@ -211,6 +207,7 @@ export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect
     }
   };
 
+  // Si el rol no está preseleccionado, mostrar selector
   if (!selectedRole) {
     return (
       <div className="w-full px-4 sm:px-0 sm:max-w-2xl lg:max-w-3xl mx-auto">
@@ -247,12 +244,15 @@ export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect
 
   return (
     <div className="w-full px-4 sm:px-0 sm:max-w-md mx-auto">
-      <button
-        onClick={() => setSelectedRole(null)}
-        className="mb-4 text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline flex items-center gap-1"
-      >
-        ← Cambiar tipo de cuenta
-      </button>
+      {/* Solo mostrar botón de cambiar tipo si NO hay rol preseleccionado */}
+      {!preselectedRole && (
+        <button
+          onClick={() => setSelectedRole(null)}
+          className="mb-4 text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline flex items-center gap-1"
+        >
+          ← Cambiar tipo de cuenta
+        </button>
+      )}
 
       <h1 className="text-xl sm:text-2xl font-bold mb-1">
         {role === "EMPRESARIO" ? "Crear cuenta (empresa)" : role === "LIDER" ? "Crear cuenta (líder)" : "Crear cuenta"}
