@@ -48,14 +48,27 @@ export default function EmpresarioProfilePage() {
     try {
       setLoading(true);
 
+      console.log('[EmpresarioProfile] 🔍 Cargando datos del usuario:', session.user.id);
+
       // 🔥 Fetch user data with profile
       const userData = await api.get<any>(`/users/${session.user.id}`);
       
+      console.log('[EmpresarioProfile] 📊 Datos recibidos:', {
+        hasProfile: !!userData.profile,
+        hasCompanyId: !!userData.companyId,
+        companyId: userData.companyId,
+        profile: userData.profile,
+      });
+
       setProfileData(userData.profile || null);
 
       // 🔥 Si el usuario tiene companyId, cargar la empresa
       if (userData.companyId) {
+        console.log('[EmpresarioProfile] 🏢 Cargando empresa:', userData.companyId);
         const companyResponse = await api.get<CompanyData>(`/companies/${userData.companyId}`);
+        
+        console.log('[EmpresarioProfile] ✅ Empresa cargada:', companyResponse);
+        
         setCompanyData(companyResponse);
 
         // Set form data
@@ -67,6 +80,7 @@ export default function EmpresarioProfilePage() {
           location: userData.profile?.location || '',
         });
       } else {
+        console.warn('[EmpresarioProfile] ⚠️ Usuario no tiene companyId vinculado');
         // Si no tiene empresa, dejar campos vacíos
         setCompanyData(null);
         setFormData({
@@ -78,7 +92,7 @@ export default function EmpresarioProfilePage() {
         });
       }
     } catch (error: any) {
-      console.error('Error fetching profile:', error);
+      console.error('[EmpresarioProfile] ❌ Error fetching profile:', error);
       show({
         message: error?.message || 'Error al cargar el perfil',
         variant: 'error',
@@ -213,40 +227,43 @@ export default function EmpresarioProfilePage() {
               Información de la Empresa
             </h2>
             <div className="space-y-4">
-              {/* Company Name */}
+              {/* Company Name - SOLO LECTURA */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Nombre de la Empresa
                 </label>
-                {editing ? (
+                <div className="relative">
                   <input
                     type="text"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    value={companyData?.name || 'No especificado'}
+                    disabled
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                    title="El nombre de la empresa no se puede modificar"
                   />
-                ) : (
-                  <p className="text-gray-900">{companyData?.name || 'No especificado'}</p>
-                )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    🔒 Este campo no es editable por seguridad
+                  </p>
+                </div>
               </div>
 
-              {/* Sector */}
+              {/* Sector - SOLO LECTURA */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <Briefcase className="inline h-4 w-4 mr-1" />
                   Sector
                 </label>
-                {editing ? (
+                <div className="relative">
                   <input
                     type="text"
-                    value={formData.sector}
-                    onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-                    placeholder="Ej: Tecnología, Salud, Educación..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    value={companyData?.sector || 'No especificado'}
+                    disabled
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                    title="El sector no se puede modificar"
                   />
-                ) : (
-                  <p className="text-gray-900">{companyData?.sector || 'No especificado'}</p>
-                )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    🔒 Este campo no es editable por seguridad
+                  </p>
+                </div>
               </div>
 
               {/* Website */}
