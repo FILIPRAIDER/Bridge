@@ -23,7 +23,7 @@ const TABS = [
   { id: "/dashboard/empresario/proyectos", label: "Mis Proyectos", icon: Briefcase },
   { id: "/dashboard/empresario/equipos", label: "Buscar Equipos", icon: Users },
   { id: "/dashboard/empresario/stats", label: "Estadísticas", icon: TrendingUp },
-  { id: "/perfil", label: "Mi Perfil", icon: User },
+  { id: "/dashboard/empresario/profile", label: "Mi Perfil", icon: User },
 ];
 
 export function EmpresarioSidebar({ isOpen = false, onClose }: EmpresarioSidebarProps) {

@@ -137,31 +137,23 @@ export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect
           message: "Iniciando sesión...",
         });
 
-        // Hacer login automático
+        // Marcar en localStorage ANTES del login
+        localStorage.setItem("empresario_needs_onboarding", "true");
+
+        // Hacer login automático con callbackUrl explícito
         const loginResult = await signIn("credentials", {
-          redirect: false,
+          redirect: true, // Cambiar a true para usar el callbackUrl
           email: data.email,
           password: data.password,
+          callbackUrl: "/auth/register/empresario", // URL específica de redirección
         });
 
-        if (loginResult?.error) {
-          console.error("Error al hacer login automático:", loginResult.error);
-          show({
-            variant: "error",
-            message: "Error al iniciar sesión. Por favor, inicia sesión manualmente.",
-          });
-          setLoading(false);
-          return;
+        // Si el redirect falla por alguna razón, intentar manualmente
+        if (loginResult === undefined) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          router.push("/auth/register/empresario");
         }
-
-        // Esperar un breve momento para que se complete el login
-        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Marcar en localStorage que viene del registro inicial
-        localStorage.setItem("empresario_needs_onboarding", "true");
-        
-        // Redirigir al onboarding de empresario usando router (sin parpadeo)
-        router.push("/auth/register/empresario");
         return;
       }
 
