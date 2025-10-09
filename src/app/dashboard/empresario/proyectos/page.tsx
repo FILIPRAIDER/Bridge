@@ -1,11 +1,12 @@
 ﻿"use client";
 
-import { Briefcase, Plus, Search, Filter, Sparkles, Calendar, MapPin, Users, CheckCircle2, Clock } from "lucide-react";
+import { Briefcase, Plus, Search, Filter, Sparkles, Calendar, MapPin, Users, CheckCircle2, Clock, X, Edit, Target, DollarSign } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 import { Loader } from "@/components/ui";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Project {
   id: string;
@@ -43,6 +44,7 @@ export default function ProyectosPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     if (session?.user?.companyId) {
@@ -144,9 +146,10 @@ export default function ProyectosPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredProjects.map((project) => (
-            <div
+            <button
               key={project.id}
-              className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow"
+              onClick={() => setSelectedProject(project)}
+              className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition-all text-left w-full"
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
@@ -157,14 +160,11 @@ export default function ProyectosPage() {
                   {getStatusBadge(project.status)}
                 </div>
                 <div className="ml-3">
-                  <Link
-                    href={`/dashboard/empresario/proyectos/${project.id}`}
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                  >
+                  <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors">
                     <svg className="w-4 h-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                  </Link>
+                  </div>
                 </div>
               </div>
 
@@ -189,10 +189,218 @@ export default function ProyectosPage() {
                   <span>{project._count.assignments} equipo{project._count.assignments !== 1 ? 's' : ''}</span>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
+
+      {/* Modal/Drawer de Detalles */}
+      <AnimatePresence>
+        {selectedProject && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedProject(null)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            />
+
+            {/* Drawer - Mobile (desde abajo) */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
+            >
+              {/* Handle para drag (visual) */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </div>
+
+              {/* Content */}
+              <div className="px-6 pb-6">
+                {/* Header */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1 pr-4">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      {selectedProject.title}
+                    </h2>
+                    {getStatusBadge(selectedProject.status)}
+                  </div>
+                  <button
+                    onClick={() => setSelectedProject(null)}
+                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="h-5 w-5 text-gray-700" />
+                  </button>
+                </div>
+
+                {/* Info Grid */}
+                <div className="space-y-4 mb-6">
+                  {selectedProject.description && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Briefcase className="h-4 w-4" />
+                        Descripción
+                      </h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {selectedProject.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedProject.area && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Área
+                      </h3>
+                      <p className="text-sm text-gray-600">{selectedProject.area}</p>
+                    </div>
+                  )}
+
+                  {selectedProject.city && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Ubicación
+                      </h3>
+                      <p className="text-sm text-gray-600">{selectedProject.city}</p>
+                    </div>
+                  )}
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Equipos Asignados
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {selectedProject._count.assignments} equipo{selectedProject._count.assignments !== 1 ? 's' : ''} trabajando
+                    </p>
+                  </div>
+                </div>
+
+                {/* Botones de Acción */}
+                <div className="space-y-3 pt-4 border-t border-gray-200">
+                  <Link
+                    href="/dashboard/empresario"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
+                  >
+                    <Sparkles className="h-5 w-5" />
+                    Buscar Más Equipos con IA
+                  </Link>
+                  <button className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700">
+                    <Edit className="h-5 w-5" />
+                    Editar Proyecto
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Modal - Desktop (centrado) */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="hidden lg:block fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto"
+            >
+              {/* Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-4">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                      {selectedProject.title}
+                    </h2>
+                    {getStatusBadge(selectedProject.status)}
+                  </div>
+                  <button
+                    onClick={() => setSelectedProject(null)}
+                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="h-5 w-5 text-gray-700" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="px-8 py-6">
+                <div className="space-y-6 mb-8">
+                  {selectedProject.description && (
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Briefcase className="h-5 w-5" />
+                        Descripción del Proyecto
+                      </h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {selectedProject.description}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-6">
+                    {selectedProject.area && (
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                          <Target className="h-4 w-4" />
+                          Área
+                        </h3>
+                        <p className="text-sm text-gray-600">{selectedProject.area}</p>
+                      </div>
+                    )}
+
+                    {selectedProject.city && (
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          Ubicación
+                        </h3>
+                        <p className="text-sm text-gray-600">{selectedProject.city}</p>
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Equipos Asignados
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {selectedProject._count.assignments} equipo{selectedProject._count.assignments !== 1 ? 's' : ''} trabajando
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <Briefcase className="h-4 w-4" />
+                        Empresa
+                      </h3>
+                      <p className="text-sm text-gray-600">{selectedProject.company.name}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones de Acción */}
+                <div className="grid grid-cols-2 gap-3 pt-6 border-t border-gray-200">
+                  <Link
+                    href="/dashboard/empresario"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors font-medium"
+                  >
+                    <Sparkles className="h-5 w-5" />
+                    Buscar Equipos
+                  </Link>
+                  <button className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium text-gray-700">
+                    <Edit className="h-5 w-5" />
+                    Editar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
