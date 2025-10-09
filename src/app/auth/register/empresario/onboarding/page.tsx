@@ -182,7 +182,9 @@ export default function EmpresarioOnboarding() {
         phone: profileData.phone || null,
         identityType: "NIT", // Siempre NIT para empresarios
         documentNumber: profileData.documentNumber || null,
-        location: `${companyData.city}, ${companyData.country}`, // Guardar ubicación en profile
+        country: companyData.country, // Guardar país por separado
+        city: companyData.city, // Guardar ciudad por separado
+        location: `${companyData.city}, ${companyData.country}`, // También guardar como string para compatibilidad
         birthdate: profileData.birthdate ? new Date(profileData.birthdate).toISOString() : null, // Fecha de fundación
       });
 
