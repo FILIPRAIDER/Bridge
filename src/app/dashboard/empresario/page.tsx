@@ -22,20 +22,28 @@ export default function EmpresarioDashboard() {
         try {
           const userData = await api.get<any>(`/users/${session.user.id}`);
           
-          if (userData.avatarUrl) {
-            console.log('[Empresario Dashboard] ✅ Avatar encontrado en backend:', userData.avatarUrl);
+          // 🔥 DEBUG: Ver estructura completa de la respuesta
+          console.log('[Empresario Dashboard] 🔍 Respuesta completa del backend:', userData);
+          console.log('[Empresario Dashboard] 🔍 Campos disponibles:', Object.keys(userData));
+          
+          // Intentar obtener avatarUrl de diferentes ubicaciones posibles
+          const avatarUrl = userData.avatarUrl || userData.profile?.avatarUrl || userData.avatar || null;
+          
+          if (avatarUrl) {
+            console.log('[Empresario Dashboard] ✅ Avatar encontrado en backend:', avatarUrl);
             
             // Actualizar sesión con el avatarUrl
             await update({
               user: {
                 ...session.user,
-                avatarUrl: userData.avatarUrl,
+                avatarUrl: avatarUrl,
               }
             });
             
             console.log('[Empresario Dashboard] ✅ Sesión actualizada con avatar');
           } else {
             console.log('[Empresario Dashboard] ℹ️ Usuario no tiene avatar en backend');
+            console.log('[Empresario Dashboard] 🔍 Estructura de userData:', JSON.stringify(userData, null, 2));
           }
         } catch (error) {
           console.error('[Empresario Dashboard] ❌ Error obteniendo avatar:', error);
