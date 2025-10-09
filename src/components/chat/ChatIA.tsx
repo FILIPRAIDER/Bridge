@@ -5,6 +5,7 @@ import { Loader2, Trash2, Sparkles } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { ProjectProgressIndicator } from './ProjectProgressIndicator';
+import { ProjectProgressBanner } from './ProjectProgressBanner';
 import { sendChatMessage, getChatSession, deleteChatSession } from '@/lib/ai-api';
 
 interface Message {
@@ -36,6 +37,7 @@ export default function ChatIA({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(null);
+  const [projectCreated, setProjectCreated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -154,8 +156,13 @@ export default function ChatIA({
       // Si se creó un proyecto, notificar al padre
       if (response.context?.lastProjectId && onProjectCreated) {
         onProjectCreated(response.context.lastProjectId);
-        // Limpiar progreso después de crear proyecto
-        setProjectProgress(null);
+        // Mostrar celebración
+        setProjectCreated(true);
+        // Limpiar progreso después de 3 segundos
+        setTimeout(() => {
+          setProjectProgress(null);
+          setProjectCreated(false);
+        }, 3000);
       }
 
     } catch (error) {
@@ -192,6 +199,7 @@ export default function ChatIA({
     setSessionId(null);
     setError(null);
     setProjectProgress(null); // Limpiar progreso del proyecto
+    setProjectCreated(false); // Limpiar estado de celebración
     console.log('[ChatIA] ✅ Chat limpiado completamente');
   };
 
@@ -226,18 +234,20 @@ export default function ChatIA({
         </button>
       </div>
 
+      {/* Project Progress Banner - Outside messages, below header */}
+      {projectProgress && (
+        <ProjectProgressBanner 
+          flags={projectProgress.flags}
+          data={projectProgress.data}
+          onProjectCreated={projectCreated}
+        />
+      )}
+
       {/* Messages Container */}
       <div 
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 bg-gradient-to-b from-gray-50/50 to-white"
       >
-        {/* Project Progress Indicator */}
-        {projectProgress && (
-          <ProjectProgressIndicator 
-            flags={projectProgress.flags}
-            data={projectProgress.data}
-          />
-        )}
 
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
