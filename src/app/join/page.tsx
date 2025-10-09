@@ -64,8 +64,10 @@ function JoinContent() {
 
     try {
       setLoading(true);
+      // Codificar el token para la URL del API
+      const encodedToken = encodeURIComponent(token);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/invites/${token}/info`
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/invites/${encodedToken}/info`
       );
 
       if (!response.ok) {
@@ -104,8 +106,10 @@ function JoinContent() {
     setAccepting(true);
 
     try {
+      // Codificar el token para la URL del API
+      const encodedToken = encodeURIComponent(token);
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/invites/${token}/accept`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/invites/${encodedToken}/accept`,
         {
           method: "POST",
           headers: {
