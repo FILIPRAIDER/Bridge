@@ -10,14 +10,32 @@ import { Loader } from "@/components/ui";
 interface Project {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   status: string;
-  budget?: number;
-  createdAt: string;
-  location?: string;
-  sectors?: Array<{ id: string; nameEs: string }>;
-  skills?: Array<{ name: string }>;
-  teamsCount?: number;
+  city: string | null;
+  area: string | null;
+  company: {
+    id: string;
+    name: string;
+  };
+  _count: {
+    assignments: number;
+  };
+}
+
+interface ApiResponse {
+  data: Project[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasPrev: boolean;
+    hasNext: boolean;
+    sortBy: string;
+    sortDir: string;
+    includeDescription: boolean;
+  };
 }
 
 export default function ProyectosPage() {
@@ -38,28 +56,12 @@ export default function ProyectosPage() {
     
     try {
       setLoading(true);
-      // 🔥 Intentar múltiples endpoints hasta que backend arregle el error de Prisma
-      try {
-        // Opción 1: Query params con paginación explícita
-        const data = await api.get<Project[]>(
-          `/projects?companyId=${session.user.companyId}&page=1&limit=50&sortBy=createdAt&order=desc`
-        );
-        setProjects(data);
-      } catch (err1) {
-        console.warn("Endpoint /projects falló, intentando alternativa...", err1);
-        
-        try {
-          // Opción 2: Ruta específica de company
-          const data = await api.get<Project[]>(
-            `/companies/${session.user.companyId}/projects`
-          );
-          setProjects(data);
-        } catch (err2) {
-          console.error("Ambos endpoints fallaron:", { err1, err2 });
-          // Si ambos fallan, mostrar estado vacío gracefully
-          setProjects([]);
-        }
-      }
+      // ✅ Backend arregló el endpoint - ahora devuelve { data: [], meta: {} }
+      const response = await api.get<ApiResponse>(
+        `/projects?companyId=${session.user.companyId}&page=1&limit=50&sortBy=createdAt&sortDir=desc`
+      );
+      setProjects(response.data);
+      console.log(`✅ Cargados ${response.data.length} proyectos (${response.meta.total} total)`);
     } catch (error) {
       console.error("Error loading projects:", error);
       // Graceful degradation: no crashear, mostrar vacío
@@ -76,10 +78,10 @@ export default function ProyectosPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; color: string }> = {
-      PLANNING: { label: "Planificación", color: "bg-blue-100 text-blue-700" },
-      ACTIVE: { label: "Activo", color: "bg-green-100 text-green-700" },
-      COMPLETED: { label: "Completado", color: "bg-gray-100 text-gray-700" },
-      CANCELLED: { label: "Cancelado", color: "bg-red-100 text-red-700" },
+      OPEN: { label: "Abierto", color: "bg-blue-100 text-blue-700" },
+      IN_PROGRESS: { label: "En Progreso", color: "bg-yellow-100 text-yellow-700" },
+      DONE: { label: "Completado", color: "bg-green-100 text-green-700" },
+      CANCELED: { label: "Cancelado", color: "bg-red-100 text-red-700" },
     };
     const config = statusConfig[status] || { label: status, color: "bg-gray-100 text-gray-700" };
     return (
@@ -166,56 +168,26 @@ export default function ProyectosPage() {
                 </div>
               </div>
 
-              {/* Description */}
-              {project.description && (
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                  {project.description}
+              {/* Area/Sector */}
+              {project.area && (
+                <p className="text-sm text-gray-600 mb-4">
+                  <span className="font-medium">Área:</span> {project.area}
                 </p>
-              )}
-
-              {/* Skills */}
-              {project.skills && project.skills.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {project.skills.slice(0, 4).map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-medium"
-                    >
-                      {skill.name}
-                    </span>
-                  ))}
-                  {project.skills.length > 4 && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">
-                      +{project.skills.length - 4}
-                    </span>
-                  )}
-                </div>
               )}
 
               {/* Footer Info */}
               <div className="flex items-center gap-4 text-xs text-gray-500 pt-4 border-t border-gray-100">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{new Date(project.createdAt).toLocaleDateString('es-ES', { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric' 
-                  })}</span>
-                </div>
-                
-                {project.location && (
+                {project.city && (
                   <div className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5" />
-                    <span>{project.location}</span>
+                    <span>{project.city}</span>
                   </div>
                 )}
 
-                {project.teamsCount !== undefined && (
-                  <div className="flex items-center gap-1 ml-auto">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{project.teamsCount} equipo{project.teamsCount !== 1 ? 's' : ''}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1 ml-auto">
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{project._count.assignments} equipo{project._count.assignments !== 1 ? 's' : ''}</span>
+                </div>
               </div>
             </div>
           ))}
