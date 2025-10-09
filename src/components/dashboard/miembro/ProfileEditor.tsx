@@ -89,6 +89,9 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
   // Prellenar campos cuando el perfil se carga
   useEffect(() => {
     if (profile) {
+      // 🔍 DEBUG: Ver qué datos tiene el perfil
+      console.log('[ProfileEditor] 📊 Profile recibido:', profile);
+      
       // Cargar país actual para activar las ciudades
       if (profile.country) {
         setSelectedCountry(profile.country);

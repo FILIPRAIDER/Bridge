@@ -40,6 +40,11 @@ export default function MiembroDashboard() {
     try {
       setIsLoading(true);
       const userData = await api.get<any>(`/users/${session.user.id}`);
+      
+      // 🔍 DEBUG: Ver estructura completa de datos
+      console.log('[MiembroDashboard] 📊 userData completo:', userData);
+      console.log('[MiembroDashboard] 📋 userData.profile:', userData.profile);
+      
       setProfile(userData.profile);
       
       const membership = userData?.teamMemberships?.[0];

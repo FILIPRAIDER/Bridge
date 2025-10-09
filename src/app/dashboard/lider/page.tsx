@@ -78,6 +78,11 @@ export default function LiderDashboard() {
     if (!session?.user?.id) return;
     try {
       const userData = await api.get<any>(`/users/${session.user.id}`);
+      
+      // 🔍 DEBUG: Ver estructura completa de datos
+      console.log('[LiderDashboard] 📊 userData completo:', userData);
+      console.log('[LiderDashboard] 📋 userData.profile:', userData.profile);
+      
       setProfile(userData.profile || userData);
     } catch (error) {
       console.error("Error loading profile:", error);
