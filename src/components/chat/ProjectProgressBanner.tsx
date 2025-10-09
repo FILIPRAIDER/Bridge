@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, Briefcase, PartyPopper } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { formatCurrency } from '@/utils/currency';
 
 interface ProjectCreationFlags {
   hasProjectType: boolean;
@@ -80,7 +81,7 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
   const mainItems = [
     { label: 'Tipo', hasData: flags.hasProjectType, icon: '🎯', value: data.projectType },
     { label: 'Industria/Sector', hasData: flags.hasIndustry, icon: '🏢', value: data.industry },
-    { label: 'Presupuesto', hasData: flags.hasBudget, icon: '💰', value: data.budget ? `${data.budgetCurrency === 'COP' ? '$' : ''}${data.budget.toLocaleString('es-CO')}` : null },
+    { label: 'Presupuesto', hasData: flags.hasBudget, icon: '💰', value: data.budget ? formatCurrency(data.budget, data.budgetCurrency) : null },
     { label: 'Tiempo', hasData: flags.hasTimeline, icon: '⏱️', value: data.timeline ? `${data.timeline} ${data.timelineUnit === 'months' ? 'meses' : 'semanas'}` : null },
     { label: 'Objetivos', hasData: flags.hasObjectives, icon: '🎯', value: data.objectives.length > 0 ? `${data.objectives.length} objetivos` : null },
   ];

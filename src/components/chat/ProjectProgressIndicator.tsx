@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Circle } from 'lucide-react';
+import { formatCurrency } from '@/utils/currency';
 
 interface ProjectCreationFlags {
   hasProjectType: boolean;
@@ -59,7 +60,7 @@ export function ProjectProgressIndicator({ flags, data }: ProjectProgressProps) 
       label: 'Presupuesto', 
       hasData: flags.hasBudget, 
       value: data.budget 
-        ? `${data.budgetCurrency === 'COP' ? '$' : ''}${data.budget.toLocaleString('es-CO')} ${data.budgetCurrency}` 
+        ? `${formatCurrency(data.budget, data.budgetCurrency)} ${data.budgetCurrency}` 
         : null,
       required: true
     },

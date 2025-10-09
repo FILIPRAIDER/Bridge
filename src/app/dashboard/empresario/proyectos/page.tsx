@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { api } from "@/lib/api";
 import { Loader } from "@/components/ui";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatCurrency } from "@/utils/currency";
 
 interface Project {
   id: string;
@@ -15,6 +16,8 @@ interface Project {
   status: string;
   city: string | null;
   area: string | null;
+  budget?: number | null;
+  budgetCurrency?: 'COP' | 'USD';
   company: {
     id: string;
     name: string;
@@ -272,6 +275,18 @@ export default function ProyectosPage() {
                     </div>
                   )}
 
+                  {selectedProject.budget && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Presupuesto
+                      </h3>
+                      <p className="text-sm font-semibold text-green-600">
+                        {formatCurrency(selectedProject.budget, selectedProject.budgetCurrency || 'COP', { showCurrencyName: true })}
+                      </p>
+                    </div>
+                  )}
+
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
                       <Users className="h-4 w-4" />
@@ -359,6 +374,18 @@ export default function ProyectosPage() {
                           Ubicación
                         </h3>
                         <p className="text-sm text-gray-600">{selectedProject.city}</p>
+                      </div>
+                    )}
+
+                    {selectedProject.budget && (
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Presupuesto
+                        </h3>
+                        <p className="text-sm font-semibold text-green-600">
+                          {formatCurrency(selectedProject.budget, selectedProject.budgetCurrency || 'COP', { showCurrencyName: true })}
+                        </p>
                       </div>
                     )}
 

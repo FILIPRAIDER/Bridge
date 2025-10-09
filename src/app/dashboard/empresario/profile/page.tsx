@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Building2, Mail, Calendar, MapPin, Globe, Briefcase, Edit2, Save, X } from 'lucide-react';
+import { Building2, Mail, Calendar, MapPin, Globe, Briefcase, Edit2, Save, X, Camera } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import { api } from '@/lib/api';
+import { CompanyLogoUploadModal } from '@/components/dashboard/empresario/CompanyLogoUploadModal';
 
 interface CompanyData {
   id: string;
@@ -12,6 +13,7 @@ interface CompanyData {
   sector: string | null;
   website: string | null;
   about: string | null;
+  logoUrl: string | null;
 }
 
 interface ProfileData {
@@ -25,6 +27,7 @@ export default function EmpresarioProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
 
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -168,9 +171,42 @@ export default function EmpresarioProfilePage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Building2 className="h-8 w-8 text-white" />
+              {/* Logo de la empresa con botón de cambio */}
+              <div className="relative flex-shrink-0 group">
+                {companyData?.logoUrl ? (
+                  <img
+                    src={companyData.logoUrl}
+                    alt={companyData.name || "Logo de la empresa"}
+                    className="w-16 h-16 rounded-lg border-2 border-gray-200 object-contain bg-white p-2"
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      img.style.display = 'none';
+                      const fallback = img.nextElementSibling;
+                      if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                
+                {/* Fallback con icono de edificio */}
+                <div 
+                  className="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center"
+                  style={{ display: companyData?.logoUrl ? 'none' : 'flex' }}
+                >
+                  <Building2 className="h-8 w-8 text-white" />
+                </div>
+                
+                {/* Camera button overlay */}
+                {companyData?.id && (
+                  <button
+                    onClick={() => setIsLogoModalOpen(true)}
+                    className="absolute bottom-0 right-0 p-1.5 bg-gray-900 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-800 hover:scale-110 transform"
+                    title="Cambiar logo de la empresa"
+                  >
+                    <Camera className="h-3 w-3" />
+                  </button>
+                )}
               </div>
+              
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   {companyData?.name || 'Mi Empresa'}
@@ -370,6 +406,20 @@ export default function EmpresarioProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Company Logo Upload Modal */}
+      {companyData?.id && (
+        <CompanyLogoUploadModal
+          isOpen={isLogoModalOpen}
+          onClose={() => setIsLogoModalOpen(false)}
+          companyId={companyData.id}
+          currentLogoUrl={companyData.logoUrl}
+          onUploadSuccess={(newUrl) => {
+            fetchProfileData();
+            setIsLogoModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
