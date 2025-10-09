@@ -159,6 +159,8 @@ export default function EmpresarioOnboarding() {
     setIsLoading(true);
 
     try {
+      console.log("[Onboarding] 🚀 Iniciando proceso de completar perfil empresario");
+      
       // 🔥 PASO 1: Validar y preparar el perfil PRIMERO (antes de crear la compañía)
       const profilePayload: any = {
         phone: profileData.phone || undefined,
@@ -174,8 +176,12 @@ export default function EmpresarioOnboarding() {
         profilePayload.birthdate = new Date(profileData.birthdate).toISOString();
       }
 
+      console.log("[Onboarding] 📝 PASO 1: Guardando perfil...", profilePayload);
+      
       // Validar perfil PRIMERO (esto lanzará error si hay problema de validación)
       await api.patch(`/users/${session.user.id}/profile`, profilePayload);
+      
+      console.log("[Onboarding] ✅ PASO 1 completado: Perfil guardado");
 
       // 🔥 PASO 2: Solo si el perfil se guardó correctamente, crear la compañía
       const companyPayload: any = {
@@ -190,16 +196,29 @@ export default function EmpresarioOnboarding() {
         companyPayload.website = companyData.website.trim();
       }
 
+      console.log("[Onboarding] 🏢 PASO 2: Creando empresa...", {
+        name: companyPayload.name,
+        sector: companyPayload.sector,
+        userId: companyPayload.userId,
+      });
+
       const companyResponse = await api.post<{ id: string }>("/companies", companyPayload);
       
       if (!companyResponse?.id) {
         throw new Error("No se pudo crear la compañía");
       }
 
+      console.log("[Onboarding] ✅ PASO 2 completado: Empresa creada con ID:", companyResponse.id);
+
       // 🔥 PASO 3: Marcar onboarding como completado
+      console.log("[Onboarding] 🎯 PASO 3: Marcando onboarding como completado...");
+      
       await api.patch(`/users/${session.user.id}`, {
         onboardingStep: "DONE",
       });
+
+      console.log("[Onboarding] ✅ PASO 3 completado: Onboarding marcado como DONE");
+      console.log("[Onboarding] 🎉 ¡PROCESO COMPLETO! Redirigiendo al dashboard...");
 
       show({
         variant: "success",
@@ -215,10 +234,29 @@ export default function EmpresarioOnboarding() {
       }, 500);
 
     } catch (error: any) {
-      console.error("Error al completar perfil:", error);
+      console.error("[Onboarding] ❌ ERROR en el proceso:", error);
+      console.error("[Onboarding] ❌ Detalles del error:", {
+        message: error?.message,
+        response: error?.response,
+        stack: error?.stack,
+      });
+      
+      // Mensajes de error específicos según el tipo
+      let errorMessage = "Error al completar el perfil";
+      
+      if (error?.message?.includes("perfil")) {
+        errorMessage = "❌ Error al guardar tu perfil. Por favor intenta de nuevo.";
+      } else if (error?.message?.includes("compañía") || error?.message?.includes("empresa")) {
+        errorMessage = "❌ Error al crear la empresa. Por favor intenta de nuevo.";
+      } else if (error?.message?.includes("onboarding")) {
+        errorMessage = "❌ Error al completar el proceso. Por favor intenta de nuevo.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       show({
         variant: "error",
-        message: error?.message || "Error al completar el perfil",
+        message: errorMessage,
       });
     } finally {
       setIsLoading(false);

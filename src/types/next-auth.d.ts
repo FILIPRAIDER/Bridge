@@ -5,6 +5,7 @@ declare module "next-auth" {
     id: string;
     role?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | "ADMIN";
     avatarUrl?: string | null;
+    companyId?: string | null; // 🔥 AGREGAR companyId
   }
   interface Session {
     user: {
@@ -14,6 +15,7 @@ declare module "next-auth" {
       image?: string | null;
       role?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | "ADMIN";
       avatarUrl?: string | null;
+      companyId?: string | null; // 🔥 AGREGAR companyId
     };
   }
 }
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
     sub?: string; // next-auth usa 'sub' para el id
     role?: "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | "ADMIN";
     avatarUrl?: string | null;
+    companyId?: string | null; // 🔥 AGREGAR companyId
   }
 }

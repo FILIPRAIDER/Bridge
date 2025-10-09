@@ -48,6 +48,17 @@ export interface SessionResponse {
  * Enviar mensaje al chat IA
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatResponse> {
+  // 🔥 LOG: Verificar que companyId se está enviando
+  console.log('[AI-API] 📤 Enviando request:', {
+    url: `${AI_API_URL}/chat`,
+    hasSessionId: !!request.sessionId,
+    sessionId: request.sessionId,
+    messagePreview: request.message.substring(0, 50) + '...',
+    context: request.context,
+    hasCompanyId: !!request.context?.companyId,
+    companyId: request.context?.companyId,
+  });
+
   const response = await fetch(`${AI_API_URL}/chat`, {
     method: 'POST',
     headers: {
@@ -58,10 +69,18 @@ export async function sendChatMessage(request: ChatRequest): Promise<ChatRespons
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
+    console.error('[AI-API] ❌ Error response:', error);
     throw new Error(error.message || `HTTP error! status: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('[AI-API] ✅ Response recibida:', {
+    sessionId: data.sessionId,
+    hasContext: !!data.context,
+    contextKeys: data.context ? Object.keys(data.context) : [],
+  });
+
+  return data;
 }
 
 /**

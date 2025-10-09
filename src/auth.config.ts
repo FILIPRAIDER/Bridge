@@ -30,7 +30,24 @@ const authOptions = {
           body: JSON.stringify(parsed.data),
         });
 
-        return user ?? null;
+        if (!user) return null;
+
+        // 🔥 Obtener companyId del usuario si es EMPRESARIO
+        if (user.role === "EMPRESARIO") {
+          try {
+            const userDetails = await coreFetch(`/users/${user.id}`);
+            if (userDetails?.companyId) {
+              user.companyId = userDetails.companyId;
+              console.log('[NextAuth] ✅ CompanyId obtenido:', user.companyId);
+            } else {
+              console.log('[NextAuth] ⚠️ Usuario EMPRESARIO sin companyId');
+            }
+          } catch (error) {
+            console.error('[NextAuth] ❌ Error obteniendo companyId:', error);
+          }
+        }
+
+        return user;
       },
     }),
   ],
@@ -39,11 +56,17 @@ const authOptions = {
       if (user) {
         token.role = (user as any).role;
         token.avatarUrl = (user as any).avatarUrl || null;
+        token.companyId = (user as any).companyId || null; // 🔥 AGREGAR companyId
       }
       
       // Actualizar avatar cuando se llama update() desde el cliente
       if (trigger === "update" && updateSession?.user?.avatarUrl) {
         token.avatarUrl = updateSession.user.avatarUrl;
+      }
+      
+      // Actualizar companyId cuando se llama update() desde el cliente
+      if (trigger === "update" && updateSession?.user?.companyId) {
+        token.companyId = updateSession.user.companyId;
       }
       
       return token;
@@ -52,6 +75,7 @@ const authOptions = {
       if (session.user) {
         session.user.role = token.role as any;
         session.user.avatarUrl = token.avatarUrl as any;
+        session.user.companyId = token.companyId as any; // 🔥 AGREGAR companyId a sesión
         // @ts-ignore
         session.user.id = token.sub as string; // <-- importante para usar userId luego
       }
