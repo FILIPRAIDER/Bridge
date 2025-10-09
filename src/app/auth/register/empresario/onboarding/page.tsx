@@ -182,6 +182,7 @@ export default function EmpresarioOnboarding() {
         name: companyData.name.trim(),
         sector: companyData.sector || null,
         about: companyData.about || null,
+        userId: session.user.id, // ✅ Backend vinculará automáticamente
       };
 
       // Solo incluir website si tiene valor
