@@ -192,7 +192,7 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-6 h-[calc(100vh-200px)]">
         {/* Left Panel - Selected Member Profile */}
-        <div className="col-span-7 overflow-y-auto pr-2 space-y-6">
+        <div className="col-span-7 overflow-y-auto pr-2 space-y-6 custom-scrollbar">
           <AnimatePresence mode="wait">
             {selectedMember && (
               <motion.div
@@ -412,7 +412,7 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
         </div>
 
         {/* Right Panel - Member Grid */}
-        <div className="col-span-5 overflow-y-auto pl-2">
+        <div className="col-span-5 overflow-y-auto pl-2 custom-scrollbar">
           <div className="sticky top-0 bg-gray-50 pb-4 z-10">
             <h2 className="text-xl font-bold text-gray-900">
               Team Members
@@ -444,20 +444,22 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
                   {/* Avatar */}
                   <div className="flex flex-col items-center text-center space-y-3">
                     {member.user?.avatarUrl ? (
-                      <img
-                        src={member.user.avatarUrl}
-                        alt={member.user?.name || "Avatar"}
-                        className={`w-20 h-20 rounded-xl object-cover ${
-                          isSelected ? "ring-2 ring-white/30" : ""
-                        }`}
-                      />
-                    ) : (
-                      <div className={`w-20 h-20 rounded-xl flex items-center justify-center ${
-                        isSelected 
-                          ? "bg-white/10 ring-2 ring-white/30" 
-                          : "bg-gradient-to-br from-gray-700 to-gray-900"
+                      <div className={`relative w-24 h-24 rounded-2xl overflow-hidden ${
+                        isSelected ? "ring-4 ring-white/30" : "ring-2 ring-gray-200"
                       }`}>
-                        <span className={`text-2xl font-bold ${
+                        <img
+                          src={member.user.avatarUrl}
+                          alt={member.user?.name || "Avatar"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className={`w-24 h-24 rounded-2xl flex items-center justify-center ${
+                        isSelected 
+                          ? "bg-white/10 ring-4 ring-white/30" 
+                          : "bg-gradient-to-br from-gray-700 to-gray-900 ring-2 ring-gray-200"
+                      }`}>
+                        <span className={`text-3xl font-bold ${
                           isSelected ? "text-white" : "text-white"
                         }`}>
                           {getInitials(member.user?.name, member.user?.email)}
@@ -520,14 +522,16 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
           >
             <div className="flex flex-col items-center text-center space-y-3">
               {member.user?.avatarUrl ? (
-                <img
-                  src={member.user.avatarUrl}
-                  alt={member.user?.name || "Avatar"}
-                  className="w-16 h-16 rounded-xl object-cover"
-                />
+                <div className="relative w-20 h-20 rounded-2xl overflow-hidden ring-2 ring-gray-200">
+                  <img
+                    src={member.user.avatarUrl}
+                    alt={member.user?.name || "Avatar"}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                  <span className="text-xl font-bold text-white">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ring-2 ring-gray-200">
+                  <span className="text-2xl font-bold text-white">
                     {getInitials(member.user?.name, member.user?.email)}
                   </span>
                 </div>
