@@ -25,13 +25,17 @@ interface ChatIAProps {
   companyId?: string;
   projectId?: string;
   onProjectCreated?: (projectId: string) => void;
+  userAvatarUrl?: string | null; // 🔥 NUEVO: Avatar del usuario
+  userName?: string | null; // 🔥 NUEVO: Nombre del usuario
 }
 
 export default function ChatIA({ 
   userId, 
   companyId, 
   projectId,
-  onProjectCreated 
+  onProjectCreated,
+  userAvatarUrl, // 🔥 NUEVO
+  userName // 🔥 NUEVO
 }: ChatIAProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -85,12 +89,22 @@ export default function ChatIA({
     }
   }, [userId]); // Dependencia: userId para detectar cambios
 
-  // Auto-scroll al final cuando hay nuevos mensajes
+  // 🔥 MEJORADO: Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {
+    // Scroll inmediato (sin smooth) para asegurar que siempre esté abajo
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     }
-  }, [messages]);
+    
+    // Segundo scroll con smooth después de un delay corto (para animaciones)
+    const timeoutId = setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, [messages, isLoading]); // 🔥 Agregar isLoading para scroll mientras carga
 
   /**
    * Cargar sesión existente
@@ -330,6 +344,8 @@ export default function ChatIA({
             content={message.content}
             timestamp={message.timestamp}
             isLatest={index === messages.length - 1 && message.role === 'assistant'}
+            userAvatarUrl={userAvatarUrl} // 🔥 NUEVO
+            userName={userName} // 🔥 NUEVO
           />
         ))}
 

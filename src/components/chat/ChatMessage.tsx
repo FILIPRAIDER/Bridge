@@ -9,6 +9,8 @@ interface ChatMessageProps {
   content: string;
   timestamp: Date;
   isLatest?: boolean; // Para aplicar efecto de escritura solo al último mensaje
+  userAvatarUrl?: string | null; // 🔥 NUEVO: Avatar del usuario
+  userName?: string | null; // 🔥 NUEVO: Nombre del usuario
 }
 
 // Función para formatear markdown simple
@@ -31,7 +33,14 @@ function formatMarkdown(text: string) {
   return `<p>${formatted}</p>`;
 }
 
-export default function ChatMessage({ role, content, timestamp, isLatest = false }: ChatMessageProps) {
+export default function ChatMessage({ 
+  role, 
+  content, 
+  timestamp, 
+  isLatest = false,
+  userAvatarUrl, // 🔥 NUEVO
+  userName // 🔥 NUEVO
+}: ChatMessageProps) {
   const isUser = role === 'user';
   const [displayedContent, setDisplayedContent] = useState(isUser ? content : '');
   const [isTyping, setIsTyping] = useState(!isUser && isLatest);
@@ -113,9 +122,19 @@ export default function ChatMessage({ role, content, timestamp, isLatest = false
       {/* Avatar del usuario */}
       {isUser && (
         <div className="flex-shrink-0 ml-3">
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-            <User className="h-4 w-4 text-gray-600" />
-          </div>
+          {userAvatarUrl ? (
+            <img
+              src={userAvatarUrl}
+              alt={userName || 'Usuario'}
+              className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-sm">
+              <span className="text-white font-semibold text-xs">
+                {userName?.charAt(0).toUpperCase() || 'U'}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>

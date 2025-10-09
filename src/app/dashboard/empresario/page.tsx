@@ -43,6 +43,8 @@ export default function EmpresarioDashboard() {
         userId={session?.user?.id}
         companyId={session?.user?.companyId ?? undefined}
         onProjectCreated={handleProjectCreated}
+        userAvatarUrl={session?.user?.avatarUrl ?? null} // 🔥 NUEVO: Avatar del usuario
+        userName={session?.user?.name ?? null} // 🔥 NUEVO: Nombre del usuario
       />
     </div>
   );
