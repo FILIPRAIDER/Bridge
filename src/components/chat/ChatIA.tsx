@@ -45,6 +45,23 @@ export default function ChatIA({
   useEffect(() => {
     const savedSessionId = localStorage.getItem('chatSessionId');
     const savedProgress = localStorage.getItem('chatProjectProgress');
+    const savedUserId = localStorage.getItem('chatUserId');
+    
+    // Si el usuario cambió (logout/login con otro usuario), limpiar todo
+    if (savedUserId && savedUserId !== userId) {
+      console.log('[ChatIA] 👤 Usuario diferente detectado, limpiando sesión anterior');
+      localStorage.removeItem('chatSessionId');
+      localStorage.removeItem('chatProjectProgress');
+      localStorage.removeItem('chatUserId');
+      setSessionId(null);
+      setProjectProgress(null);
+      return;
+    }
+    
+    // Guardar userId actual para detectar cambios futuros
+    if (userId) {
+      localStorage.setItem('chatUserId', userId);
+    }
     
     if (savedSessionId) {
       console.log('[ChatIA] 📂 Sesión recuperada del localStorage:', savedSessionId);
@@ -65,7 +82,7 @@ export default function ChatIA({
         localStorage.removeItem('chatProjectProgress');
       }
     }
-  }, []);
+  }, [userId]); // Dependencia: userId para detectar cambios
 
   // Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {

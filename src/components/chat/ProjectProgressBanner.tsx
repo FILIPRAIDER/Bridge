@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, Sparkles, PartyPopper } from 'lucide-react';
+import { CheckCircle2, Circle, Briefcase, PartyPopper } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface ProjectCreationFlags {
@@ -152,7 +152,7 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
                     {isComplete ? (
                       <CheckCircle2 className="h-4 w-4 text-white" />
                     ) : (
-                      <Sparkles className="h-4 w-4 text-white" />
+                      <Briefcase className="h-4 w-4 text-white" />
                     )}
                   </motion.div>
                 </motion.div>

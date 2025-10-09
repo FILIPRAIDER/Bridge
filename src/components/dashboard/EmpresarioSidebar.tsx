@@ -31,6 +31,12 @@ export function EmpresarioSidebar({ isOpen = false, onClose }: EmpresarioSidebar
   const pathname = usePathname();
 
   const handleLogout = async () => {
+    // Limpiar datos del chat antes de cerrar sesión
+    localStorage.removeItem('chatSessionId');
+    localStorage.removeItem('chatProjectProgress');
+    localStorage.removeItem('chatUserId');
+    console.log('[EmpresarioSidebar] 🗑️ Datos del chat limpiados antes de logout');
+    
     // Usar callbackUrl para evitar errores de hooks después del signOut
     await signOut({ callbackUrl: "/auth/login" });
   };

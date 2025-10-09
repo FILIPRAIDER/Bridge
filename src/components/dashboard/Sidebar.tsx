@@ -69,6 +69,12 @@ export function Sidebar({
     : allTabs.filter(tab => !teamRequiredTabs.includes(tab.id));
 
   const handleLogout = async () => {
+    // Limpiar datos del chat antes de cerrar sesión
+    localStorage.removeItem('chatSessionId');
+    localStorage.removeItem('chatProjectProgress');
+    localStorage.removeItem('chatUserId');
+    console.log('[Sidebar] 🗑️ Datos del chat limpiados antes de logout');
+    
     clear(); // Limpiar Zustand antes
     await signOut({ callbackUrl: "/auth/login" }); // Usar callbackUrl para evitar errores
   };
