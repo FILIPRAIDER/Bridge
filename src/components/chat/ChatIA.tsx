@@ -153,24 +153,24 @@ export default function ChatIA({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="flex flex-col h-full bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
+      <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center shadow-sm">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Bridge AI</h3>
+            <h3 className="font-bold text-gray-900">Bridge AI</h3>
             <p className="text-xs text-gray-500">Asistente inteligente</p>
           </div>
         </div>
         <button
           onClick={handleClearChat}
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
           title="Limpiar chat"
         >
           <Trash2 className="h-5 w-5" />
@@ -180,37 +180,35 @@ export default function ChatIA({
       {/* Messages Container */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-6 bg-white"
-        style={{ 
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(229 231 235 / 0.3) 1px, transparent 0)',
-          backgroundSize: '24px 24px'
-        }}
+        className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 bg-gradient-to-b from-gray-50/50 to-white"
       >
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <Sparkles className="h-8 w-8 text-white" />
+          <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+              <Sparkles className="h-10 w-10 text-white" />
             </div>
-            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-              ¡Hola! Soy tu asistente de IA
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              ¡Hola! Soy tu asistente Bridge AI
             </h3>
-            <p className="text-sm md:text-base text-gray-600 max-w-md">
-              Puedo ayudarte a crear proyectos, encontrar equipos especializados y conectarte con el talento ideal.
+            <p className="text-sm md:text-base text-gray-600 max-w-lg mb-8">
+              Puedo ayudarte a crear proyectos, encontrar equipos especializados y conectarte con el talento ideal para tu empresa.
             </p>
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-md">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
               <button
                 onClick={() => handleSendMessage('Quiero crear un proyecto nuevo')}
-                className="text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200"
+                className="group text-left p-5 bg-white hover:bg-gray-50 rounded-2xl transition-all border-2 border-gray-200 hover:border-gray-900 hover:shadow-lg"
               >
-                <p className="text-sm font-medium text-gray-900">💡 Crear proyecto</p>
-                <p className="text-xs text-gray-500 mt-1">Describe tu idea</p>
+                <div className="text-3xl mb-2">💡</div>
+                <p className="text-base font-semibold text-gray-900 mb-1">Crear proyecto</p>
+                <p className="text-sm text-gray-500">Describe tu idea y te ayudo a darle forma</p>
               </button>
               <button
                 onClick={() => handleSendMessage('Muéstrame equipos disponibles')}
-                className="text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors border border-gray-200"
+                className="group text-left p-5 bg-white hover:bg-gray-50 rounded-2xl transition-all border-2 border-gray-200 hover:border-gray-900 hover:shadow-lg"
               >
-                <p className="text-sm font-medium text-gray-900">👥 Ver equipos</p>
-                <p className="text-xs text-gray-500 mt-1">Encuentra talento</p>
+                <div className="text-3xl mb-2">👥</div>
+                <p className="text-base font-semibold text-gray-900 mb-1">Ver equipos</p>
+                <p className="text-sm text-gray-500">Encuentra el talento perfecto</p>
               </button>
             </div>
           </div>
@@ -222,6 +220,7 @@ export default function ChatIA({
             role={message.role}
             content={message.content}
             timestamp={message.timestamp}
+            isLatest={index === messages.length - 1 && message.role === 'assistant'}
           />
         ))}
 

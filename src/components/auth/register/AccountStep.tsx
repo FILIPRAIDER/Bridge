@@ -148,6 +148,9 @@ export function AccountStep({ onNext }: AccountStepProps) {
         // Esperar un breve momento para que se complete el login
         await new Promise(resolve => setTimeout(resolve, 500));
         
+        // Marcar en localStorage que viene del registro inicial
+        localStorage.setItem("empresario_needs_onboarding", "true");
+        
         // Redirigir al onboarding de empresario usando router (sin parpadeo)
         router.push("/auth/register/empresario");
         return;

@@ -1,18 +1,20 @@
 "use client";
 
-import { useSession, signOut } from 'next-auth/react';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
-import { Briefcase, Users, TrendingUp, Sparkles, User, LogOut } from 'lucide-react';
 import ChatIA from '@/components/chat/ChatIA';
-import Link from 'next/link';
+import { EmpresarioSidebar } from '@/components/dashboard/EmpresarioSidebar';
+import { Navbar } from '@/components/layout/Navbar';
 
 export default function EmpresarioDashboard() {
   const { data: session, status } = useSession();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Redirigir si no está autenticado o no es empresario
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
       </div>
     );
@@ -25,98 +27,32 @@ export default function EmpresarioDashboard() {
   const handleProjectCreated = (projectId: string) => {
     console.log('Proyecto creado:', projectId);
     // Aquí puedes agregar lógica para actualizar la lista de proyectos
-    // Por ejemplo, revalidar datos o mostrar una notificación
   };
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <Briefcase className="h-5 w-5 text-gray-900" />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg">Bridge</h1>
-              <p className="text-xs text-gray-400">Panel Empresario</p>
-            </div>
+      {/* Sidebar con diseño de miembros/líder */}
+      <EmpresarioSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+
+      {/* Contenedor de navbar + contenido */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Navbar solo en el área de contenido */}
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+
+        {/* Main Content - Chat IA */}
+        <main className="flex-1 overflow-hidden">
+          <div className="h-full max-w-7xl mx-auto p-4 lg:p-6">
+            <ChatIA
+              userId={session.user.id}
+              companyId={(session.user as any).companyId}
+              onProjectCreated={handleProjectCreated}
+            />
           </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          <Link
-            href="/dashboard/empresario"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white"
-          >
-            <Sparkles className="h-5 w-5" />
-            <span className="font-medium">Chat IA</span>
-          </Link>
-
-          <Link
-            href="/dashboard/empresario/proyectos"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <Briefcase className="h-5 w-5" />
-            <span className="font-medium">Mis Proyectos</span>
-          </Link>
-
-          <Link
-            href="/dashboard/empresario/equipos"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <Users className="h-5 w-5" />
-            <span className="font-medium">Buscar Equipos</span>
-          </Link>
-
-          <Link
-            href="/dashboard/empresario/stats"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <TrendingUp className="h-5 w-5" />
-            <span className="font-medium">Estadísticas</span>
-          </Link>
-
-          <Link
-            href="/perfil"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <User className="h-5 w-5" />
-            <span className="font-medium">Mi Perfil</span>
-          </Link>
-        </nav>
-
-        {/* User Info + Logout */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-              <User className="h-5 w-5 text-gray-300" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{session.user.name}</p>
-              <p className="text-xs text-gray-400 truncate">{session.user.email}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
-          >
-            <LogOut className="h-4 w-4" />
-            Cerrar Sesión
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content - Full Width Chat */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <ChatIA
-          userId={session.user.id}
-          companyId={(session.user as any).companyId}
-          onProjectCreated={handleProjectCreated}
-        />
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

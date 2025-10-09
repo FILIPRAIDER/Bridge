@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
-import { Building2, Globe, MapPin, FileText, Phone, CreditCard, Calendar, ArrowRight, ArrowLeft, Check, Loader2 } from "lucide-react";
+import { Building2, Globe, MapPin, FileText, Phone, CreditCard, Calendar, ArrowRight, ArrowLeft, Check, Loader2, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api";
 import { useCountries } from "@/hooks/useCountries";
 import { useCities } from "@/hooks/useCities";
@@ -69,6 +69,13 @@ export default function EmpresarioOnboarding() {
 
     if (session.user.role !== "EMPRESARIO") {
       router.push("/dashboard");
+      return;
+    }
+
+    // 🔥 FIX: Si no viene del registro inicial, redirigir al dashboard
+    const needsOnboarding = localStorage.getItem("empresario_needs_onboarding");
+    if (!needsOnboarding || needsOnboarding !== "true") {
+      router.push("/dashboard/empresario");
       return;
     }
   }, [session, status, router]);
@@ -145,7 +152,10 @@ export default function EmpresarioOnboarding() {
         message: "¡Perfil completado exitosamente!",
       });
 
-      // 4. Redirigir al dashboard empresario
+      // 4. Limpiar flag de onboarding
+      localStorage.removeItem("empresario_needs_onboarding");
+
+      // 5. Redirigir al dashboard empresario
       setTimeout(() => {
         router.push("/dashboard/empresario");
       }, 500);
@@ -303,7 +313,7 @@ export default function EmpresarioOnboarding() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Cargando ciudades...
                 </div>
-              ) : (
+              ) : citiesData?.cities && citiesData.cities.length > 0 ? (
                 <select
                   value={companyData.city}
                   onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
@@ -312,12 +322,27 @@ export default function EmpresarioOnboarding() {
                   disabled={!companyData.country}
                 >
                   <option value="">Selecciona una ciudad</option>
-                  {citiesData?.cities?.map((city: any) => (
+                  {citiesData.cities.map((city: any) => (
                     <option key={city.id} value={city.name}>
                       {city.name}
                     </option>
                   ))}
                 </select>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    value={companyData.city}
+                    onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+                    className="input"
+                    placeholder="Escribe el nombre de tu ciudad"
+                    required
+                  />
+                  <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    No hay ciudades precargadas para este país. Escribe tu ciudad manualmente.
+                  </p>
+                </>
               )}
             </div>
 
