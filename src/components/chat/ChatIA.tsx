@@ -41,15 +41,29 @@ export default function ChatIA({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Cargar sesión desde localStorage al montar
+  // Cargar sesión y progreso desde localStorage al montar
   useEffect(() => {
     const savedSessionId = localStorage.getItem('chatSessionId');
+    const savedProgress = localStorage.getItem('chatProjectProgress');
+    
     if (savedSessionId) {
       console.log('[ChatIA] 📂 Sesión recuperada del localStorage:', savedSessionId);
       setSessionId(savedSessionId);
       loadSession(savedSessionId);
     } else {
       console.log('[ChatIA] 🆕 No hay sesión previa, se creará una nueva');
+    }
+
+    // Restaurar progreso del proyecto si existe
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress);
+        console.log('[ChatIA] 📊 Progreso del proyecto restaurado:', progress);
+        setProjectProgress(progress);
+      } catch (error) {
+        console.error('[ChatIA] ❌ Error parseando progreso guardado:', error);
+        localStorage.removeItem('chatProjectProgress');
+      }
     }
   }, []);
 
@@ -147,10 +161,14 @@ export default function ChatIA({
       // Actualizar progreso del proyecto si hay banderas
       if (response.context?.projectFlags && response.context?.projectData) {
         console.log('[ChatIA] ✅ Flags actualizados:', response.context.projectFlags);
-        setProjectProgress({
+        const newProgress = {
           flags: response.context.projectFlags,
           data: response.context.projectData,
-        });
+        };
+        setProjectProgress(newProgress);
+        
+        // Guardar en localStorage para persistencia
+        localStorage.setItem('chatProjectProgress', JSON.stringify(newProgress));
       }
 
       // Si se creó un proyecto, notificar al padre
@@ -158,10 +176,13 @@ export default function ChatIA({
         onProjectCreated(response.context.lastProjectId);
         // Mostrar celebración
         setProjectCreated(true);
-        // Limpiar progreso después de 3 segundos
+        // Limpiar progreso después de 3 segundos (celebración completa)
         setTimeout(() => {
           setProjectProgress(null);
           setProjectCreated(false);
+          // Limpiar del localStorage también
+          localStorage.removeItem('chatProjectProgress');
+          console.log('[ChatIA] 🎉 Proyecto completado, progreso limpiado');
         }, 3000);
       }
 
@@ -200,7 +221,10 @@ export default function ChatIA({
     setError(null);
     setProjectProgress(null); // Limpiar progreso del proyecto
     setProjectCreated(false); // Limpiar estado de celebración
-    console.log('[ChatIA] ✅ Chat limpiado completamente');
+    
+    // Limpiar progreso del localStorage
+    localStorage.removeItem('chatProjectProgress');
+    console.log('[ChatIA] ✅ Chat limpiado completamente (incluye progreso)');
   };
 
   return (
