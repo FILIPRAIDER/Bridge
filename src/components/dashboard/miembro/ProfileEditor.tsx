@@ -89,40 +89,52 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
   // Prellenar campos cuando el perfil se carga
   useEffect(() => {
     if (profile) {
-      // 🔍 DEBUG: Ver qué datos tiene el perfil
-      console.log('[ProfileEditor] 📊 Profile recibido:', profile);
-      console.log('[ProfileEditor] 🔄 Precargando formulario con datos...');
+      console.log('[ProfileEditor] 📊 Cargando datos del perfil...');
       
       // Cargar país actual para activar las ciudades
       if (profile.country) {
         setSelectedCountry(profile.country);
       }
       
-      // Preparar los valores con logs
-      const formValues = {
-        headline: profile.headline || "",
-        bio: profile.bio || "",
-        seniority: profile.seniority || "",
-        country: profile.country || "",
-        city: profile.city || "",
-        address: profile.address || "",
-        availability: profile.availability !== undefined && profile.availability !== null 
-          ? profile.availability 
-          : undefined,
-        stack: profile.stack || "",
-        sectorId: profile.sectorId || "",
-        phone: profile.phone || "",
-      };
+      // Usar setValue para cada campo individualmente (más confiable que reset)
+      setValue("headline", profile.headline || "");
+      setValue("bio", profile.bio || "");
+      setValue("seniority", profile.seniority || "");
+      setValue("address", profile.address || "");
+      setValue("stack", profile.stack || "");
+      setValue("phone", profile.phone || "");
       
-      console.log('[ProfileEditor] 📝 Valores para reset:', formValues);
+      if (profile.availability !== undefined && profile.availability !== null) {
+        setValue("availability", profile.availability);
+      }
       
-      // Pequeño delay para asegurar que los selects estén renderizados
-      setTimeout(() => {
-        reset(formValues);
-        console.log('[ProfileEditor] ✅ Formulario reseteado con datos');
-      }, 100);
+      console.log('[ProfileEditor] ✅ Campos básicos cargados');
     }
-  }, [profile, reset]);
+  }, [profile, setValue]);
+
+  // Cargar país cuando esté disponible (después de que countries esté listo)
+  useEffect(() => {
+    if (profile?.country && countries && !countriesLoading) {
+      setValue("country", profile.country);
+      console.log('[ProfileEditor] ✅ País cargado:', profile.country);
+    }
+  }, [profile?.country, countries, countriesLoading, setValue]);
+
+  // Cargar ciudad cuando esté disponible (después de que cities esté listo)
+  useEffect(() => {
+    if (profile?.city && citiesData && !citiesLoading && selectedCountry) {
+      setValue("city", profile.city);
+      console.log('[ProfileEditor] ✅ Ciudad cargada:', profile.city);
+    }
+  }, [profile?.city, citiesData, citiesLoading, selectedCountry, setValue]);
+
+  // Cargar sector cuando esté disponible (después de que sectors esté listo)
+  useEffect(() => {
+    if (profile?.sectorId && sectorsData && !sectorsLoading) {
+      setValue("sectorId", profile.sectorId);
+      console.log('[ProfileEditor] ✅ Sector cargado:', profile.sectorId);
+    }
+  }, [profile?.sectorId, sectorsData, sectorsLoading, setValue]);
 
   const onSubmit = async (data: ProfileForm) => {
     try {
