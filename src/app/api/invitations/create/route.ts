@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import authOptions from '@/auth.config';
-import crypto from 'crypto';
 
 interface CreateInvitationBody {
   teamId: string;
@@ -12,11 +11,8 @@ interface CreateInvitationBody {
 }
 
 /**
- * Endpoint temporal para crear invitaciones
- * Este endpoint funciona mientras el backend implementa POST /invitations
- * 
- * Una vez que el backend esté listo, cambiar InviteMembers.tsx para usar:
- * await api.post('/invitations', { ... })
+ * Endpoint proxy que llama al backend para crear invitaciones
+ * El backend se encarga de generar el token y guardarlo en la base de datos
  */
 export async function POST(req: NextRequest) {
   try {
@@ -62,38 +58,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generar token único y seguro
-    const token = crypto.randomBytes(32).toString('hex');
-    const invitationId = crypto.randomUUID();
+    // Llamar al backend para crear la invitación
+    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'https://proyectoia-backend.onrender.com';
     
-    // Calcular fecha de expiración
-    const now = new Date();
-    const expiresAt = new Date(now);
-    expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+    console.log('🔄 [API /api/invitations/create] Llamando al backend:', `${BACKEND_URL}/teams/${teamId}/invites`);
+    
+    const backendResponse = await fetch(`${BACKEND_URL}/teams/${teamId}/invites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.toLowerCase().trim(),
+        role: role || 'MIEMBRO',
+      }),
+    });
 
-    // Datos de la invitación
-    const invitation = {
-      id: invitationId,
-      email: email.toLowerCase().trim(),
-      token,
-      teamId,
-      invitedByUserId: byUserId,
-      role,
-      status: 'PENDING',
-      createdAt: now.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-    };
+    if (!backendResponse.ok) {
+      const errorData = await backendResponse.json().catch(() => ({}));
+      console.error('❌ [API /api/invitations/create] Error del backend:', errorData);
+      return NextResponse.json(
+        { error: { message: errorData.message || 'Error al crear invitación en el backend' } },
+        { status: backendResponse.status }
+      );
+    }
 
-    console.log('✅ [API /api/invitations/create] Invitación temporal creada:', {
+    const invitation = await backendResponse.json();
+    
+    console.log('✅ [API /api/invitations/create] Invitación creada en backend:', {
       id: invitation.id,
       email: invitation.email,
       teamId: invitation.teamId,
-      expiresAt: invitation.expiresAt,
+      token: invitation.token?.substring(0, 10) + '...',
     });
-
-    // NOTE: Esta es una solución temporal
-    // Cuando el backend implemente POST /invitations, este endpoint puede ser eliminado
-    // y InviteMembers.tsx debe cambiar a usar api.post('/invitations', ...)
 
     return NextResponse.json(invitation, { status: 201 });
   } catch (error) {
