@@ -1,15 +1,52 @@
 "use client";
 
 import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import ChatIA from '@/components/chat/ChatIA';
+import { api } from '@/lib/api';
 
 export default function EmpresarioDashboard() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
+  const [avatarChecked, setAvatarChecked] = useState(false);
 
   const handleProjectCreated = (projectId: string) => {
     console.log('Proyecto creado:', projectId);
   };
+
+  // 🔥 AUTO-FIX: Cargar avatarUrl si falta en la sesión
+  useEffect(() => {
+    const loadAvatarIfMissing = async () => {
+      if (session?.user?.id && !session.user.avatarUrl && !avatarChecked) {
+        console.log('[Empresario Dashboard] 🔄 Avatar faltante, consultando backend...');
+        
+        try {
+          const userData = await api.get<any>(`/users/${session.user.id}`);
+          
+          if (userData.avatarUrl) {
+            console.log('[Empresario Dashboard] ✅ Avatar encontrado en backend:', userData.avatarUrl);
+            
+            // Actualizar sesión con el avatarUrl
+            await update({
+              user: {
+                ...session.user,
+                avatarUrl: userData.avatarUrl,
+              }
+            });
+            
+            console.log('[Empresario Dashboard] ✅ Sesión actualizada con avatar');
+          } else {
+            console.log('[Empresario Dashboard] ℹ️ Usuario no tiene avatar en backend');
+          }
+        } catch (error) {
+          console.error('[Empresario Dashboard] ❌ Error obteniendo avatar:', error);
+        } finally {
+          setAvatarChecked(true);
+        }
+      }
+    };
+
+    loadAvatarIfMissing();
+  }, [session, update, avatarChecked]);
 
   // 🔥 LOG: Verificar que companyId está disponible en sesión
   useEffect(() => {
@@ -18,7 +55,9 @@ export default function EmpresarioDashboard() {
         userId: session.user.id,
         role: session.user.role,
         companyId: session.user.companyId,
+        avatarUrl: session.user.avatarUrl,
         hasCompanyId: !!session.user.companyId,
+        hasAvatar: !!session.user.avatarUrl,
       });
 
       if (!session.user.companyId) {

@@ -91,20 +91,33 @@ export default function ChatIA({
 
   // 🔥 MEJORADO: Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {
-    // Scroll inmediato (sin smooth) para asegurar que siempre esté abajo
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-    }
-    
-    // Segundo scroll con smooth después de un delay corto (para animaciones)
-    const timeoutId = setTimeout(() => {
+    // Función para hacer scroll al fondo de manera más agresiva
+    const scrollToBottom = () => {
+      // Método 1: Scroll directo en el contenedor (más confiable)
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }
+      
+      // Método 2: Scroll con scrollIntoView
       if (messagesEndRef.current) {
         messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
-    }, 100);
+    };
+
+    // Ejecutar inmediatamente
+    scrollToBottom();
     
-    return () => clearTimeout(timeoutId);
-  }, [messages, isLoading]); // 🔥 Agregar isLoading para scroll mientras carga
+    // Repetir después de 100ms para asegurar renderizado completo
+    const timeout1 = setTimeout(scrollToBottom, 100);
+    
+    // Repetir después de 300ms por si hay imágenes u otro contenido que tarda
+    const timeout2 = setTimeout(scrollToBottom, 300);
+    
+    return () => {
+      clearTimeout(timeout1);
+      clearTimeout(timeout2);
+    };
+  }, [messages, isLoading]); // 🔥 Scroll cuando cambian mensajes o estado de carga
 
   /**
    * Cargar sesión existente
