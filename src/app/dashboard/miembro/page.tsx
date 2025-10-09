@@ -7,16 +7,13 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamInfo } from "@/components/dashboard/miembro/TeamInfo";
-import { MySkills } from "@/components/dashboard/miembro/MySkills";
-import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
 import { TeamMembersPortfolio } from "@/components/dashboard/shared/TeamMembersPortfolio";
-import { CertificationsManager } from "@/components/dashboard/miembro/CertificationsManager";
-import { ExperiencesManager } from "@/components/dashboard/miembro/ExperiencesManager";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
-type TabType = "profile" | "team" | "members" | "skills" | "certifications" | "experiences";
+// 🔥 Tabs optimizadas - Sin redundancias
+type TabType = "profile" | "team" | "members";
 
 export default function MiembroDashboard() {
   const { data: session } = useNextAuthSession();
@@ -106,16 +103,11 @@ export default function MiembroDashboard() {
                 {activeTab === "profile" && (
                   <ProfileManager profile={profile} onUpdate={loadData} />
                 )}
-                {activeTab === "certifications" && <CertificationsManager />}
-                {activeTab === "experiences" && <ExperiencesManager />}
                 {activeTab === "team" && session?.user?.id && (
                   <TeamInfo team={team} members={members} userId={session.user.id} />
                 )}
                 {activeTab === "members" && teamId && session?.user?.id && (
                   <TeamMembersPortfolio teamId={teamId} currentUserId={session.user.id} />
-                )}
-                {activeTab === "skills" && session?.user?.id && (
-                  <MySkills userId={session.user.id} />
                 )}
               </>
             )}

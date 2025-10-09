@@ -9,18 +9,14 @@ import { TeamOverview } from "@/components/dashboard/lider/TeamOverview";
 import { InviteMembers } from "@/components/dashboard/lider/InviteMembers";
 import { ManageSkills } from "@/components/dashboard/lider/ManageSkills";
 import { ViewInvites } from "@/components/dashboard/lider/ViewInvites";
-import { TeamManagement } from "@/components/dashboard/lider/TeamManagement";
 import { TeamMembersManager } from "@/components/dashboard/lider/TeamMembersManager";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
-import { TeamMembers } from "@/components/dashboard/shared/TeamMembers";
-import { MySkills } from "@/components/dashboard/miembro/MySkills";
-import { CertificationsManager } from "@/components/dashboard/miembro/CertificationsManager";
-import { ExperiencesManager } from "@/components/dashboard/miembro/ExperiencesManager";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
-type TabType = "overview" | "profile" | "members" | "manage-members" | "manage" | "invite" | "my-skills" | "team-skills" | "invites" | "certifications" | "experiences";
+// 🔥 Tabs optimizadas - Sin redundancias
+type TabType = "overview" | "profile" | "manage-members" | "team-skills" | "invite" | "invites";
 
 export default function LiderDashboard() {
   const { data: session } = useNextAuthSession();
@@ -126,26 +122,15 @@ export default function LiderDashboard() {
                 {activeTab === "profile" && (
                   <ProfileManager profile={profile} onUpdate={loadProfile} />
                 )}
-                {activeTab === "certifications" && <CertificationsManager />}
-                {activeTab === "experiences" && <ExperiencesManager />}
-                {activeTab === "members" && teamId && session?.user?.id && (
-                  <TeamMembers teamId={teamId} currentUserId={session.user.id} />
-                )}
                 {activeTab === "manage-members" && teamId && session?.user?.id && (
                   <TeamMembersManager teamId={teamId} currentUserId={session.user.id} />
-                )}
-                {activeTab === "manage" && (
-                  <TeamManagement team={team} onUpdate={loadTeamData} />
                 )}
                 {activeTab === "invite" && teamId && (
                   <InviteMembers 
                     teamId={teamId} 
                     onInviteSent={loadTeamData}
-                    teamName={team?.name} // 🔥 Pasar nombre del equipo
+                    teamName={team?.name}
                   />
-                )}
-                {activeTab === "my-skills" && session?.user?.id && (
-                  <MySkills userId={session.user.id} />
                 )}
                 {activeTab === "team-skills" && teamId && (
                   <ManageSkills teamId={teamId} members={members} />

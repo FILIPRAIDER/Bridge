@@ -173,37 +173,51 @@ export default function EmpresarioProfilePage() {
             <div className="flex items-center gap-4">
               {/* Logo de la empresa con botón de cambio */}
               <div className="relative flex-shrink-0 group">
-                {companyData?.logoUrl ? (
-                  <img
-                    src={companyData.logoUrl}
-                    alt={companyData.name || "Logo de la empresa"}
-                    className="w-16 h-16 rounded-lg border-2 border-gray-200 object-contain bg-white p-2"
-                    onError={(e) => {
-                      const img = e.target as HTMLImageElement;
-                      img.style.display = 'none';
-                      const fallback = img.nextElementSibling;
-                      if (fallback) (fallback as HTMLElement).style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                
-                {/* Fallback con icono de edificio */}
-                <div 
-                  className="w-16 h-16 bg-gray-900 rounded-lg flex items-center justify-center"
-                  style={{ display: companyData?.logoUrl ? 'none' : 'flex' }}
+                {/* Contenedor clickeable */}
+                <button
+                  onClick={() => companyData?.id && setIsLogoModalOpen(true)}
+                  disabled={!companyData?.id}
+                  className="relative w-20 h-20 rounded-xl border-2 border-gray-200 overflow-hidden bg-white hover:border-gray-400 transition-all duration-200 disabled:cursor-not-allowed group"
+                  title={companyData?.id ? "Click para cambiar el logo" : "No disponible"}
                 >
-                  <Building2 className="h-8 w-8 text-white" />
-                </div>
-                
-                {/* Camera button overlay */}
-                {companyData?.id && (
-                  <button
-                    onClick={() => setIsLogoModalOpen(true)}
-                    className="absolute bottom-0 right-0 p-1.5 bg-gray-900 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-800 hover:scale-110 transform"
-                    title="Cambiar logo de la empresa"
+                  {/* Logo o fallback */}
+                  {companyData?.logoUrl ? (
+                    <img
+                      src={companyData.logoUrl}
+                      alt={companyData.name || "Logo de la empresa"}
+                      className="w-full h-full object-contain p-2"
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = 'none';
+                        const fallback = img.nextElementSibling;
+                        if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  
+                  {/* Fallback con icono de edificio */}
+                  <div 
+                    className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center"
+                    style={{ display: companyData?.logoUrl ? 'none' : 'flex' }}
                   >
+                    <Building2 className="h-9 w-9 text-white" />
+                  </div>
+                  
+                  {/* Overlay con icono de cámara - SIEMPRE VISIBLE */}
+                  {companyData?.id && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                      <div className="bg-white/90 rounded-full p-2.5">
+                        <Camera className="h-5 w-5 text-gray-900" />
+                      </div>
+                    </div>
+                  )}
+                </button>
+                
+                {/* Indicador visual */}
+                {companyData?.id && (
+                  <div className="absolute -bottom-1 -right-1 bg-gray-900 text-white rounded-full p-1 shadow-lg">
                     <Camera className="h-3 w-3" />
-                  </button>
+                  </div>
                 )}
               </div>
               

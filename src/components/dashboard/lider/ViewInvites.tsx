@@ -127,7 +127,7 @@ export function ViewInvites({ teamId }: ViewInvitesProps) {
           </h2>
           <button
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer text-sm w-full sm:w-auto justify-center"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer text-sm w-full sm:w-auto justify-center"
           >
             <Download className="h-4 w-4" />
             <span className="whitespace-nowrap">Exportar CSV</span>

@@ -144,7 +144,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                 <button
                   onClick={handleSaveName}
                   disabled={saving || !teamName.trim()}
-                  className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex-shrink-0"
+                  className="p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex-shrink-0"
                   title="Guardar"
                 >
                   <Check className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -191,7 +191,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                   <button
                     onClick={handleSaveDescription}
                     disabled={saving}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-xs sm:text-sm"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 text-xs sm:text-sm"
                   >
                     <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                     {saving ? "Guardando..." : "Guardar"}

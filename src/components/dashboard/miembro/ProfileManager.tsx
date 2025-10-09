@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { User, Briefcase, Award } from "lucide-react";
+import { User, Briefcase, Award, Target } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { ProfileCard } from "./ProfileCard";
 import { ProfileEditor } from "./ProfileEditor";
 import { ExperiencesManager } from "./ExperiencesManager";
 import { CertificationsManager } from "./CertificationsManager";
+import { MySkills } from "./MySkills";
 import type { MemberProfile } from "@/types/api";
 
 interface ProfileManagerProps {
@@ -13,9 +15,10 @@ interface ProfileManagerProps {
   onUpdate: () => void;
 }
 
-type SubTab = "info" | "experience" | "certifications";
+type SubTab = "info" | "experience" | "certifications" | "skills";
 
 export function ProfileManager({ profile, onUpdate }: ProfileManagerProps) {
+  const { data: session } = useSession();
   const [activeSubTab, setActiveSubTab] = useState<SubTab>("info");
 
   const subTabs = [
@@ -25,6 +28,11 @@ export function ProfileManager({ profile, onUpdate }: ProfileManagerProps) {
       id: "certifications" as SubTab,
       label: "Certificaciones",
       icon: Award,
+    },
+    {
+      id: "skills" as SubTab,
+      label: "Mis Skills",
+      icon: Target,
     },
   ];
 
@@ -62,6 +70,9 @@ export function ProfileManager({ profile, onUpdate }: ProfileManagerProps) {
       )}
       {activeSubTab === "experience" && <ExperiencesManager />}
       {activeSubTab === "certifications" && <CertificationsManager />}
+      {activeSubTab === "skills" && session?.user?.id && (
+        <MySkills userId={session.user.id} />
+      )}
     </div>
   );
 }
