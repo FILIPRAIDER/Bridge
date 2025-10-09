@@ -5,6 +5,9 @@ import { coreFetch } from "@/lib/core";
 
 const authOptions = {
   session: { strategy: "jwt" },
+  pages: {
+    signIn: "/auth/login",
+  },
   providers: [
     Credentials({
       id: "credentials",

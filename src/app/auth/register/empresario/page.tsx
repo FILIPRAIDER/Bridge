@@ -35,6 +35,7 @@ export default function EmpresarioOnboarding() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
 
   // Hooks para países y ciudades
   const { data: countries, loading: countriesLoading } = useCountries();
@@ -58,12 +59,48 @@ export default function EmpresarioOnboarding() {
     birthdate: "",
   });
 
+  // Auto-login si viene del registro
+  useEffect(() => {
+    const attemptAutoLogin = async () => {
+      if (autoLoginAttempted) return;
+      if (session) return; // Ya está logueado
+      
+      const tempEmail = sessionStorage.getItem("temp_email");
+      const tempPassword = sessionStorage.getItem("temp_password");
+      
+      if (tempEmail && tempPassword) {
+        setAutoLoginAttempted(true);
+        try {
+          const { signIn } = await import("next-auth/react");
+          await signIn("credentials", {
+            redirect: false,
+            email: tempEmail,
+            password: tempPassword,
+          });
+          
+          // Limpiar credenciales temporales
+          sessionStorage.removeItem("temp_email");
+          sessionStorage.removeItem("temp_password");
+        } catch (error) {
+          console.error("Auto-login failed:", error);
+          router.push("/auth/login");
+        }
+      }
+    };
+    
+    attemptAutoLogin();
+  }, [session, autoLoginAttempted, router]);
+
   // Verificar autenticación y rol
   useEffect(() => {
     if (status === "loading") return;
     
     if (!session) {
-      router.push("/auth/login");
+      // Si no hay credenciales temporales, redirigir a login
+      const tempEmail = sessionStorage.getItem("temp_email");
+      if (!tempEmail && !autoLoginAttempted) {
+        router.push("/auth/login");
+      }
       return;
     }
 
@@ -78,7 +115,7 @@ export default function EmpresarioOnboarding() {
       router.push("/dashboard/empresario");
       return;
     }
-  }, [session, status, router]);
+  }, [session, status, router, autoLoginAttempted]);
 
   if (status === "loading" || !session) {
     return (

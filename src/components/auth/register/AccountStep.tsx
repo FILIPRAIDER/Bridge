@@ -134,26 +134,19 @@ export function AccountStep({ onNext, preselectedRole, disableEmpresarioRedirect
         show({
           variant: "success",
           title: "Cuenta creada",
-          message: "Iniciando sesión...",
+          message: "Redirigiendo al onboarding...",
         });
 
-        // Marcar en localStorage ANTES del login
+        // Marcar en localStorage ANTES de cualquier cosa
         localStorage.setItem("empresario_needs_onboarding", "true");
-
-        // Hacer login automático con callbackUrl explícito
-        const loginResult = await signIn("credentials", {
-          redirect: true, // Cambiar a true para usar el callbackUrl
-          email: data.email,
-          password: data.password,
-          callbackUrl: "/auth/register/empresario", // URL específica de redirección
-        });
-
-        // Si el redirect falla por alguna razón, intentar manualmente
-        if (loginResult === undefined) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          router.push("/auth/register/empresario");
-        }
         
+        // Guardar credenciales temporalmente para el onboarding
+        sessionStorage.setItem("temp_email", data.email);
+        sessionStorage.setItem("temp_password", data.password);
+
+        // Redirigir inmediatamente al onboarding
+        // El onboarding hará el login automáticamente
+        router.push("/auth/register/empresario");
         return;
       }
 
