@@ -3,36 +3,41 @@ import Image from "next/image";
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+    <main className="relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center">
       {/* Fondo cuadrícula */}
       <div className="bg-grid-fade" aria-hidden="true" />
 
-      {/* HERO: centrado y balanceado */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 md:pt-20 pb-16 md:pb-24 relative">
+      {/* HERO: centrado vertical y horizontal */}
+      <section className="mx-auto max-w-7xl w-full px-6 sm:px-8 lg:px-12 py-8 sm:py-12 lg:py-16 relative">
         {/* Layout responsive: columna única en mobile, grid en desktop */}
         <div className="grid gap-8 lg:gap-12 items-center lg:grid-cols-2">
           {/* Izquierda: claim */}
-          <div className="text-center lg:text-left">
-            <p className="inline-flex items-center gap-2.5 text-xs sm:text-sm text-gray-600 bg-white/60 border border-gray-200 rounded-full px-4 py-1.5 mb-6 backdrop-blur">
-              <span className="flex items-center justify-center h-2 w-2">
-                <span className="animate-pulse-dot inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              Conecta empresas y equipos universitarios
-            </p>
+          <div className="text-center lg:text-left space-y-6 sm:space-y-8">
+            {/* Badge */}
+            <div className="flex justify-center lg:justify-start">
+              <p className="inline-flex items-center gap-2.5 text-xs sm:text-sm text-gray-600 bg-white/60 border border-gray-200 rounded-full px-4 py-2 backdrop-blur">
+                <span className="flex items-center justify-center h-2 w-2">
+                  <span className="animate-pulse-dot inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Conecta empresas y equipos universitarios
+              </p>
+            </div>
 
-            <h1 className="text-3xl sm:text-5xl font-bold leading-[0.8] tracking-tight text-[#0f172a] mb-6">
+            {/* Título - Mejor spacing para móvil */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-[#0f172a]">
               Encuentra oportunidades o talento para tus proyectos
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0">
+            {/* Descripción */}
+            <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                Una nueva forma de colaborar. Bridge conecta desafíos empresariales con mentes universitarias brillantes.
             </p>
 
             {/* Botón Comienza Ahora */}
-            <div className="flex justify-center lg:justify-start">
+            <div className="flex justify-center lg:justify-start pt-2">
               <Link 
                 href="/auth/register"
-                className="inline-flex items-center justify-center rounded-xl bg-[#0b0f19] text-white px-6 sm:px-8 py-3 sm:py-3.5 font-semibold shadow-md hover:shadow-lg hover:bg-[#111827] transition-all transform hover:-translate-y-0.5 text-sm sm:text-base"
+                className="inline-flex items-center justify-center rounded-xl bg-[#0b0f19] text-white px-8 py-4 font-semibold shadow-lg hover:shadow-xl hover:bg-[#111827] transition-all transform hover:-translate-y-0.5 text-base sm:text-lg w-full sm:w-auto"
               >
                 Comienza ahora
               </Link>
