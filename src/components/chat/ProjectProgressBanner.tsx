@@ -70,10 +70,10 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
 
     if (completed === 5 && !isComplete) {
       setIsComplete(true);
-      // Esperar 2.5 segundos en verde celebrando, luego desaparecer
+      // Esperar 3 segundos en verde celebrando, luego desaparecer con animación elegante
       setTimeout(() => {
         setShouldHide(true);
-      }, 2500);
+      }, 3000);
     }
   }, [flags, isComplete]);
 
@@ -101,7 +101,11 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
         // Banner normal de progreso
         <motion.div
           key="progress-banner"
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ 
+            opacity: 0, 
+            y: -100,
+            scale: 0.95
+          }}
           animate={{ 
             opacity: 1, 
             y: 0,
@@ -109,12 +113,16 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
           }}
           exit={{ 
             opacity: 0, 
-            y: -30, 
-            scale: 0.9,
-            transition: { duration: 0.5, ease: "easeInOut" }
+            y: -100,
+            scale: 0.95,
+            transition: { 
+              duration: 0.6, 
+              ease: [0.4, 0, 0.2, 1] // Ease out cubic
+            }
           }}
           transition={{ 
-            duration: 0.3,
+            duration: 0.6,
+            ease: [0.25, 0.1, 0.25, 1], // Ease in-out cubic
             scale: { duration: 0.6, times: [0, 0.5, 1] }
           }}
           className={`border-b transition-colors duration-700 backdrop-blur-sm ${
@@ -400,10 +408,32 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
         // Celebration Banner cuando se crea el proyecto
         <motion.div
           key="celebration-banner"
-          initial={{ opacity: 0, scale: 0.8, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: -20 }}
-          transition={{ duration: 0.5, type: "spring" }}
+          initial={{ 
+            opacity: 0, 
+            y: -100,
+            scale: 0.9
+          }}
+          animate={{ 
+            opacity: 1, 
+            y: 0,
+            scale: 1
+          }}
+          exit={{ 
+            opacity: 0, 
+            y: -100,
+            scale: 0.9,
+            transition: { 
+              duration: 0.6,
+              ease: [0.4, 0, 0.2, 1]
+            }
+          }}
+          transition={{ 
+            duration: 0.7,
+            ease: [0.16, 1, 0.3, 1], // Ease out expo (más dramático)
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }}
           className="border-b border-green-200 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50"
         >
           <div className="px-4 lg:px-6 py-4">
