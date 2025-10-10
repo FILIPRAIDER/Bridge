@@ -85,7 +85,7 @@ export default function LiderDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar ocupa todo el alto */}
       <Sidebar
         activeTab={activeTab}
@@ -101,13 +101,13 @@ export default function LiderDashboard() {
         {/* Navbar solo en el área de contenido */}
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 transition-colors">
+        <main className="flex-1 overflow-auto">
           <div className="mx-auto max-w-7xl p-4 lg:p-6">
             <div className="mb-6 lg:mb-8">
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white transition-colors">
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
                 Dashboard del Líder
               </h1>
-              <p className="mt-2 text-sm lg:text-base text-gray-600 dark:text-gray-400 transition-colors">
+              <p className="mt-2 text-sm lg:text-base text-gray-600">
                 Gestiona tu equipo: {team?.name || "Sin nombre"}
               </p>
             </div>

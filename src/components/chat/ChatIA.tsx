@@ -314,19 +314,19 @@ export default function ChatIA({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-800 transition-colors">
+    <div className="flex flex-col h-full bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 transition-colors">
+      <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 rounded-xl flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center shadow-sm">
               <BridgeLogo variant="white" size="md" />
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 dark:text-white">Bridge AI</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Asistente inteligente</p>
+            <h3 className="font-bold text-gray-900">Bridge AI</h3>
+            <p className="text-xs text-gray-500">Asistente inteligente</p>
             {/* 🔥 DEBUG: Mostrar sessionId en desarrollo */}
             {process.env.NODE_ENV === 'development' && (
               <p className="text-[10px] text-blue-600 font-mono">
@@ -337,7 +337,7 @@ export default function ChatIA({
         </div>
         <button
           onClick={handleClearChat}
-          className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
           title="Limpiar chat"
         >
           <Trash2 className="h-5 w-5" />
@@ -356,36 +356,36 @@ export default function ChatIA({
       {/* Messages Container */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900 dark:to-gray-950 transition-colors"
+        className="flex-1 overflow-y-auto px-4 lg:px-6 py-6 bg-gradient-to-b from-gray-50/50 to-white"
       >
 
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
-            <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
               <BridgeLogo variant="white" size="lg" />
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
               ¡Hola! Soy tu asistente Bridge AI
             </h3>
-            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-lg mb-8">
+            <p className="text-sm md:text-base text-gray-600 max-w-lg mb-8">
               Puedo ayudarte a crear proyectos, encontrar equipos especializados y conectarte con el talento ideal para tu empresa.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
               <button
                 onClick={() => handleSendMessage('Quiero crear un proyecto nuevo')}
-                className="group text-left p-5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-gray-600 hover:shadow-lg"
+                className="group text-left p-5 bg-white hover:bg-gray-50 rounded-2xl transition-all border-2 border-gray-200 hover:border-gray-900 hover:shadow-lg"
               >
                 <div className="text-3xl mb-2">💡</div>
-                <p className="text-base font-semibold text-gray-900 dark:text-white mb-1">Crear proyecto</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Describe tu idea y te ayudo a darle forma</p>
+                <p className="text-base font-semibold text-gray-900 mb-1">Crear proyecto</p>
+                <p className="text-sm text-gray-500">Describe tu idea y te ayudo a darle forma</p>
               </button>
               <button
                 onClick={() => handleSendMessage('Muéstrame equipos disponibles')}
-                className="group text-left p-5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all border-2 border-gray-200 dark:border-gray-700 hover:border-gray-900 dark:hover:border-gray-600 hover:shadow-lg"
+                className="group text-left p-5 bg-white hover:bg-gray-50 rounded-2xl transition-all border-2 border-gray-200 hover:border-gray-900 hover:shadow-lg"
               >
                 <div className="text-3xl mb-2">👥</div>
-                <p className="text-base font-semibold text-gray-900 dark:text-white mb-1">Ver equipos</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Encuentra el talento perfecto</p>
+                <p className="text-base font-semibold text-gray-900 mb-1">Ver equipos</p>
+                <p className="text-sm text-gray-500">Encuentra el talento perfecto</p>
               </button>
             </div>
           </div>

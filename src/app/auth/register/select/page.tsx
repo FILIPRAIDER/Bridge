@@ -42,7 +42,7 @@ export default function RoleSelection() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center mb-4">
-            <BridgeLogo size="lg" showText={false} variant="dark" />
+            <BridgeLogo size="lg" showText={false} />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Bienvenido a Bridge
