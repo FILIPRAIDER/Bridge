@@ -126,10 +126,10 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
               </span>
             </div>
             
-            {/* Camera button overlay */}
+            {/* Camera button overlay - SIEMPRE VISIBLE en mobile, hover en desktop */}
             <button
               onClick={() => setIsAvatarModalOpen(true)}
-              className="absolute bottom-2 right-2 p-2.5 bg-gray-900 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-800 hover:scale-110 transform"
+              className="absolute bottom-2 right-2 p-2.5 bg-gray-900 text-white rounded-full shadow-lg opacity-100 sm:opacity-60 sm:group-hover:opacity-100 transition-all duration-200 hover:bg-gray-800 hover:scale-110 transform active:scale-95"
               title="Cambiar foto de perfil"
             >
               <Camera className="h-4 w-4" />

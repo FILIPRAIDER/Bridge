@@ -166,24 +166,24 @@ export default function EmpresarioProfilePage() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50">
-      <div className="max-w-4xl mx-auto p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header con botón de editar */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mi Perfil</h1>
           {!editing ? (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors w-full sm:w-auto justify-center"
             >
               <Edit2 className="h-4 w-4" />
               Editar
             </button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 onClick={handleCancel}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 order-2 sm:order-1"
               >
                 <X className="h-4 w-4" />
                 Cancelar
@@ -191,7 +191,7 @@ export default function EmpresarioProfilePage() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 order-1 sm:order-2"
               >
                 {saving ? (
                   <>
@@ -210,44 +210,46 @@ export default function EmpresarioProfilePage() {
         </div>
 
         {/* Secciones del perfil */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* 1. PERFIL PERSONAL */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
-              <User className="h-5 w-5" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <User className="h-4 sm:h-5 w-4 sm:w-5" />
               Tu Perfil Personal
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Información sobre ti como profesional</p>
+            <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Información sobre ti como profesional</p>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Avatar + Nombre */}
-              <div className="flex items-start gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                 {/* Avatar Personal */}
-                <div className="flex-shrink-0">
-                  <AvatarUploader
-                    currentAvatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
-                    onUploadSuccess={async (newUrl: string) => {
-                      await update({
-                        ...session,
-                        user: {
-                          ...session?.user,
-                          avatarUrl: newUrl,
-                        },
-                      });
-                      fetchProfileData();
-                      show({ message: 'Avatar actualizado ✅', variant: 'success' });
-                    }}
-                  />
-                  <p className="text-xs text-gray-500 text-center mt-2">Tu foto de perfil</p>
+                <div className="flex-shrink-0 w-full sm:w-auto">
+                  <div className="flex flex-col items-center">
+                    <AvatarUploader
+                      currentAvatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
+                      onUploadSuccess={async (newUrl: string) => {
+                        await update({
+                          ...session,
+                          user: {
+                            ...session?.user,
+                            avatarUrl: newUrl,
+                          },
+                        });
+                        fetchProfileData();
+                        show({ message: 'Avatar actualizado ✅', variant: 'success' });
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 text-center mt-2">Tu foto de perfil</p>
+                  </div>
                 </div>
 
                 {/* Información básica */}
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 w-full space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nombre Completo
                     </label>
-                    <p className="text-gray-900 font-medium">{userData?.name || session?.user?.name}</p>
+                    <p className="text-gray-900 font-medium text-sm sm:text-base">{userData?.name || session?.user?.name}</p>
                   </div>
 
                   <div>
@@ -260,10 +262,10 @@ export default function EmpresarioProfilePage() {
                         value={formData.jobTitle}
                         onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
                         placeholder="Ej: CEO, Fundador, Director"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900">{userData?.profile?.jobTitle || 'No especificado'}</p>
+                      <p className="text-gray-900 text-sm sm:text-base">{userData?.profile?.jobTitle || 'No especificado'}</p>
                     )}
                   </div>
 
@@ -277,10 +279,10 @@ export default function EmpresarioProfilePage() {
                         onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                         placeholder="Cuéntanos brevemente sobre ti (2-3 líneas)"
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                       />
                     ) : (
-                      <p className="text-gray-900 whitespace-pre-wrap">
+                      <p className="text-gray-900 whitespace-pre-wrap text-sm sm:text-base">
                         {userData?.profile?.bio || 'No especificado'}
                       </p>
                     )}
@@ -291,56 +293,59 @@ export default function EmpresarioProfilePage() {
           </div>
 
           {/* 2. INFORMACIÓN DE LA EMPRESA */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+              <Building2 className="h-4 sm:h-5 w-4 sm:w-5" />
               Información de la Empresa
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Datos de tu empresa</p>
+            <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Datos de tu empresa</p>
             
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Logo + Info básica */}
-              <div className="flex items-start gap-6">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                 {/* Logo de la empresa */}
-                <div className="flex-shrink-0">
-                  <button
-                    onClick={() => companyData?.id && setIsLogoModalOpen(true)}
-                    disabled={!companyData?.id}
-                    className="relative w-24 h-24 rounded-xl border-2 border-gray-200 overflow-hidden bg-white hover:border-gray-400 transition-all duration-200 disabled:cursor-not-allowed group"
-                    title={companyData?.id ? "Click para cambiar el logo" : "No disponible"}
-                  >
-                    {companyData?.logoUrl ? (
-                      <img
-                        src={companyData.logoUrl}
-                        alt={companyData.name || "Logo"}
-                        className="w-full h-full object-contain p-2"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                        <Building2 className="h-10 w-10 text-white" />
-                      </div>
-                    )}
-                    
-                    {companyData?.id && (
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="bg-white/90 rounded-full p-2.5">
-                          <Camera className="h-5 w-5 text-gray-900" />
+                <div className="flex-shrink-0 w-full sm:w-auto">
+                  <div className="flex flex-col items-center">
+                    <button
+                      onClick={() => companyData?.id && setIsLogoModalOpen(true)}
+                      disabled={!companyData?.id}
+                      className="relative w-24 h-24 rounded-xl border-2 border-gray-200 overflow-hidden bg-white hover:border-gray-400 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 group"
+                      title={companyData?.id ? "Click para cambiar el logo" : "No disponible"}
+                    >
+                      {companyData?.logoUrl ? (
+                        <img
+                          src={companyData.logoUrl}
+                          alt={companyData.name || "Logo"}
+                          className="w-full h-full object-contain p-2"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                          <Building2 className="h-10 w-10 text-white" />
                         </div>
-                      </div>
-                    )}
-                  </button>
-                  <p className="text-xs text-gray-500 text-center mt-2">Logo empresa</p>
+                      )}
+                      
+                      {companyData?.id && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                          <div className="bg-white/90 rounded-full p-2.5">
+                            <Camera className="h-5 w-5 text-gray-900" />
+                          </div>
+                          <span className="text-xs text-white font-medium">Cambiar logo</span>
+                        </div>
+                      )}
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-2">Logo empresa</p>
+                  </div>
                 </div>
 
                 {/* Datos de la empresa */}
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 w-full space-y-4">
                   {/* Nombre - SOLO LECTURA */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nombre de la Empresa
                     </label>
-                    <div className="flex items-center gap-2">
-                      <p className="text-gray-900 font-medium">{companyData?.name || 'No especificado'}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <p className="text-gray-900 font-medium text-sm sm:text-base">{companyData?.name || 'No especificado'}</p>
                       <span className="text-xs text-gray-500">🔒 No editable</span>
                     </div>
                   </div>
@@ -351,8 +356,8 @@ export default function EmpresarioProfilePage() {
                       <Briefcase className="inline h-4 w-4 mr-1" />
                       Sector
                     </label>
-                    <div className="flex items-center gap-2">
-                      <p className="text-gray-900">{companyData?.sector || 'No especificado'}</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <p className="text-gray-900 text-sm sm:text-base">{companyData?.sector || 'No especificado'}</p>
                       <span className="text-xs text-gray-500">🔒 No editable</span>
                     </div>
                   </div>
@@ -369,10 +374,10 @@ export default function EmpresarioProfilePage() {
                         value={formData.website}
                         onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                         placeholder="https://www.ejemplo.com"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900">
+                      <p className="text-gray-900 text-sm sm:text-base break-all">
                         {companyData?.website ? (
                           <a
                             href={companyData.website}
@@ -400,10 +405,10 @@ export default function EmpresarioProfilePage() {
                         onChange={(e) => setFormData({ ...formData, about: e.target.value })}
                         placeholder="Descripción de la empresa..."
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
                       />
                     ) : (
-                      <p className="text-gray-900 whitespace-pre-wrap">
+                      <p className="text-gray-900 whitespace-pre-wrap text-sm sm:text-base">
                         {companyData?.about || 'No especificado'}
                       </p>
                     )}
@@ -414,24 +419,24 @@ export default function EmpresarioProfilePage() {
           </div>
 
           {/* 3. INFORMACIÓN DE CUENTA */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Mail className="h-5 w-5" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Mail className="h-4 sm:h-5 w-4 sm:w-5" />
               Información de Cuenta
             </h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Email</span>
-                <span className="text-sm font-medium text-gray-900">{session?.user?.email}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-gray-100">
+                <span className="text-xs sm:text-sm text-gray-600">Email</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-900 break-all">{session?.user?.email}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <span className="text-sm text-gray-600">Rol</span>
-                <span className="text-sm font-medium text-gray-900">Empresario</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-gray-100">
+                <span className="text-xs sm:text-sm text-gray-600">Rol</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-900">Empresario</span>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-gray-600">Miembro desde</span>
-                <span className="text-sm font-medium text-gray-900 flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2">
+                <span className="text-xs sm:text-sm text-gray-600">Miembro desde</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-900 flex items-center gap-1">
+                  <Calendar className="h-3 sm:h-4 w-3 sm:w-4" />
                   {userData?.createdAt
                     ? new Date(userData.createdAt).toLocaleDateString('es-ES', {
                         year: 'numeric',

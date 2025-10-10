@@ -510,16 +510,20 @@ export function CertificationsStep({ onNext, onSkip }: CertificationsStepProps) 
       )}
 
       {/* Botones de navegación */}
-      <div className="flex gap-3 pt-4">
+      <div className="flex flex-col sm:flex-row gap-3 pt-4">
         <button
           type="button"
           onClick={handleContinue}
           disabled={certifications.length === 0}
-          className="btn btn-dark flex-1 disabled:opacity-60"
+          className="btn btn-dark flex-1 disabled:opacity-60 order-1"
         >
           Continuar
         </button>
-        <button type="button" onClick={onSkip} className="btn btn-outline">
+        <button 
+          type="button" 
+          onClick={onSkip} 
+          className="btn btn-outline w-full sm:w-auto whitespace-nowrap order-2"
+        >
           Completar más tarde
         </button>
       </div>

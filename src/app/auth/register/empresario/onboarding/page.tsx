@@ -160,8 +160,36 @@ export default function EmpresarioOnboarding() {
 
     try {
       console.log("[Onboarding] 🚀 Iniciando proceso de completar perfil empresario");
+      console.log("[Onboarding] 👤 Usuario ID:", session.user.id);
       
-      // 🔥 PASO 1: Validar y preparar el perfil PRIMERO (antes de crear la compañía)
+      // 🔥 PASO 1: Crear la compañía PRIMERO
+      const companyPayload: any = {
+        name: companyData.name.trim(),
+        sector: companyData.sector || undefined,
+        about: companyData.about || undefined,
+        userId: session.user.id, // ✅ Backend vinculará automáticamente
+      };
+
+      // Solo incluir website si tiene valor
+      if (companyData.website.trim()) {
+        companyPayload.website = companyData.website.trim();
+      }
+
+      console.log("[Onboarding] 🏢 PASO 1: Creando empresa...", {
+        name: companyPayload.name,
+        sector: companyPayload.sector,
+        userId: companyPayload.userId,
+      });
+
+      const companyResponse = await api.post<{ id: string }>("/companies", companyPayload);
+      
+      if (!companyResponse?.id) {
+        throw new Error("No se pudo crear la compañía");
+      }
+
+      console.log("[Onboarding] ✅ PASO 1 completado: Empresa creada con ID:", companyResponse.id);
+
+      // 🔥 PASO 2: Actualizar el perfil con la información adicional
       const profilePayload: any = {
         phone: profileData.phone || undefined,
         identityType: "NIT", // Siempre NIT para empresarios
@@ -176,39 +204,11 @@ export default function EmpresarioOnboarding() {
         profilePayload.birthdate = new Date(profileData.birthdate).toISOString();
       }
 
-      console.log("[Onboarding] 📝 PASO 1: Guardando perfil...", profilePayload);
+      console.log("[Onboarding] 📝 PASO 2: Actualizando perfil...", profilePayload);
       
-      // Validar perfil PRIMERO (esto lanzará error si hay problema de validación)
       await api.patch(`/users/${session.user.id}/profile`, profilePayload);
       
-      console.log("[Onboarding] ✅ PASO 1 completado: Perfil guardado");
-
-      // 🔥 PASO 2: Solo si el perfil se guardó correctamente, crear la compañía
-      const companyPayload: any = {
-        name: companyData.name.trim(),
-        sector: companyData.sector || null,
-        about: companyData.about || null,
-        userId: session.user.id, // ✅ Backend vinculará automáticamente
-      };
-
-      // Solo incluir website si tiene valor
-      if (companyData.website.trim()) {
-        companyPayload.website = companyData.website.trim();
-      }
-
-      console.log("[Onboarding] 🏢 PASO 2: Creando empresa...", {
-        name: companyPayload.name,
-        sector: companyPayload.sector,
-        userId: companyPayload.userId,
-      });
-
-      const companyResponse = await api.post<{ id: string }>("/companies", companyPayload);
-      
-      if (!companyResponse?.id) {
-        throw new Error("No se pudo crear la compañía");
-      }
-
-      console.log("[Onboarding] ✅ PASO 2 completado: Empresa creada con ID:", companyResponse.id);
+      console.log("[Onboarding] ✅ PASO 2 completado: Perfil actualizado");
 
       // 🔥 PASO 3: Marcar onboarding como completado
       console.log("[Onboarding] 🎯 PASO 3: Marcando onboarding como completado...");
@@ -244,10 +244,10 @@ export default function EmpresarioOnboarding() {
       // Mensajes de error específicos según el tipo
       let errorMessage = "Error al completar el perfil";
       
-      if (error?.message?.includes("perfil")) {
-        errorMessage = "❌ Error al guardar tu perfil. Por favor intenta de nuevo.";
-      } else if (error?.message?.includes("compañía") || error?.message?.includes("empresa")) {
-        errorMessage = "❌ Error al crear la empresa. Por favor intenta de nuevo.";
+      if (error?.message?.includes("perfil") || error?.message?.includes("Profile")) {
+        errorMessage = "❌ Error al guardar tu perfil. Verifica los datos e intenta de nuevo.";
+      } else if (error?.message?.includes("compañía") || error?.message?.includes("empresa") || error?.message?.includes("Company")) {
+        errorMessage = "❌ Error al crear la empresa. Verifica los datos e intenta de nuevo.";
       } else if (error?.message?.includes("onboarding")) {
         errorMessage = "❌ Error al completar el proceso. Por favor intenta de nuevo.";
       } else if (error?.message) {
@@ -492,12 +492,17 @@ export default function EmpresarioOnboarding() {
               <input
                 type="text"
                 value={profileData.documentNumber}
-                onChange={(e) => setProfileData({ ...profileData, documentNumber: e.target.value })}
+                onChange={(e) => {
+                  // Permitir números, guiones y espacios
+                  const value = e.target.value;
+                  setProfileData({ ...profileData, documentNumber: value });
+                }}
                 className="input"
                 placeholder="900123456-1"
+                pattern="[0-9\-\s]*"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Número de Identificación Tributaria (NIT)
+                Número de Identificación Tributaria (NIT). Ej: 900123456-1
               </p>
             </div>
 
