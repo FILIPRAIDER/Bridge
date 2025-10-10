@@ -67,20 +67,20 @@ export function EmpresarioSidebar({ isOpen = false, onClose }: EmpresarioSidebar
         `}
       >
         {/* Close button - solo en móvil */}
-        <div className="p-4 border-b border-gray-800 flex items-center justify-between lg:hidden">
+        <div className="p-4 border-b border-gray-800 dark:border-gray-700 flex items-center justify-between lg:hidden">
           <BridgeLogo size="sm" showText={true} variant="dark" />
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Logo - solo en desktop */}
-        <div className="hidden lg:block p-6 border-b border-gray-800">
+        <div className="hidden lg:block p-6 border-b border-gray-800 dark:border-gray-700">
           <BridgeLogo size="md" showText={true} variant="dark" />
-          <p className="mt-2 text-sm text-gray-400">Panel Empresario</p>
+          <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">Panel Empresario</p>
         </div>
 
         {/* Navigation */}

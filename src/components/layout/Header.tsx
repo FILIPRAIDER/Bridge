@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BridgeLogo } from "@/components/shared/BridgeLogo";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 /** Tipos de rol manejados en UI */
 type UserRole = "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | "ADMIN" | "ANON";
@@ -17,7 +18,6 @@ type CenterLink = {
 };
 
 const centerLinks: CenterLink[] = [
-  { href: "/",                       label: "Inicio",    showFor: ["EMPRESARIO", "ESTUDIANTE", "LIDER", "ADMIN", "ANON"] },
   { href: "/dashboard/empresario",   label: "Dashboard", showFor: ["EMPRESARIO"] },
   { href: "/dashboard/lider",        label: "Dashboard", showFor: ["LIDER"] },
   { href: "/dashboard/miembro",      label: "Dashboard", showFor: ["ESTUDIANTE"] },
@@ -83,7 +83,7 @@ export default function Header() {
 
             {/* Logo - Mobile derecha, Desktop izquierda */}
             <Link href="/" className="md:justify-self-start">
-              <BridgeLogo size="sm" showText={true} />
+              <BridgeLogo size="md" showText={true} variant="auto" />
             </Link>
 
             {/* Nav centrado (solo desktop) */}
@@ -106,6 +106,7 @@ export default function Header() {
 
             {/* Acciones (derecha) - Solo visible en Desktop */}
             <div className="hidden md:flex items-center gap-2 justify-self-end col-start-3">
+              <ThemeToggle />
               {session?.user ? (
                 <>
                   <Link href="/dashboard" className={navBtn}>
@@ -149,7 +150,7 @@ export default function Header() {
           >
             {/* Header de la Sidebar */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <BridgeLogo size="sm" showText={true} />
+              <BridgeLogo size="md" showText={true} variant="auto" />
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

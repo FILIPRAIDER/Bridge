@@ -1,44 +1,24 @@
-"use client";
-
-import { useTheme } from "@/hooks/useTheme";
-import { BridgeLogoStatic } from "./BridgeLogoStatic";
-
-interface BridgeLogoProps {
+interface BridgeLogoStaticProps {
   className?: string;
   showText?: boolean;
   size?: "sm" | "md" | "lg";
-  variant?: "light" | "dark" | "auto"; // auto usa el tema del sistema
-  forceLight?: boolean; // Forzar variante clara independientemente del tema
+  variant?: "light" | "dark" | "auto";
+  forceLight?: boolean;
 }
 
-export function BridgeLogo(props: BridgeLogoProps) {
-  const { variant = "auto" } = props;
-  
-  // Si no es "auto", usa el componente estático que no necesita el ThemeProvider
-  if (variant !== "auto") {
-    return <BridgeLogoStatic {...props} />;
-  }
-  
-  // Para "auto", usa el tema del sistema
-  return <BridgeLogoWithTheme {...props} />;
-}
-
-// Componente interno que usa el hook
-function BridgeLogoWithTheme({ 
+export function BridgeLogoStatic({ 
   className = "", 
   showText = true, 
   size = "md", 
-  variant = "auto",
+  variant = "dark",
   forceLight = false 
-}: BridgeLogoProps) {
-  const { theme } = useTheme();
-  
+}: BridgeLogoStaticProps) {
   // Determinar si debe usar la variante oscura
   let isDark = false;
   if (forceLight) {
     isDark = false;
   } else {
-    isDark = theme === "dark";
+    isDark = variant === "dark";
   }
   
   const sizes = {
@@ -174,10 +154,10 @@ function BridgeLogoWithTheme({
         </div>
       </div>
 
-      {/* Texto Bridge - color según variante y tema */}
+      {/* Texto Bridge - color según variante */}
       {showText && (
         <span className={`${textSizes[size]} font-bold tracking-tight ${
-          isDark || theme === "dark"
+          isDark
             ? "text-white" 
             : "bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent"
         }`}>
