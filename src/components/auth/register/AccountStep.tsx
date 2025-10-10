@@ -135,14 +135,17 @@ export function AccountStep({ onNext, preselectedRole }: AccountStepProps) {
         sessionStorage.setItem("temp_password", data.password);
         localStorage.setItem("empresario_needs_onboarding", "true");
 
+        // Toast más específico para empresarios
         show({
           variant: "success",
-          title: "Cuenta creada",
-          message: "Continuemos con el perfil empresarial...",
+          title: "¡Cuenta creada exitosamente!",
+          message: "Ahora completa el perfil de tu empresa",
         });
 
-        // Llamar a onNext para que la página padre maneje la redirección
-        onNext();
+        // Pequeño delay para que el usuario vea el toast
+        setTimeout(() => {
+          onNext();
+        }, 800);
         return;
       }
 

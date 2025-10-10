@@ -220,73 +220,68 @@ export default function EmpresarioProfilePage() {
             <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Información sobre ti como profesional</p>
             
             <div className="space-y-4 sm:space-y-6">
-              {/* Avatar + Nombre */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-                {/* Avatar Personal */}
-                <div className="flex-shrink-0 w-full sm:w-auto">
-                  <div className="flex flex-col items-center">
-                    <AvatarUploader
-                      currentAvatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
-                      onUploadSuccess={async (newUrl: string) => {
-                        await update({
-                          ...session,
-                          user: {
-                            ...session?.user,
-                            avatarUrl: newUrl,
-                          },
-                        });
-                        fetchProfileData();
-                        show({ message: 'Avatar actualizado ✅', variant: 'success' });
-                      }}
-                    />
-                    <p className="text-xs text-gray-500 text-center mt-2">Tu foto de perfil</p>
-                  </div>
+              {/* Avatar centrado */}
+              <div className="flex flex-col items-center">
+                <AvatarUploader
+                  currentAvatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
+                  onUploadSuccess={async (newUrl: string) => {
+                    await update({
+                      ...session,
+                      user: {
+                        ...session?.user,
+                        avatarUrl: newUrl,
+                      },
+                    });
+                    fetchProfileData();
+                    show({ message: 'Avatar actualizado ✅', variant: 'success' });
+                  }}
+                />
+                <p className="text-xs text-gray-500 text-center mt-2">Tu foto de perfil</p>
+              </div>
+
+              {/* Información básica debajo del avatar */}
+              <div className="w-full space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre Completo
+                  </label>
+                  <p className="text-gray-900 font-medium text-sm sm:text-base">{userData?.name || session?.user?.name}</p>
                 </div>
 
-                {/* Información básica */}
-                <div className="flex-1 w-full space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre Completo
-                    </label>
-                    <p className="text-gray-900 font-medium text-sm sm:text-base">{userData?.name || session?.user?.name}</p>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cargo / Título
+                  </label>
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={formData.jobTitle}
+                      onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                      placeholder="Ej: CEO, Fundador, Director"
+                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900 text-sm sm:text-base">{userData?.profile?.jobTitle || 'No especificado'}</p>
+                  )}
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cargo / Título
-                    </label>
-                    {editing ? (
-                      <input
-                        type="text"
-                        value={formData.jobTitle}
-                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                        placeholder="Ej: CEO, Fundador, Director"
-                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      />
-                    ) : (
-                      <p className="text-gray-900 text-sm sm:text-base">{userData?.profile?.jobTitle || 'No especificado'}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Bio
-                    </label>
-                    {editing ? (
-                      <textarea
-                        value={formData.bio}
-                        onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                        placeholder="Cuéntanos brevemente sobre ti (2-3 líneas)"
-                        rows={3}
-                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
-                      />
-                    ) : (
-                      <p className="text-gray-900 whitespace-pre-wrap text-sm sm:text-base">
-                        {userData?.profile?.bio || 'No especificado'}
-                      </p>
-                    )}
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Bio
+                  </label>
+                  {editing ? (
+                    <textarea
+                      value={formData.bio}
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      placeholder="Cuéntanos brevemente sobre ti (2-3 líneas)"
+                      rows={3}
+                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                    />
+                  ) : (
+                    <p className="text-gray-900 whitespace-pre-wrap text-sm sm:text-base">
+                      {userData?.profile?.bio || 'No especificado'}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -301,118 +296,113 @@ export default function EmpresarioProfilePage() {
             <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Datos de tu empresa</p>
             
             <div className="space-y-4 sm:space-y-6">
-              {/* Logo + Info básica */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-                {/* Logo de la empresa */}
-                <div className="flex-shrink-0 w-full sm:w-auto">
-                  <div className="flex flex-col items-center">
-                    <button
-                      onClick={() => companyData?.id && setIsLogoModalOpen(true)}
-                      disabled={!companyData?.id}
-                      className="relative w-24 h-24 rounded-xl border-2 border-gray-200 overflow-hidden bg-white hover:border-gray-400 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 group"
-                      title={companyData?.id ? "Click para cambiar el logo" : "No disponible"}
-                    >
-                      {companyData?.logoUrl ? (
-                        <img
-                          src={companyData.logoUrl}
-                          alt={companyData.name || "Logo"}
-                          className="w-full h-full object-contain p-2"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                          <Building2 className="h-10 w-10 text-white" />
-                        </div>
-                      )}
-                      
-                      {companyData?.id && (
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-                          <div className="bg-white/90 rounded-full p-2.5">
-                            <Camera className="h-5 w-5 text-gray-900" />
-                          </div>
-                          <span className="text-xs text-white font-medium">Cambiar logo</span>
-                        </div>
-                      )}
-                    </button>
-                    <p className="text-xs text-gray-500 text-center mt-2">Logo empresa</p>
+              {/* Logo centrado */}
+              <div className="flex flex-col items-center">
+                <button
+                  onClick={() => companyData?.id && setIsLogoModalOpen(true)}
+                  disabled={!companyData?.id}
+                  className="relative w-24 h-24 rounded-xl border-2 border-gray-200 overflow-hidden bg-white hover:border-gray-400 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 group"
+                  title={companyData?.id ? "Click para cambiar el logo" : "No disponible"}
+                >
+                  {companyData?.logoUrl ? (
+                    <img
+                      src={companyData.logoUrl}
+                      alt={companyData.name || "Logo"}
+                      className="w-full h-full object-contain p-2"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                      <Building2 className="h-10 w-10 text-white" />
+                    </div>
+                  )}
+                  
+                  {companyData?.id && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+                      <div className="bg-white/90 rounded-full p-2.5">
+                        <Camera className="h-5 w-5 text-gray-900" />
+                      </div>
+                      <span className="text-xs text-white font-medium">Cambiar logo</span>
+                    </div>
+                  )}
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">Logo empresa</p>
+              </div>
+
+              {/* Datos de la empresa debajo del logo */}
+              <div className="w-full space-y-4">
+                {/* Nombre - SOLO LECTURA */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre de la Empresa
+                  </label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <p className="text-gray-900 font-medium text-sm sm:text-base">{companyData?.name || 'No especificado'}</p>
+                    <span className="text-xs text-gray-500">🔒 No editable</span>
                   </div>
                 </div>
 
-                {/* Datos de la empresa */}
-                <div className="flex-1 w-full space-y-4">
-                  {/* Nombre - SOLO LECTURA */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre de la Empresa
-                    </label>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <p className="text-gray-900 font-medium text-sm sm:text-base">{companyData?.name || 'No especificado'}</p>
-                      <span className="text-xs text-gray-500">🔒 No editable</span>
-                    </div>
+                {/* Sector - SOLO LECTURA */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <Briefcase className="inline h-4 w-4 mr-1" />
+                    Sector
+                  </label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <p className="text-gray-900 text-sm sm:text-base">{companyData?.sector || 'No especificado'}</p>
+                    <span className="text-xs text-gray-500">🔒 No editable</span>
                   </div>
+                </div>
 
-                  {/* Sector - SOLO LECTURA */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      <Briefcase className="inline h-4 w-4 mr-1" />
-                      Sector
-                    </label>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                      <p className="text-gray-900 text-sm sm:text-base">{companyData?.sector || 'No especificado'}</p>
-                      <span className="text-xs text-gray-500">🔒 No editable</span>
-                    </div>
-                  </div>
+                {/* Website */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <Globe className="inline h-4 w-4 mr-1" />
+                    Sitio Web
+                  </label>
+                  {editing ? (
+                    <input
+                      type="url"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      placeholder="https://www.ejemplo.com"
+                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900 text-sm sm:text-base break-all">
+                      {companyData?.website ? (
+                        <a
+                          href={companyData.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {companyData.website}
+                        </a>
+                      ) : (
+                        'No especificado'
+                      )}
+                    </p>
+                  )}
+                </div>
 
-                  {/* Website */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      <Globe className="inline h-4 w-4 mr-1" />
-                      Sitio Web
-                    </label>
-                    {editing ? (
-                      <input
-                        type="url"
-                        value={formData.website}
-                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        placeholder="https://www.ejemplo.com"
-                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                      />
-                    ) : (
-                      <p className="text-gray-900 text-sm sm:text-base break-all">
-                        {companyData?.website ? (
-                          <a
-                            href={companyData.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {companyData.website}
-                          </a>
-                        ) : (
-                          'No especificado'
-                        )}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* About */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Acerca de la Empresa
-                    </label>
-                    {editing ? (
-                      <textarea
-                        value={formData.about}
-                        onChange={(e) => setFormData({ ...formData, about: e.target.value })}
-                        placeholder="Descripción de la empresa..."
-                        rows={3}
-                        className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
-                      />
-                    ) : (
-                      <p className="text-gray-900 whitespace-pre-wrap text-sm sm:text-base">
-                        {companyData?.about || 'No especificado'}
-                      </p>
-                    )}
-                  </div>
+                {/* About */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Acerca de la Empresa
+                  </label>
+                  {editing ? (
+                    <textarea
+                      value={formData.about}
+                      onChange={(e) => setFormData({ ...formData, about: e.target.value })}
+                      placeholder="Descripción de la empresa..."
+                      rows={3}
+                      className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
+                    />
+                  ) : (
+                    <p className="text-gray-900 whitespace-pre-wrap text-sm sm:text-base">
+                      {companyData?.about || 'No especificado'}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

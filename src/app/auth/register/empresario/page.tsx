@@ -20,15 +20,8 @@ function EmpresarioRegisterContent() {
 
   const handleNext = () => {
     // Después de crear la cuenta, redirigir al onboarding
-    show({
-      variant: "success",
-      title: "¡Cuenta creada!",
-      message: "Ahora completa tu perfil empresarial...",
-    });
-
-    setTimeout(() => {
-      router.push("/auth/register/empresario/onboarding");
-    }, 500);
+    // NO mostrar toast aquí (ya se muestra en AccountStep)
+    router.push("/auth/register/empresario/onboarding");
   };
 
   if (status === "loading") {

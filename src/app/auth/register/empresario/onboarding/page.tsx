@@ -156,6 +156,13 @@ export default function EmpresarioOnboarding() {
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevenir envíos múltiples
+    if (isLoading) {
+      console.log("[Onboarding] ⚠️ Envío ya en progreso, ignorando...");
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
