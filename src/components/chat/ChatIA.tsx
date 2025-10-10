@@ -6,6 +6,7 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { ProjectProgressIndicator } from './ProjectProgressIndicator';
 import { ProjectProgressBanner } from './ProjectProgressBanner';
+import { ProjectSelector } from './ProjectSelector'; // 🔥 NUEVO
 import { sendChatMessage, getChatSession, deleteChatSession } from '@/lib/ai-api';
 import { BridgeLogo } from '@/components/ui/BridgeLogo';
 
@@ -13,6 +14,9 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  type?: 'text' | 'project_selection'; // 🔥 NUEVO: Tipo de mensaje
+  projects?: any[]; // 🔥 NUEVO: Lista de proyectos (si es project_selection)
+  totalProjects?: number; // 🔥 NUEVO: Total de proyectos
 }
 
 interface ProjectProgress {
@@ -197,11 +201,17 @@ export default function ChatIA({
         localStorage.setItem('chatSessionId', response.sessionId);
       }
 
+      // 🔥 NUEVO: Detectar si es selector de proyectos
+      const isProjectSelection = response.type === 'project_selection';
+      
       // Agregar respuesta del asistente
       const assistantMessage: Message = {
         role: 'assistant',
         content: response.message,
         timestamp: new Date(response.timestamp),
+        type: isProjectSelection ? 'project_selection' : 'text', // 🔥 NUEVO
+        projects: isProjectSelection ? response.projects : undefined, // 🔥 NUEVO
+        totalProjects: isProjectSelection ? response.totalProjects : undefined, // 🔥 NUEVO
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -264,6 +274,18 @@ export default function ChatIA({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handler para cuando el usuario selecciona un proyecto existente
+  const handleProjectSelection = (projectId: string) => {
+    console.log('[ChatIA] 📋 Proyecto seleccionado:', projectId);
+    handleSendMessage(`Quiero buscar equipos para el proyecto ${projectId}`);
+  };
+
+  // Handler para cuando el usuario quiere crear un nuevo proyecto
+  const handleCreateNewProject = () => {
+    console.log('[ChatIA] ➕ Usuario quiere crear nuevo proyecto');
+    handleSendMessage('Quiero crear un nuevo proyecto');
   };
 
   /**
@@ -369,17 +391,42 @@ export default function ChatIA({
           </div>
         )}
 
-        {messages.map((message, index) => (
-          <ChatMessage
-            key={index}
-            role={message.role}
-            content={message.content}
-            timestamp={message.timestamp}
-            isLatest={index === messages.length - 1 && message.role === 'assistant'}
-            userAvatarUrl={userAvatarUrl} // 🔥 NUEVO
-            userName={userName} // 🔥 NUEVO
-          />
-        ))}
+        {messages.map((message, index) => {
+          // If message is project_selection type, render both ChatMessage and ProjectSelector
+          if (message.type === 'project_selection' && message.projects) {
+            return (
+              <div key={index} className="space-y-4">
+                <ChatMessage
+                  role={message.role}
+                  content={message.content}
+                  timestamp={message.timestamp}
+                  isLatest={index === messages.length - 1 && message.role === 'assistant'}
+                  userAvatarUrl={userAvatarUrl}
+                  userName={userName}
+                />
+                <ProjectSelector
+                  projects={message.projects}
+                  totalProjects={message.totalProjects || 0}
+                  onSelectProject={handleProjectSelection}
+                  onCreateNew={handleCreateNewProject}
+                />
+              </div>
+            );
+          }
+
+          // Default: render regular ChatMessage
+          return (
+            <ChatMessage
+              key={index}
+              role={message.role}
+              content={message.content}
+              timestamp={message.timestamp}
+              isLatest={index === messages.length - 1 && message.role === 'assistant'}
+              userAvatarUrl={userAvatarUrl}
+              userName={userName}
+            />
+          );
+        })}
 
         {isLoading && (
           <div className="flex justify-start mb-4">

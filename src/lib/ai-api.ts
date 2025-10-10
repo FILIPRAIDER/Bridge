@@ -23,6 +23,19 @@ export interface ChatRequest {
 export interface ChatResponse {
   sessionId: string;
   message: string;
+  type?: 'text' | 'project_selection' | 'team_matches'; // 🔥 NUEVO: Tipo de respuesta
+  projects?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    area: string;
+    budget: number;
+    budgetCurrency?: 'COP' | 'USD';
+    status: 'ACTIVE' | 'DRAFT' | 'COMPLETED' | 'CANCELLED';
+    city?: string;
+    createdAt: string;
+  }>; // 🔥 NUEVO: Lista de proyectos (para project_selection)
+  totalProjects?: number; // 🔥 NUEVO: Total de proyectos
   toolCalls: Array<{
     name: string;
     arguments: string;
