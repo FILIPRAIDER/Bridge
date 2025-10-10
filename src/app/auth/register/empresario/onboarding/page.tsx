@@ -196,7 +196,7 @@ export default function EmpresarioOnboarding() {
 
       console.log("[Onboarding] ✅ PASO 1 completado: Empresa creada con ID:", companyResponse.id);
 
-      // 🔥 PASO 2: Actualizar el perfil con la información adicional
+      // 🔥 PASO 2: Crear/Actualizar el perfil con la información adicional
       const profilePayload: any = {
         phone: profileData.phone || undefined,
         identityType: "NIT", // Siempre NIT para empresarios
@@ -211,11 +211,12 @@ export default function EmpresarioOnboarding() {
         profilePayload.birthdate = new Date(profileData.birthdate).toISOString();
       }
 
-      console.log("[Onboarding] 📝 PASO 2: Actualizando perfil...", profilePayload);
+      console.log("[Onboarding] 📝 PASO 2: Creando perfil...", profilePayload);
       
-      await api.patch(`/users/${session.user.id}/profile`, profilePayload);
+      // Usar POST para crear el perfil (igual que en ProfileStep)
+      await api.post(`/users/${session.user.id}/profile`, profilePayload);
       
-      console.log("[Onboarding] ✅ PASO 2 completado: Perfil actualizado");
+      console.log("[Onboarding] ✅ PASO 2 completado: Perfil creado");
 
       // 🔥 PASO 3: Marcar onboarding como completado
       console.log("[Onboarding] 🎯 PASO 3: Marcando onboarding como completado...");

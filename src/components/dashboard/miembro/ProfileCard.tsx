@@ -97,10 +97,10 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
 
       {/* Main Content */}
       <div className="relative px-6 pb-6">
-        {/* Avatar positioned over header */}
-        <div className="flex items-start gap-6 -mt-16">
-          {/* Avatar with Camera Button */}
-          <div className="relative flex-shrink-0 group">
+        {/* Avatar positioned over header - MOBILE: Column, DESKTOP: Row */}
+        <div className="flex flex-col md:flex-row md:items-start gap-6 -mt-16">
+          {/* Avatar with Camera Button - Centered on mobile */}
+          <div className="relative flex-shrink-0 group mx-auto md:mx-0">
             {session?.user?.avatarUrl ? (
               <img
                 src={session.user.avatarUrl}
@@ -136,10 +136,10 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
             </button>
           </div>
 
-          {/* Info next to avatar */}
-          <div className="flex-1 pt-20">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
+          {/* Info below avatar on mobile, next to avatar on desktop */}
+          <div className="flex-1 pt-0 md:pt-20 w-full">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="flex-1 text-center md:text-left">
                 <h2 className="text-2xl font-bold text-gray-900">
                   {session?.user?.name || "Usuario"}
                 </h2>
@@ -148,7 +148,7 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
                 </p>
                 
                 {/* Badges */}
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap gap-2 mt-3 justify-center md:justify-start">
                   {profile?.seniority && (
                     <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                       <Target className="h-3 w-3" />
@@ -165,7 +165,7 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
                 </div>
               </div>
 
-              {/* Contact info aligned to right */}
+              {/* Contact info aligned to right on desktop */}
               <div className="hidden md:flex flex-col items-end gap-2 text-sm text-gray-600">
                 {profile?.seniority && (
                   <div className="flex items-center gap-2">
@@ -192,8 +192,8 @@ export function ProfileCard({ profile, onUpdate }: ProfileCardProps) {
               </div>
             </div>
 
-            {/* Mobile contact info */}
-            <div className="md:hidden flex flex-wrap gap-3 mt-3 text-sm text-gray-600">
+            {/* Mobile contact info - centered */}
+            <div className="md:hidden flex flex-wrap gap-3 mt-4 text-sm text-gray-600 justify-center">
               {profile?.seniority && (
                 <div className="flex items-center gap-2">
                   <Target className="h-4 w-4" />
