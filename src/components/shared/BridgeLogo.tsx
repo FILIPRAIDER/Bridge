@@ -7,97 +7,122 @@ interface BridgeLogoProps {
   variant?: "light" | "dark";
 }
 
-export function BridgeLogo({ className = "", showText = true, size = "md", variant = "light" }: BridgeLogoProps) {
+export function BridgeLogo({ 
+  className = "", 
+  showText = true, 
+  size = "md", 
+  variant = "light" 
+}: BridgeLogoProps) {
   const sizes = {
-    sm: "h-6 w-6",
-    md: "h-8 w-8",
-    lg: "h-10 w-10",
+    sm: "h-7 w-7",
+    md: "h-10 w-10",
+    lg: "h-12 w-12",
   };
 
   const textSizes = {
-    sm: "text-base",
-    md: "text-lg",
-    lg: "text-xl",
+    sm: "text-lg",
+    md: "text-xl",
+    lg: "text-2xl",
   };
 
   const isDark = variant === "dark";
-  const gradientId = isDark ? "metallic-gradient-dark" : "metallic-gradient-light";
-  const shineId = isDark ? "shine-gradient-dark" : "shine-gradient-light";
-  const shadowId = isDark ? "inner-shadow-dark" : "inner-shadow-light";
-
+  
   return (
-    <div className={`inline-flex items-center gap-2 -Force{className}`}>
-      <div className="relative">
-        <svg viewBox="0 0 34 34" className={`-Force{sizes[size]} drop-shadow-lg`} aria-hidden="true">
+    <div className={`inline-flex items-center gap-3 ${className}`}>
+      <div className="relative group">
+        <svg 
+          viewBox="0 0 32 32" 
+          className={`${sizes[size]} transition-transform duration-300 group-hover:scale-105`}
+          aria-hidden="true"
+        >
           <defs>
-            <linearGradient id="metallic-gradient-light" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#1f2937" />
-              <stop offset="30%" stopColor="#374151" />
-              <stop offset="50%" stopColor="#4b5563" />
-              <stop offset="70%" stopColor="#374151" />
-              <stop offset="100%" stopColor="#1f2937" />
+            <linearGradient id="metallic-light" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1a1a1a" />
+              <stop offset="25%" stopColor="#2d2d2d" />
+              <stop offset="50%" stopColor="#4a4a4a" />
+              <stop offset="75%" stopColor="#2d2d2d" />
+              <stop offset="100%" stopColor="#1a1a1a" />
             </linearGradient>
-            <linearGradient id="metallic-gradient-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#d1d5db" />
-              <stop offset="30%" stopColor="#e5e7eb" />
-              <stop offset="50%" stopColor="#f3f4f6" />
-              <stop offset="70%" stopColor="#e5e7eb" />
-              <stop offset="100%" stopColor="#d1d5db" />
+            <linearGradient id="metallic-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#c0c0c0" />
+              <stop offset="25%" stopColor="#d4d4d4" />
+              <stop offset="50%" stopColor="#e8e8e8" />
+              <stop offset="75%" stopColor="#d4d4d4" />
+              <stop offset="100%" stopColor="#c0c0c0" />
             </linearGradient>
-            <linearGradient id="shine-gradient-light" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="shine-top" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.4" />
               <stop offset="50%" stopColor="#ffffff" stopOpacity="0.1" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
             </linearGradient>
-            <linearGradient id="shine-gradient-dark" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="#ffffff" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-            </linearGradient>
-            <filter id="inner-shadow-light">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="1" />
-              <feOffset dx="0" dy="1" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.3" />
-              </feComponentTransfer>
+            <filter id="inner-glow">
+              <feGaussianBlur stdDeviation="0.5" result="blur"/>
+              <feOffset in="blur" dx="0" dy="1" result="offsetBlur"/>
               <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="inner-shadow-dark">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="1" />
-              <feOffset dx="0" dy="1" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.2" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
+                <feMergeNode in="offsetBlur"/>
+                <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
           </defs>
-          <rect x="2" y="2" width="28" height="28" rx="6" fill={`url(#-Force{gradientId})`} filter={`url(#-Force{shadowId})`} />
-          <rect x="2" y="2" width="28" height="14" rx="6" fill={`url(#-Force{shineId})`} />
-          <text x="16" y="23" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="bold" fill={isDark ? "#000000" : "#ffffff"} textAnchor="middle" style={{ filter: isDark ? 'drop-shadow(0 1px 2px rgba(255, 255, 255, 0.2))' : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))' }}>
+          <rect 
+            width="32" 
+            height="32" 
+            rx="6" 
+            fill={isDark ? "url(#metallic-dark)" : "url(#metallic-light)"}
+            filter="url(#inner-glow)"
+          />
+          <rect 
+            width="32" 
+            height="16" 
+            rx="6" 
+            fill="url(#shine-top)"
+          />
+          <text 
+            x="16" 
+            y="24" 
+            fontFamily="Arial, sans-serif" 
+            fontSize="20" 
+            fontWeight="bold" 
+            fill={isDark ? "#000000" : "#ffffff"}
+            textAnchor="middle"
+            style={{ 
+              filter: isDark 
+                ? "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))" 
+                : "drop-shadow(0 1px 2px rgba(255, 255, 255, 0.2))"
+            }}
+          >
             B
           </text>
         </svg>
-        <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none">
-          <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/20 to-transparent" style={{ transform: 'skewX(-15deg)', animation: 'shine 3s ease-in-out 2s infinite' }} />
+        <div className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          <div 
+            className="absolute -inset-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shine"
+            style={{ transform: "skewX(-20deg)" }}
+          />
         </div>
       </div>
       {showText && (
-        <span className={`-Force{textSizes[size]} font-bold tracking-tight -Force{isDark ? "text-white" : "bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent"}`}>
+        <span 
+          className={`${textSizes[size]} font-bold tracking-tight transition-colors ${
+            isDark 
+              ? "text-white" 
+              : "text-gray-900"
+          }`}
+        >
           Bridge
         </span>
       )}
       <style jsx>{`
         @keyframes shine {
-          0% { transform: translateX(-200%) skewX(-15deg); opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
+          from {
+            transform: translateX(-100%) skewX(-20deg);
+          }
+          to {
+            transform: translateX(200%) skewX(-20deg);
+          }
+        }
+        .animate-shine {
+          animation: shine 0.75s ease-in-out;
         }
       `}</style>
     </div>
