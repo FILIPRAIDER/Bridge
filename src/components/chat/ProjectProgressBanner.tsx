@@ -102,27 +102,25 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
         <motion.div
           key="progress-banner"
           initial={{ 
-            opacity: 0, 
-            y: -100,
-            scale: 0.95
+            opacity: 0,
+            y: -20
           }}
           animate={{ 
-            opacity: 1, 
+            opacity: 1,
             y: 0,
             scale: isComplete ? [1, 1.02, 1] : 1,
           }}
           exit={{ 
-            opacity: 0, 
-            y: -100,
-            scale: 0.95,
+            opacity: 0,
+            y: -20,
             transition: { 
-              duration: 0.6, 
-              ease: [0.4, 0, 0.2, 1] // Ease out cubic
+              duration: 0.5,
+              ease: [0.4, 0, 0.2, 1]
             }
           }}
           transition={{ 
-            duration: 0.6,
-            ease: [0.25, 0.1, 0.25, 1], // Ease in-out cubic
+            duration: 0.5,
+            ease: [0.4, 0, 0.2, 1],
             scale: { duration: 0.6, times: [0, 0.5, 1] }
           }}
           className={`border-b transition-colors duration-700 backdrop-blur-sm ${
@@ -409,30 +407,24 @@ export function ProjectProgressBanner({ flags, data, onProjectCreated }: Project
         <motion.div
           key="celebration-banner"
           initial={{ 
-            opacity: 0, 
-            y: -100,
-            scale: 0.9
+            opacity: 0,
+            y: -20
           }}
           animate={{ 
-            opacity: 1, 
-            y: 0,
-            scale: 1
+            opacity: 1,
+            y: 0
           }}
           exit={{ 
-            opacity: 0, 
-            y: -100,
-            scale: 0.9,
+            opacity: 0,
+            y: -20,
             transition: { 
-              duration: 0.6,
+              duration: 0.5,
               ease: [0.4, 0, 0.2, 1]
             }
           }}
           transition={{ 
-            duration: 0.7,
-            ease: [0.16, 1, 0.3, 1], // Ease out expo (más dramático)
-            type: "spring",
-            stiffness: 100,
-            damping: 15
+            duration: 0.5,
+            ease: [0.4, 0, 0.2, 1]
           }}
           className="border-b border-green-200 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50"
         >
