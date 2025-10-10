@@ -52,7 +52,7 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
   // Hooks para datos del backend
   const { data: sectorsData, loading: sectorsLoading } = useSectors();
   const { data: countries, loading: countriesLoading } = useCountries();
-  const { data: citiesData, loading: citiesLoading } = useCities(selectedCountry);
+  const { data: citiesData, loading: citiesLoading, hasCities } = useCities(selectedCountry);
 
   const {
     register,
@@ -356,29 +356,48 @@ export function ProfileEditor({ profile, onUpdate }: ProfileEditorProps) {
           <label htmlFor="city" className="label">
             Ciudad <span className="text-red-500">*</span>
           </label>
-          <select
-            {...register("city")}
-            id="city"
-            className="input appearance-none cursor-pointer"
-            disabled={!selectedCountry || citiesLoading}
-          >
-            <option value="">
-              {!selectedCountry
-                ? "Primero selecciona un país"
-                : citiesLoading
-                ? "Cargando ciudades..."
-                : "Selecciona una ciudad"}
-            </option>
-            {citiesData?.cities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-          {!selectedCountry && (
-            <p className="mt-1 text-xs text-gray-500">
-              💡 Primero selecciona un país para ver las ciudades disponibles
-            </p>
+          
+          {/* Si no hay ciudades disponibles, mostrar input manual */}
+          {selectedCountry && !citiesLoading && !hasCities ? (
+            <>
+              <input
+                {...register("city")}
+                id="city"
+                className="input"
+                placeholder="Escribe el nombre de tu ciudad"
+              />
+              <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                <span>⚠️</span>
+                <span>No hay ciudades precargadas para este país. Escribe tu ciudad manualmente.</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <select
+                {...register("city")}
+                id="city"
+                className="input appearance-none cursor-pointer"
+                disabled={!selectedCountry || citiesLoading}
+              >
+                <option value="">
+                  {!selectedCountry
+                    ? "Primero selecciona un país"
+                    : citiesLoading
+                    ? "Cargando ciudades..."
+                    : "Selecciona una ciudad"}
+                </option>
+                {citiesData?.cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              {!selectedCountry && (
+                <p className="mt-1 text-xs text-gray-500">
+                  💡 Primero selecciona un país para ver las ciudades disponibles
+                </p>
+              )}
+            </>
           )}
         </div>
 

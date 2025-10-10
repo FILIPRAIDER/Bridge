@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
 import { PhoneInput } from "./PhoneInput";
+import { PhoneInputWithCountry } from "@/components/ui/PhoneInputWithCountry";
 import { Loader2 } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
 import { useCities } from "@/hooks/useCities";
@@ -53,7 +54,7 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
   // Hooks para datos del backend
   const { data: sectorsData, loading: sectorsLoading } = useSectors();
   const { data: countries, loading: countriesLoading } = useCountries();
-  const { data: citiesData, loading: citiesLoading } = useCities(selectedCountry);
+  const { data: citiesData, loading: citiesLoading, hasCities } = useCities(selectedCountry);
 
   const {
     register,
@@ -276,31 +277,50 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
         {/* Ciudad */}
         <div>
           <label className="label">Ciudad *</label>
-          <select
-            {...register("city")}
-            className={`input ${errors.city ? "border-red-500" : ""}`}
-            disabled={!selectedCountry || citiesLoading}
-          >
-            <option value="">
-              {!selectedCountry
-                ? "Primero selecciona un país"
-                : citiesLoading
-                ? "Cargando ciudades..."
-                : "Selecciona una ciudad"}
-            </option>
-            {citiesData?.cities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
+          
+          {/* Si no hay ciudades disponibles, mostrar input manual */}
+          {selectedCountry && !citiesLoading && !hasCities ? (
+            <>
+              <input
+                {...register("city")}
+                className={`input ${errors.city ? "border-red-500" : ""}`}
+                placeholder="Escribe el nombre de tu ciudad"
+              />
+              <p className="text-amber-600 text-sm mt-1 flex items-center gap-1">
+                <span>⚠️</span>
+                <span>No hay ciudades precargadas para este país. Escribe tu ciudad manualmente.</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <select
+                {...register("city")}
+                className={`input ${errors.city ? "border-red-500" : ""}`}
+                disabled={!selectedCountry || citiesLoading}
+              >
+                <option value="">
+                  {!selectedCountry
+                    ? "Primero selecciona un país"
+                    : citiesLoading
+                    ? "Cargando ciudades..."
+                    : "Selecciona una ciudad"}
+                </option>
+                {citiesData?.cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              {!selectedCountry && (
+                <p className="text-gray-500 text-sm mt-1">
+                  💡 Primero selecciona un país para ver las ciudades
+                </p>
+              )}
+            </>
+          )}
+          
           {errors.city && (
             <p className="text-red-600 text-sm mt-1">{errors.city.message}</p>
-          )}
-          {!selectedCountry && (
-            <p className="text-gray-500 text-sm mt-1">
-              💡 Primero selecciona un país para ver las ciudades
-            </p>
           )}
         </div>
 
@@ -319,10 +339,11 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
 
         <div>
           <label className="label">Teléfono *</label>
-          <PhoneInput
+          <PhoneInputWithCountry
             value={phone}
             onChange={(val) => setValue("phone", val, { shouldValidate: true })}
             error={errors.phone?.message}
+            defaultCountryCode={watch("country") || "CO"}
           />
         </div>
 

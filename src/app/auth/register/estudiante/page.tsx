@@ -6,6 +6,7 @@ import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useRegistrationProgress } from "@/hooks/useRegistrationProgress";
 import {
   AccountStep,
   ProfileStep,
@@ -17,61 +18,72 @@ import {
 type Step = "account" | "profile" | "experience" | "certifications" | "skills";
 
 function EstudianteRegisterContent() {
-  const searchParams = useSearchParams();
-  const urlStep = searchParams.get("step") as Step | null;
-  
-  const [currentStep, setCurrentStep] = useState<Step>(urlStep || "account");
-  const [completedSteps, setCompletedSteps] = useState<Set<Step>>(new Set());
-  const [isInitialized, setIsInitialized] = useState(false);
   const { user, clear } = useSession();
   const { show } = useToast();
   const router = useRouter();
   const { data: session, status } = useNextAuthSession();
+  
+  // 🔥 Usar nuevo hook seguro para manejar el progreso
+  const {
+    progress,
+    isInitialized,
+    completeStep,
+    canAccessStep,
+    getLastValidStep,
+    clearProgress,
+    isExpired,
+  } = useRegistrationProgress('estudiante');
+  
+  const [currentStep, setCurrentStep] = useState<Step>(progress.currentStep);
 
+  // Redirigir si ya tiene sesión
   useEffect(() => {
-    // Si el usuario ya tiene sesión, limpiar localStorage y redirigir
     if (session && status === "authenticated") {
-      localStorage.removeItem("register-estudiante-completed");
+      clearProgress();
       router.replace("/dashboard");
       return;
     }
+  }, [session, status, router, clearProgress]);
 
-    const saved = localStorage.getItem("register-estudiante-completed");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setCompletedSteps(new Set(parsed));
-      } catch (e) {}
-    }
-    if (urlStep) setCurrentStep(urlStep);
-    setIsInitialized(true);
-  }, [urlStep, session, status, router]);
-
+  // Sincronizar currentStep con el progress
   useEffect(() => {
     if (!isInitialized) return;
-    const params = new URLSearchParams();
-    params.set("step", currentStep);
-    router.replace(`/auth/register/estudiante?${params.toString()}`, { scroll: false });
-  }, [currentStep, router, isInitialized]);
+    
+    // Si el progreso expiró, reiniciar
+    if (isExpired()) {
+      clearProgress();
+      setCurrentStep('account');
+      show({
+        variant: 'warning',
+        message: 'Tu sesión de registro expiró. Por favor comienza de nuevo.',
+      });
+      return;
+    }
+    
+    setCurrentStep(progress.currentStep);
+  }, [progress.currentStep, isInitialized, isExpired, clearProgress, show]);
 
+  // Validar acceso al step actual
   useEffect(() => {
     if (!isInitialized) return;
-    localStorage.setItem("register-estudiante-completed", JSON.stringify(Array.from(completedSteps)));
-  }, [completedSteps, isInitialized]);
-
-  useEffect(() => {
-    if (status === "authenticated" && session) {
-      router.replace("/dashboard");
+    
+    if (!canAccessStep(currentStep)) {
+      const validStep = getLastValidStep();
+      setCurrentStep(validStep);
+      show({
+        variant: 'warning',
+        message: 'Debes completar los pasos anteriores primero',
+      });
     }
-  }, [session, status, router]);
+  }, [currentStep, canAccessStep, getLastValidStep, isInitialized, show]);
 
   const handleStepComplete = (step: Step, nextStep: Step) => {
-    setCompletedSteps((prev) => new Set(prev).add(step));
+    completeStep(step, nextStep);
     setCurrentStep(nextStep);
   };
 
   const handleSkipStep = (currentStepToSkip: Step, nextStep: Step) => {
-    setCompletedSteps((prev) => new Set(prev).add(currentStepToSkip));
+    completeStep(currentStepToSkip, nextStep);
     setCurrentStep(nextStep);
   };
 
@@ -87,7 +99,8 @@ function EstudianteRegisterContent() {
       message: "Bienvenido a Bridge. Redirigiendo...",
     });
 
-    localStorage.removeItem("register-estudiante-completed");
+    // Limpiar progreso al completar
+    clearProgress();
     await new Promise(resolve => setTimeout(resolve, 1000));
     clear();
     window.location.href = "/auth/login?registered=true";
@@ -119,7 +132,7 @@ function EstudianteRegisterContent() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               {steps.map((step, index) => {
-                const isCompleted = completedSteps.has(step);
+                const isCompleted = progress.completedSteps.includes(step);
                 const isCurrent = currentStep === step;
                 return (
                   <div key={step} className="flex items-center flex-1">
@@ -138,7 +151,7 @@ function EstudianteRegisterContent() {
                       <p className="hidden sm:block text-xs mt-2 font-medium">{stepTitles[step]}</p>
                     </div>
                     {index < steps.length - 1 && (
-                      <div className={`h-1 flex-1 mx-2 rounded ${completedSteps.has(steps[index + 1]) ? "bg-gray-900" : "bg-gray-200"}`} />
+                      <div className={`h-1 flex-1 mx-2 rounded ${progress.completedSteps.includes(steps[index + 1]) ? "bg-gray-900" : "bg-gray-200"}`} />
                     )}
                   </div>
                 );

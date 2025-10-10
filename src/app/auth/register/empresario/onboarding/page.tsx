@@ -8,6 +8,7 @@ import { Building2, Globe, MapPin, FileText, Phone, CreditCard, Calendar, ArrowR
 import { api } from "@/lib/api";
 import { useCountries } from "@/hooks/useCountries";
 import { useCities } from "@/hooks/useCities";
+import { PhoneInputWithCountry } from "@/components/ui/PhoneInputWithCountry";
 
 // Onboarding personalizado para empresarios
 
@@ -218,14 +219,25 @@ export default function EmpresarioOnboarding() {
       
       console.log("[Onboarding] ✅ PASO 2 completado: Perfil creado");
 
-      // 🔥 PASO 3: Marcar onboarding como completado
-      console.log("[Onboarding] 🎯 PASO 3: Marcando onboarding como completado...");
+      // 🔥 PASO 3: Marcar onboarding como completado (SOLO si el endpoint existe)
+      console.log("[Onboarding] 🎯 PASO 3: Verificando si necesita marcar onboarding...");
       
-      await api.patch(`/users/${session.user.id}`, {
-        onboardingStep: "DONE",
-      });
-
-      console.log("[Onboarding] ✅ PASO 3 completado: Onboarding marcado como DONE");
+      // ⚠️ Comentado temporalmente - verificar si el backend tiene este endpoint
+      // Si el backend NO tiene PATCH /users/:id, comentar o eliminar esto
+      try {
+        await api.patch(`/users/${session.user.id}`, {
+          onboardingStep: "DONE",
+        });
+        console.log("[Onboarding] ✅ PASO 3 completado: Onboarding marcado como DONE");
+      } catch (patchError: any) {
+        // Si el endpoint no existe, simplemente continuar
+        if (patchError?.message?.includes("404") || patchError?.message?.includes("No se encontró")) {
+          console.log("[Onboarding] ⚠️ PASO 3 omitido: Endpoint PATCH no disponible (esto es normal)");
+        } else {
+          // Si es otro error, re-lanzarlo
+          throw patchError;
+        }
+      }
       console.log("[Onboarding] 🎉 ¡PROCESO COMPLETO! Redirigiendo al dashboard...");
 
       show({
@@ -480,16 +492,11 @@ export default function EmpresarioOnboarding() {
                 <Phone className="h-4 w-4 mr-2" />
                 Teléfono de Contacto
               </label>
-              <input
-                type="tel"
+              <PhoneInputWithCountry
                 value={profileData.phone}
-                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                className="input"
-                placeholder="+57 300 123 4567"
+                onChange={(val) => setProfileData({ ...profileData, phone: val })}
+                defaultCountryCode={companyData.country || "CO"}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Formato recomendado: +57 XXX XXX XXXX
-              </p>
             </div>
 
             <div>

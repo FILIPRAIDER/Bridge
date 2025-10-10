@@ -5,12 +5,14 @@ export function useCities(countryCode?: string) {
   const [data, setData] = useState<CitiesResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [hasCities, setHasCities] = useState(true);
 
   useEffect(() => {
     // No fetch if no country code
     if (!countryCode) {
       setData(null);
       setLoading(false);
+      setHasCities(true);
       return;
     }
 
@@ -26,11 +28,16 @@ export function useCities(countryCode?: string) {
         }
         
         const result = await response.json();
+        
+        // Verificar si hay ciudades disponibles
+        const cities = result?.cities || [];
+        setHasCities(cities.length > 0);
         setData(result);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Unknown error"));
         setData(null);
+        setHasCities(false);
       } finally {
         setLoading(false);
       }
@@ -39,5 +46,5 @@ export function useCities(countryCode?: string) {
     fetchCities();
   }, [countryCode]);
 
-  return { data, loading, error };
+  return { data, loading, error, hasCities };
 }
