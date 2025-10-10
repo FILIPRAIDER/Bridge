@@ -100,7 +100,7 @@ export function Sidebar({
       >
         {/* Close button - solo en móvil */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between lg:hidden">
-          <BridgeLogo size="sm" showText={true} variant="dark" />
+          <BridgeLogo size="sm" showText={true} variant="light" />
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:bg-gray-800 rounded-lg transition-colors"
@@ -111,7 +111,7 @@ export function Sidebar({
 
         {/* Logo - solo en desktop */}
         <div className="hidden lg:block p-6 border-b border-gray-800">
-          <BridgeLogo size="md" showText={true} variant="dark" />
+          <BridgeLogo size="lg" showText={true} variant="light" />
           <p className="mt-2 text-sm text-gray-400">
             {role === "LIDER" ? "Panel del Líder" : "Panel del Miembro"}
           </p>
