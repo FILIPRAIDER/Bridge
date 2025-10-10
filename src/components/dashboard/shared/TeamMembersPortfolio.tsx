@@ -338,13 +338,13 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
                               {skill.skill.name}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {skill.level}/10
+                              {skill.level}/5
                             </span>
                           </div>
                           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                             <motion.div
                               initial={{ width: 0 }}
-                              animate={{ width: `${skill.level * 10}%` }}
+                              animate={{ width: `${skill.level * 20}%` }}
                               transition={{ duration: 0.5, delay: idx * 0.05 }}
                               className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"
                             />
@@ -710,12 +710,12 @@ export function TeamMembersPortfolio({ teamId, currentUserId }: TeamMembersPortf
                               {skill.skill.name}
                             </span>
                             <span className="text-xs text-gray-500">
-                              {skill.level}/10
+                              {skill.level}/5
                             </span>
                           </div>
                           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              style={{ width: `${skill.level * 10}%` }}
+                              style={{ width: `${skill.level * 20}%` }}
                               className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"
                             />
                           </div>
