@@ -43,6 +43,7 @@ export default function ChatIA({
   const [error, setError] = useState<string | null>(null);
   const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(null);
   const [projectCreated, setProjectCreated] = useState(false);
+  const [shownProjectBanners, setShownProjectBanners] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +61,7 @@ export default function ChatIA({
       localStorage.removeItem('chatUserId');
       setSessionId(null);
       setProjectProgress(null);
+      setShownProjectBanners(new Set()); // Limpiar banners al cambiar usuario
       return;
     }
     
@@ -74,6 +76,7 @@ export default function ChatIA({
       loadSession(savedSessionId);
     } else {
       console.log('[ChatIA] 🆕 No hay sesión previa, se creará una nueva');
+      setShownProjectBanners(new Set()); // Nueva sesión = limpiar banners
     }
 
     // Restaurar progreso del proyecto si existe
@@ -218,17 +221,32 @@ export default function ChatIA({
 
       // Si se creó un proyecto, notificar al padre
       if (response.context?.lastProjectId && onProjectCreated) {
-        onProjectCreated(response.context.lastProjectId);
-        // Mostrar celebración
-        setProjectCreated(true);
-        // Limpiar progreso después de 3 segundos (celebración completa)
-        setTimeout(() => {
-          setProjectProgress(null);
-          setProjectCreated(false);
-          // Limpiar del localStorage también
-          localStorage.removeItem('chatProjectProgress');
-          console.log('[ChatIA] 🎉 Proyecto completado, progreso limpiado');
-        }, 3000);
+        const projectId = response.context.lastProjectId;
+        const bannerKey = `${sessionId}_${projectId}`;
+        
+        // Solo mostrar banner si NO se ha mostrado antes para este proyecto
+        if (!shownProjectBanners.has(bannerKey)) {
+          console.log('[ChatIA] 🎉 Nuevo proyecto creado:', projectId);
+          
+          onProjectCreated(projectId);
+          
+          // Mostrar celebración
+          setProjectCreated(true);
+          
+          // Marcar que este banner ya se mostró
+          setShownProjectBanners(prev => new Set(prev).add(bannerKey));
+          
+          // Limpiar progreso después de 3 segundos (celebración completa)
+          setTimeout(() => {
+            setProjectProgress(null);
+            setProjectCreated(false);
+            // Limpiar del localStorage también
+            localStorage.removeItem('chatProjectProgress');
+            console.log('[ChatIA] 🎉 Proyecto completado, progreso limpiado');
+          }, 3000);
+        } else {
+          console.log('[ChatIA] ℹ️ Banner ya mostrado para proyecto:', projectId);
+        }
       }
 
     } catch (error) {
@@ -266,10 +284,11 @@ export default function ChatIA({
     setError(null);
     setProjectProgress(null); // Limpiar progreso del proyecto
     setProjectCreated(false); // Limpiar estado de celebración
+    setShownProjectBanners(new Set()); // Limpiar banners en nueva sesión
     
     // Limpiar progreso del localStorage
     localStorage.removeItem('chatProjectProgress');
-    console.log('[ChatIA] ✅ Chat limpiado completamente (incluye progreso)');
+    console.log('[ChatIA] ✅ Chat limpiado completamente (incluye progreso y banners)');
   };
 
   return (
