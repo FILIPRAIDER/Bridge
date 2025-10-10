@@ -78,10 +78,10 @@ export default function EmpresarioDashboard() {
     <div className="h-full max-w-5xl mx-auto p-4 lg:p-6">
       {/* Advertencia si no tiene companyId */}
       {session?.user && !session.user.companyId && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
+        <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
             ⚠️ <strong>Atención:</strong> No tienes una empresa asociada. 
-            Completa tu perfil en la sección de <a href="/dashboard/empresario/profile" className="underline font-semibold">Mi Perfil</a> para poder crear proyectos.
+            Completa tu perfil en la sección de <a href="/dashboard/empresario/profile" className="underline font-semibold hover:text-yellow-900 dark:hover:text-yellow-100">Mi Perfil</a> para poder crear proyectos.
           </p>
         </div>
       )}
