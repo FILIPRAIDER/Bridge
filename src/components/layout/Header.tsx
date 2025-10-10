@@ -17,7 +17,9 @@ type CenterLink = {
   showFor: UserRole[];
 };
 
-
+// Links de navegación (vacío por ahora - es una landing page)
+// Más adelante se puede agregar "Sobre Nosotros", etc.
+const centerLinks: CenterLink[] = [];
 
 export default function Header() {
   const pathname = usePathname();
