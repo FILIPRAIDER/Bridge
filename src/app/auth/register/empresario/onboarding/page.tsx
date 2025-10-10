@@ -163,12 +163,46 @@ export default function EmpresarioOnboarding() {
       console.log("[Onboarding] ⚠️ Envío ya en progreso, ignorando...");
       return;
     }
+
+    // ✅ VALIDACIONES antes de enviar
+    if (!profileData.documentNumber || !profileData.documentNumber.trim()) {
+      show({ variant: "error", message: "El NIT de la empresa es requerido" });
+      return;
+    }
+
+    // Validar formato del NIT (solo números sin guiones ni espacios)
+    const nitClean = profileData.documentNumber.replace(/[\s\-]/g, "");
+    if (!/^\d+$/.test(nitClean)) {
+      show({ variant: "error", message: "El NIT debe contener solo números (sin guiones ni espacios)" });
+      return;
+    }
+
+    if (nitClean.length < 8 || nitClean.length > 12) {
+      show({ variant: "error", message: "El NIT debe tener entre 8 y 12 dígitos" });
+      return;
+    }
     
     setIsLoading(true);
 
     try {
       console.log("[Onboarding] 🚀 Iniciando proceso de completar perfil empresario");
       console.log("[Onboarding] 👤 Usuario ID:", session.user.id);
+      
+      // 🔥 PASO 0: Verificar si el usuario ya tiene una empresa creada
+      try {
+        const existingCompanies = await api.get<any[]>(`/users/${session.user.id}/companies`);
+        if (existingCompanies && existingCompanies.length > 0) {
+          console.log("[Onboarding] ⚠️ Usuario ya tiene empresa creada, saltando creación");
+          // Si ya tiene empresa, solo actualizar el perfil (ir directo a PASO 2)
+          throw { skipCompanyCreation: true, companyId: existingCompanies[0].id };
+        }
+      } catch (checkError: any) {
+        if (checkError.skipCompanyCreation) {
+          throw checkError; // Re-lanzar para manejar en el catch principal
+        }
+        // Si falla la verificación (ej: endpoint no existe), continuar con la creación
+        console.log("[Onboarding] ℹ️ No se pudo verificar empresas existentes, continuando...");
+      }
       
       // 🔥 PASO 1: Crear la compañía PRIMERO
       const companyPayload: any = {
@@ -198,10 +232,13 @@ export default function EmpresarioOnboarding() {
       console.log("[Onboarding] ✅ PASO 1 completado: Empresa creada con ID:", companyResponse.id);
 
       // 🔥 PASO 2: Crear/Actualizar el perfil con la información adicional
+      // Limpiar el NIT (remover guiones y espacios que el usuario pudo haber puesto)
+      const nitLimpio = profileData.documentNumber.replace(/[\s\-]/g, "");
+      
       const profilePayload: any = {
         phone: profileData.phone || undefined,
         identityType: "NIT", // Siempre NIT para empresarios
-        documentNumber: profileData.documentNumber || undefined,
+        documentNumber: nitLimpio, // Enviar solo números
         country: companyData.country, // Guardar país por separado
         city: companyData.city, // Guardar ciudad por separado
         location: `${companyData.city}, ${companyData.country}`, // También guardar como string para compatibilidad
@@ -254,6 +291,42 @@ export default function EmpresarioOnboarding() {
       }, 500);
 
     } catch (error: any) {
+      // Caso especial: Ya tiene empresa creada
+      if (error?.skipCompanyCreation) {
+        console.log("[Onboarding] 🔄 Empresa ya existe, solo actualizando perfil...");
+        try {
+          // Solo crear/actualizar el perfil
+          const nitLimpio = profileData.documentNumber.replace(/[\s\-]/g, "");
+          const profilePayload: any = {
+            phone: profileData.phone || undefined,
+            identityType: "NIT",
+            documentNumber: nitLimpio,
+            country: companyData.country,
+            city: companyData.city,
+            location: `${companyData.city}, ${companyData.country}`,
+          };
+          
+          if (profileData.birthdate) {
+            profilePayload.birthdate = new Date(profileData.birthdate).toISOString();
+          }
+
+          await api.post(`/users/${session.user.id}/profile`, profilePayload);
+          
+          show({
+            variant: "success",
+            message: "¡Perfil completado exitosamente! 🎉",
+          });
+
+          localStorage.removeItem("empresario_needs_onboarding");
+          setTimeout(() => {
+            router.push("/dashboard/empresario");
+          }, 500);
+          return;
+        } catch (profileError) {
+          console.error("[Onboarding] ❌ Error al actualizar perfil:", profileError);
+        }
+      }
+      
       console.error("[Onboarding] ❌ ERROR en el proceso:", error);
       console.error("[Onboarding] ❌ Detalles del error:", {
         message: error?.message,
@@ -264,7 +337,11 @@ export default function EmpresarioOnboarding() {
       // Mensajes de error específicos según el tipo
       let errorMessage = "Error al completar el perfil";
       
-      if (error?.message?.includes("perfil") || error?.message?.includes("Profile")) {
+      if (error?.message?.includes("ya existe")) {
+        errorMessage = "❌ Esta empresa ya fue registrada. Por favor usa un nombre diferente.";
+      } else if (error?.message?.includes("NIT")) {
+        errorMessage = "❌ NIT inválido. Debe contener solo números (8-12 dígitos).";
+      } else if (error?.message?.includes("perfil") || error?.message?.includes("Profile")) {
         errorMessage = "❌ Error al guardar tu perfil. Verifica los datos e intenta de nuevo.";
       } else if (error?.message?.includes("compañía") || error?.message?.includes("empresa") || error?.message?.includes("Company")) {
         errorMessage = "❌ Error al crear la empresa. Verifica los datos e intenta de nuevo.";
@@ -502,22 +579,25 @@ export default function EmpresarioOnboarding() {
             <div>
               <label className="label">
                 <CreditCard className="h-4 w-4 mr-2" />
-                NIT de la Empresa
+                NIT de la Empresa *
               </label>
               <input
                 type="text"
                 value={profileData.documentNumber}
                 onChange={(e) => {
-                  // Permitir números, guiones y espacios
-                  const value = e.target.value;
+                  // Permitir solo números (remover cualquier otro caracter mientras escribe)
+                  const value = e.target.value.replace(/[^\d]/g, "");
                   setProfileData({ ...profileData, documentNumber: value });
                 }}
                 className="input"
-                placeholder="900123456-1"
-                pattern="[0-9\-\s]*"
+                placeholder="900123456"
+                pattern="[0-9]*"
+                inputMode="numeric"
+                maxLength={12}
+                required
               />
               <p className="text-xs text-gray-500 mt-1">
-                Número de Identificación Tributaria (NIT). Ej: 900123456-1
+                Número de Identificación Tributaria (solo números, sin guiones). Ej: 900123456
               </p>
             </div>
 
@@ -566,8 +646,9 @@ export default function EmpresarioOnboarding() {
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
-                className="btn-dark flex-1 inline-flex items-center justify-center gap-2"
+                disabled={isLoading || !profileData.documentNumber || profileData.documentNumber.length < 8}
+                className="btn-dark flex-1 inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!profileData.documentNumber ? "El NIT es requerido" : ""}
               >
                 {isLoading ? (
                   <>
