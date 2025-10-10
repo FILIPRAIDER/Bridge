@@ -100,7 +100,7 @@ export function Sidebar({
       >
         {/* Close button - solo en móvil */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between lg:hidden">
-          <BridgeLogo size="sm" showText={true} variant="dark" />
+          <BridgeLogo size="sm" showText={true} variant="light" />
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:bg-gray-800 rounded-lg transition-colors"
