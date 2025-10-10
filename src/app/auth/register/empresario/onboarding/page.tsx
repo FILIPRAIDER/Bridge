@@ -29,7 +29,7 @@ interface ProfileData {
 }
 
 export default function EmpresarioOnboarding() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const { show } = useToast();
   
@@ -285,6 +285,18 @@ export default function EmpresarioOnboarding() {
       // Limpiar flag de onboarding
       localStorage.removeItem("empresario_needs_onboarding");
 
+      // 🔥 PASO 4: Actualizar la sesión de NextAuth con el companyId
+      console.log("[Onboarding] 🔄 Actualizando sesión con companyId:", companyResponse.id);
+      
+      if (updateSession) {
+        await updateSession({
+          user: {
+            companyId: companyResponse.id,
+          }
+        });
+        console.log("[Onboarding] ✅ Sesión actualizada con companyId");
+      }
+
       // Redirigir al dashboard empresario
       setTimeout(() => {
         router.push("/dashboard/empresario");
@@ -318,6 +330,16 @@ export default function EmpresarioOnboarding() {
           });
 
           localStorage.removeItem("empresario_needs_onboarding");
+          
+          // Actualizar sesión con companyId existente
+          if (updateSession && error.companyId) {
+            await updateSession({
+              user: {
+                companyId: error.companyId,
+              }
+            });
+          }
+          
           setTimeout(() => {
             router.push("/dashboard/empresario");
           }, 500);
