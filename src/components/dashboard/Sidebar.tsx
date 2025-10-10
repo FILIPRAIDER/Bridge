@@ -17,6 +17,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useSession } from "@/store/session/useSession";
+import { BridgeLogo } from "@/components/shared/BridgeLogo";
 
 interface SidebarProps {
   activeTab: string;
@@ -99,11 +100,8 @@ export function Sidebar({
       >
         {/* Close button - solo en móvil */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between lg:hidden">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-800 rounded-lg">
-              <div className="w-4 h-4 bg-white rounded" />
-            </div>
-            <span className="text-xl font-bold text-white">Bridge</span>
+          <div className="text-white">
+            <BridgeLogo size="sm" showText={true} />
           </div>
           <button
             onClick={onClose}
@@ -115,13 +113,10 @@ export function Sidebar({
 
         {/* Logo - solo en desktop */}
         <div className="hidden lg:block p-6 border-b border-gray-800">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-800 rounded-lg">
-              <div className="w-4 h-4 bg-white rounded" />
-            </div>
-            <span className="text-xl font-bold text-white">Bridge</span>
+          <div className="text-white">
+            <BridgeLogo size="md" showText={true} />
           </div>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-gray-400">
             {role === "LIDER" ? "Panel del Líder" : "Panel del Miembro"}
           </p>
         </div>

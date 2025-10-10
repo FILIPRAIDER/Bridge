@@ -3,6 +3,7 @@
 import { Menu, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/dashboard/NotificationBell";
+import { BridgeLogo } from "@/components/shared/BridgeLogo";
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -32,11 +33,8 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         </button>
 
         {/* Logo / Brand - Solo en mobile */}
-        <div className="lg:hidden flex items-center gap-2">
-          <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center">
-            <div className="h-4 w-4 bg-white rounded"></div>
-          </div>
-          <span className="text-gray-900 font-semibold text-lg">Bridge</span>
+        <div className="lg:hidden">
+          <BridgeLogo size="sm" showText={true} />
         </div>
       </div>
 

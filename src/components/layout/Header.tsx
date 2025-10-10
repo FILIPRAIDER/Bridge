@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { BridgeLogo } from "@/components/shared/BridgeLogo";
 
 /** Tipos de rol manejados en UI */
 type UserRole = "EMPRESARIO" | "ESTUDIANTE" | "LIDER" | "ADMIN" | "ANON";
@@ -81,18 +82,8 @@ export default function Header() {
             </button>
 
             {/* Logo - Mobile derecha, Desktop izquierda */}
-            <Link href="/" className="inline-flex items-center gap-2 md:justify-self-start">
-              <svg viewBox="0 0 32 32" className="h-6 w-6 md:h-7 md:w-7" aria-hidden="true">
-                <rect x="2" y="2" width="28" height="28" rx="6" className="fill-[--color-brand-500]/15" />
-                <path
-                  d="M10 16.5l4 4 8-9"
-                  className="stroke-[--color-brand-600] fill-none"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-sm md:text-lg font-semibold tracking-tight">Bridge</span>
+            <Link href="/" className="md:justify-self-start">
+              <BridgeLogo size="sm" showText={true} />
             </Link>
 
             {/* Nav centrado (solo desktop) */}
@@ -158,19 +149,7 @@ export default function Header() {
           >
             {/* Header de la Sidebar */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden="true">
-                  <rect x="2" y="2" width="28" height="28" rx="6" className="fill-[--color-brand-500]/15" />
-                  <path
-                    d="M10 16.5l4 4 8-9"
-                    className="stroke-[--color-brand-600] fill-none"
-                    strokeWidth="2.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-lg font-semibold tracking-tight">Bridge</span>
-              </div>
+              <BridgeLogo size="sm" showText={true} />
               <button
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

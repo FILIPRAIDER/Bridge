@@ -3,6 +3,7 @@
 import { Building2, GraduationCap, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { BridgeLogo } from "@/components/shared/BridgeLogo";
 
 const ROLES = [
   {
@@ -40,8 +41,8 @@ export default function RoleSelection() {
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl mb-4">
-            <div className="w-8 h-8 bg-white rounded" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <BridgeLogo size="lg" showText={false} />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Bienvenido a Bridge

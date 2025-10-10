@@ -6,7 +6,8 @@ import { Building2, Mail, Calendar, Globe, Briefcase, Edit2, Save, X, Camera, Us
 import { useToast } from '@/components/ui/toast';
 import { api } from '@/lib/api';
 import { CompanyLogoUploadModal } from '@/components/dashboard/empresario/CompanyLogoUploadModal';
-import { AvatarUploader } from '@/components/dashboard/miembro/AvatarUploader';
+import { AvatarUploadModal } from '@/components/dashboard/empresario/AvatarUploadModal';
+import { AvatarWithCamera } from '@/components/shared/AvatarWithCamera';
 
 interface CompanyData {
   id: string;
@@ -38,6 +39,7 @@ export default function EmpresarioProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -220,21 +222,13 @@ export default function EmpresarioProfilePage() {
             <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Información sobre ti como profesional</p>
             
             <div className="space-y-4 sm:space-y-6">
-              {/* Avatar centrado */}
+              {/* Avatar centrado con botón de cámara */}
               <div className="flex flex-col items-center">
-                <AvatarUploader
-                  currentAvatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
-                  onUploadSuccess={async (newUrl: string) => {
-                    await update({
-                      ...session,
-                      user: {
-                        ...session?.user,
-                        avatarUrl: newUrl,
-                      },
-                    });
-                    fetchProfileData();
-                    show({ message: 'Avatar actualizado ✅', variant: 'success' });
-                  }}
+                <AvatarWithCamera
+                  avatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
+                  name={userData?.name || session?.user?.name}
+                  size="lg"
+                  onCameraClick={() => setIsAvatarModalOpen(true)}
                 />
                 <p className="text-xs text-gray-500 text-center mt-2">Tu foto de perfil</p>
               </div>
@@ -440,6 +434,24 @@ export default function EmpresarioProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Avatar Upload Modal */}
+      <AvatarUploadModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+        currentAvatarUrl={userData?.avatarUrl || session?.user?.avatarUrl}
+        onUploadSuccess={async (newUrl) => {
+          await update({
+            ...session,
+            user: {
+              ...session?.user,
+              avatarUrl: newUrl,
+            },
+          });
+          fetchProfileData();
+          setIsAvatarModalOpen(false);
+        }}
+      />
 
       {/* Company Logo Upload Modal */}
       {companyData?.id && (
