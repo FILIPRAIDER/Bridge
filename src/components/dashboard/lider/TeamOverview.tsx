@@ -71,9 +71,12 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
   return (
     <div className="space-y-6">
       {/* Team Header Card with Photo */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-        {/* Gradient Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 sm:px-8 sm:py-10">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50 relative">
+        {/* Subtle shine effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
+        
+        {/* Header Content */}
+        <div className="relative px-6 py-8 sm:px-8 sm:py-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Team Avatar */}
             <div className="flex-shrink-0">
@@ -83,7 +86,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                 size="xl"
                 showCamera={false}
                 editable={false}
-                className="ring-4 ring-white/30"
+                className="ring-4 ring-white/10 shadow-2xl"
               />
             </div>
 
@@ -97,14 +100,14 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                         type="text"
                         value={teamName}
                         onChange={(e) => setTeamName(e.target.value)}
-                        className="bg-white/20 border-2 border-white/30 text-white placeholder-white/50 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 text-xl font-bold flex-1"
+                        className="bg-white/10 border-2 border-gray-500/30 text-white placeholder-white/40 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/50 text-xl font-bold flex-1 backdrop-blur-sm"
                         placeholder="Nombre del equipo"
                         disabled={saving}
                       />
                       <button
                         onClick={handleSaveName}
                         disabled={saving || !teamName.trim()}
-                        className="p-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 disabled:opacity-50 transition-colors"
+                        className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors disabled:opacity-50 backdrop-blur-sm border border-gray-500/20"
                         title="Guardar"
                       >
                         <Check className="h-5 w-5" />
@@ -112,7 +115,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                       <button
                         onClick={() => setIsEditingName(false)}
                         disabled={saving}
-                        className="p-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
+                        className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors backdrop-blur-sm border border-gray-500/20"
                         title="Cancelar"
                       >
                         <X className="h-5 w-5" />
@@ -120,12 +123,12 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                     </div>
                   ) : (
                     <div className="flex items-center justify-center sm:justify-start gap-3">
-                      <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
                         {team?.name || "Sin nombre"}
                       </h1>
                       <button
                         onClick={handleEditName}
-                        className="p-2 text-white/80 hover:bg-white/20 rounded-lg transition-colors"
+                        className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors backdrop-blur-sm"
                         title="Editar nombre"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -138,7 +141,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                       <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="bg-white/20 border-2 border-white/30 text-white placeholder-white/50 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm w-full resize-none"
+                        className="bg-white/10 border-2 border-gray-500/30 text-white placeholder-white/40 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/50 text-sm w-full resize-none backdrop-blur-sm"
                         rows={2}
                         placeholder="Descripción del equipo..."
                         disabled={saving}
@@ -147,7 +150,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                         <button
                           onClick={handleSaveDescription}
                           disabled={saving}
-                          className="px-4 py-1.5 bg-white text-blue-600 rounded-lg hover:bg-blue-50 disabled:opacity-50 text-sm font-medium transition-colors flex items-center gap-2"
+                          className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg disabled:opacity-50 text-sm font-medium transition-colors flex items-center gap-2 backdrop-blur-sm border border-gray-500/20"
                         >
                           <Check className="h-4 w-4" />
                           {saving ? "Guardando..." : "Guardar"}
@@ -155,7 +158,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                         <button
                           onClick={() => setIsEditingDescription(false)}
                           disabled={saving}
-                          className="px-4 py-1.5 bg-white/20 text-white rounded-lg hover:bg-white/30 text-sm font-medium transition-colors flex items-center gap-2"
+                          className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 backdrop-blur-sm border border-gray-500/20"
                         >
                           <X className="h-4 w-4" />
                           Cancelar
@@ -164,12 +167,12 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                     </div>
                   ) : (
                     <div className="mt-2 flex items-start justify-center sm:justify-start gap-2">
-                      <p className="text-blue-100 text-sm sm:text-base max-w-2xl">
+                      <p className="text-gray-300 text-sm sm:text-base max-w-2xl">
                         {team?.description || "Sin descripción. Click en editar para agregar una."}
                       </p>
                       <button
                         onClick={handleEditDescription}
-                        className="p-1.5 text-white/80 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                        className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0 backdrop-blur-sm"
                         title="Editar descripción"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -182,7 +185,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
                 <div className="flex flex-col items-center sm:items-end gap-2">
                   <button
                     onClick={() => router.push('/dashboard/lider/equipo/configuracion')}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium shadow-lg"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all text-sm font-medium shadow-lg border border-gray-500/30 backdrop-blur-sm"
                   >
                     <Settings className="h-4 w-4" />
                     Configurar Equipo
@@ -192,19 +195,19 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
 
               {/* Stats */}
               <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6">
-                <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center gap-2 text-gray-300">
                   <Users className="h-4 w-4" />
                   <span className="text-sm font-medium">
                     {members.length} {members.length === 1 ? "miembro" : "miembros"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center gap-2 text-gray-300">
                   <Award className="h-4 w-4" />
                   <span className="text-sm">
                     {leaders} {leaders === 1 ? "líder" : "líderes"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center gap-2 text-gray-300">
                   <Calendar className="h-4 w-4" />
                   <span className="text-sm">
                     Desde {team?.createdAt
@@ -220,52 +223,52 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="p-6 sm:p-8 bg-gray-50">
+        {/* Quick Stats - Chrome/Silver Effect */}
+        <div className="p-6 sm:p-8 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 border-t border-gray-300/50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-gray-900" />
+                <div className="h-10 w-10 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <Users className="h-5 w-5 text-gray-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-600">Total</p>
+                  <p className="text-xs text-gray-600 font-medium">Total</p>
                   <p className="text-lg font-bold text-gray-900">{members.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
+                <div className="h-10 w-10 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <TrendingUp className="h-5 w-5 text-green-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-600">Regulares</p>
+                  <p className="text-xs text-gray-600 font-medium">Regulares</p>
                   <p className="text-lg font-bold text-gray-900">{regularMembers}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Award className="h-5 w-5 text-purple-600" />
+                <div className="h-10 w-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <Award className="h-5 w-5 text-purple-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-600">Líderes</p>
+                  <p className="text-xs text-gray-600 font-medium">Líderes</p>
                   <p className="text-lg font-bold text-gray-900">{leaders}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mail className="h-5 w-5 text-orange-600" />
+                <div className="h-10 w-10 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <Mail className="h-5 w-5 text-orange-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-600">Invitaciones</p>
+                  <p className="text-xs text-gray-600 font-medium">Invitaciones</p>
                   <p className="text-lg font-bold text-gray-900">-</p>
                 </div>
               </div>

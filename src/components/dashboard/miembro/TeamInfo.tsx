@@ -96,9 +96,12 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
   return (
     <div className="space-y-6">
       {/* Team Header Card with Photo */}
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-        {/* Gradient Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 sm:px-8 sm:py-10">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50 relative">
+        {/* Subtle shine effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
+        
+        {/* Header Content */}
+        <div className="relative px-6 py-8 sm:px-8 sm:py-10">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Team Avatar */}
             <div className="flex-shrink-0">
@@ -109,10 +112,10 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
                 showCamera={isLeader}
                 editable={isLeader}
                 onCameraClick={isLeader ? handleCameraClick : undefined}
-                className="ring-4 ring-white/30"
+                className="ring-4 ring-white/10 shadow-2xl"
               />
               {uploading && (
-                <p className="text-xs text-white/80 text-center mt-2">
+                <p className="text-xs text-gray-300 text-center mt-2">
                   Subiendo...
                 </p>
               )}
@@ -122,11 +125,11 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg mb-2">
                     {team.name}
                   </h1>
                   {team.description && (
-                    <p className="text-blue-100 text-sm sm:text-base max-w-2xl">
+                    <p className="text-gray-300 text-sm sm:text-base max-w-2xl">
                       {team.description}
                     </p>
                   )}
@@ -134,12 +137,12 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
                 
                 {currentMember && (
                   <div className="flex flex-col items-center sm:items-end gap-2">
-                    <span className="text-xs text-blue-100">Tu rol</span>
+                    <span className="text-xs text-gray-400">Tu rol</span>
                     <span
-                      className={`px-4 py-2 rounded-full text-sm font-medium shadow-lg ${
+                      className={`px-4 py-2 rounded-full text-sm font-medium shadow-lg border ${
                         currentMember.role === "LIDER"
-                          ? "bg-purple-500 text-white"
-                          : "bg-white text-gray-900"
+                          ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white border-purple-500/30"
+                          : "bg-gradient-to-r from-gray-700 to-gray-600 text-white border-gray-500/30"
                       }`}
                     >
                       {currentMember.role}
@@ -150,13 +153,13 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
 
               {/* Stats */}
               <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6">
-                <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center gap-2 text-gray-300">
                   <Users className="h-4 w-4" />
                   <span className="text-sm font-medium">
                     {members.length} {members.length === 1 ? "miembro" : "miembros"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center gap-2 text-gray-300">
                   <Calendar className="h-4 w-4" />
                   <span className="text-sm">
                     Desde {new Date(team.createdAt).toLocaleDateString("es-ES", {
@@ -170,28 +173,28 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
           </div>
         </div>
 
-        {/* Team Details */}
-        <div className="p-6 sm:p-8 bg-gray-50">
+        {/* Team Details - Chrome/Silver Effect */}
+        <div className="p-6 sm:p-8 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 border-t border-gray-300/50">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-purple-600" />
+                <div className="h-10 w-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <Users className="h-5 w-5 text-purple-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-600">Líderes</p>
+                  <p className="text-xs text-gray-600 font-medium">Líderes</p>
                   <p className="text-lg font-bold text-gray-900">{leaders.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-blue-600" />
+                <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <Users className="h-5 w-5 text-blue-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-600">Miembros</p>
+                  <p className="text-xs text-gray-600 font-medium">Miembros</p>
                   <p className="text-lg font-bold text-gray-900">{regularMembers.length}</p>
                 </div>
               </div>
