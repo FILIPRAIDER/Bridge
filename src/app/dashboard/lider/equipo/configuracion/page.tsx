@@ -17,6 +17,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { TeamAvatarWithCamera } from '@/components/shared/TeamAvatarWithCamera';
+import { BridgeLogo } from '@/components/shared/BridgeLogo';
+import { api } from '@/lib/api';
 
 /**
  * Página de Configuración del Equipo
@@ -81,54 +83,38 @@ export default function TeamConfigPage() {
   const loadTeamData = async () => {
     try {
       setLoading(true);
+      setErrorMessage(null);
+      
+      console.log('🔄 Cargando datos del equipo para usuario:', session?.user?.id);
       
       // 1. Obtener el teamId del usuario desde /users/:userId
-      const userResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${session?.user?.id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${(session as any)?.accessToken}`
-          }
-        }
-      );
-
-      if (!userResponse.ok) {
-        throw new Error('Error al obtener información del usuario');
-      }
-
-      const userData = await userResponse.json();
+      const userData = await api.get<any>(`/users/${session?.user?.id}`);
+      
+      console.log('✅ Datos del usuario obtenidos:', userData);
       
       // 2. Buscar el equipo donde el usuario es LIDER
       const membership = userData?.teamMemberships?.find((m: any) => m.role === 'LIDER');
       
       if (!membership?.teamId) {
+        console.warn('⚠️ No se encontró equipo para el usuario');
         setErrorMessage('No se encontró el equipo asociado a tu cuenta');
         setLoading(false);
         return;
       }
 
       const teamId = membership.teamId;
+      console.log('✅ TeamId encontrado:', teamId);
 
       // 3. Cargar datos del equipo
-      const teamResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/teams/${teamId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${(session as any)?.accessToken}`
-          }
-        }
-      );
-
-      if (!teamResponse.ok) {
-        throw new Error('Error al cargar los datos del equipo');
-      }
-
-      const data = await teamResponse.json();
+      const data = await api.get<any>(`/teams/${teamId}`);
+      
+      console.log('✅ Datos del equipo cargados:', data);
+      
       setTeamData(data);
       setPreviewImage(data.profileImage);
-    } catch (error) {
-      console.error('Error loading team data:', error);
-      setErrorMessage('Error al cargar los datos del equipo');
+    } catch (error: any) {
+      console.error('❌ Error loading team data:', error);
+      setErrorMessage(error.message || 'Error al cargar los datos del equipo');
     } finally {
       setLoading(false);
     }
@@ -264,7 +250,7 @@ export default function TeamConfigPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
-            <Users className="w-8 h-8 text-blue-600" />
+            <BridgeLogo size="sm" showText={false} />
             <h1 className="text-3xl font-bold text-gray-900">
               Configuración del Equipo
             </h1>

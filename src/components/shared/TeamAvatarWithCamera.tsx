@@ -89,7 +89,7 @@ export function TeamAvatarWithCamera({
         )}
       </div>
 
-      {/* Camera Button */}
+      {/* Camera Button - Gray/Black/Chrome Style */}
       {showCamera && editable && onCameraClick && (
         <button
           onClick={(e) => {
@@ -99,17 +99,20 @@ export function TeamAvatarWithCamera({
           className={`
             absolute bottom-0 right-0 
             ${cameraSizes[size]} 
-            bg-gradient-to-br from-gray-700 to-gray-800 
+            bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900
             rounded-full 
             flex items-center justify-center 
-            ring-2 ring-white/20 
-            hover:from-gray-600 hover:to-gray-700
+            ring-2 ring-white/10
+            hover:from-gray-600 hover:via-gray-700 hover:to-gray-800
+            hover:ring-white/20
             transition-all
-            shadow-lg
+            shadow-xl
+            border border-gray-600/30
           `}
           title="Cambiar foto del equipo"
+          aria-label="Cambiar foto del equipo"
         >
-          <Camera className={`${cameraIconSizes[size]} text-white`} />
+          <Camera className={`${cameraIconSizes[size]} text-white drop-shadow-lg`} />
         </button>
       )}
 
