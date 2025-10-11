@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Target, Plus, Trash2, Loader2, Search, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Skill, UserSkill } from "@/types/api";
 
 interface MySkillsProps {
@@ -12,6 +13,7 @@ interface MySkillsProps {
 
 export function MySkills({ userId }: MySkillsProps) {
   const { show } = useToast();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [mySkills, setMySkills] = useState<UserSkill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,15 +113,23 @@ export function MySkills({ userId }: MySkillsProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este skill?")) return;
-    try {
-      await api.delete(`/users/${userId}/skills/${id}`);
-      show({ message: "Skill eliminado", variant: "success" });
-      loadData();
-    } catch (error: any) {
-      show({ message: error.message || "Error al eliminar", variant: "error" });
-    }
+  const handleDelete = async (id: string, skillName: string) => {
+    await showConfirm({
+      title: "¿Eliminar este skill?",
+      message: `Estás a punto de eliminar "${skillName}" de tu perfil. Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${userId}/skills/${id}`);
+          show({ message: "Skill eliminado correctamente", variant: "success" });
+          loadData();
+        } catch (error: any) {
+          show({ message: error.message || "Error al eliminar", variant: "error" });
+        }
+      },
+    });
   };
 
   // Filtrar skills que el usuario ya tiene
@@ -177,6 +187,7 @@ export function MySkills({ userId }: MySkillsProps) {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialogComponent />
       {/* Add Skill Form */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
         <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -371,7 +382,7 @@ export function MySkills({ userId }: MySkillsProps) {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDelete(us.id)}
+                  onClick={() => handleDelete(us.id, us.skill?.name || "este skill")}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />

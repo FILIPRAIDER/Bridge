@@ -7,6 +7,7 @@ import { z } from "zod";
 import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Loader2, Plus, Trash2, Briefcase, Calendar } from "lucide-react";
 import type { Experience } from "@/types/api";
 
@@ -33,6 +34,7 @@ export function ExperienceStep({ onNext, onSkip }: ExperienceStepProps) {
   const [showForm, setShowForm] = useState(false);
   const { user } = useSession();
   const { show } = useToast();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   const {
     register,
@@ -129,22 +131,30 @@ export function ExperienceStep({ onNext, onSkip }: ExperienceStepProps) {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, role: string, company: string) => {
     if (!user?.id) return;
-    if (!confirm("¿Eliminar esta experiencia?")) return;
 
-    try {
-      await api.delete(`/users/${user.id}/experiences/${id}`);
-      setExperiences((prev) => prev.filter((exp) => exp.id !== id));
-      show({ variant: "success", title: "Experiencia eliminada", message: "" });
-    } catch (e) {
-      const error = e as Error;
-      show({
-        variant: "error",
-        title: "Error al eliminar",
-        message: error.message,
-      });
-    }
+    await showConfirm({
+      title: "¿Eliminar esta experiencia?",
+      message: `Estás a punto de eliminar "${role} en ${company}". Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${user.id}/experiences/${id}`);
+          setExperiences((prev) => prev.filter((exp) => exp.id !== id));
+          show({ variant: "success", title: "Experiencia eliminada", message: "" });
+        } catch (e) {
+          const error = e as Error;
+          show({
+            variant: "error",
+            title: "Error al eliminar",
+            message: error.message,
+          });
+        }
+      },
+    });
   };
 
   const handleContinue = () => {
@@ -169,6 +179,7 @@ export function ExperienceStep({ onNext, onSkip }: ExperienceStepProps) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      <ConfirmDialogComponent />
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div className="flex-1">
           <h1 className="text-xl sm:text-2xl font-bold mb-1">Tu experiencia</h1>
@@ -237,7 +248,7 @@ export function ExperienceStep({ onNext, onSkip }: ExperienceStepProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(exp.id)}
+                    onClick={() => handleDelete(exp.id, exp.role, exp.company)}
                     className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition"
                   >
                     <Trash2 className="w-4 h-4" />

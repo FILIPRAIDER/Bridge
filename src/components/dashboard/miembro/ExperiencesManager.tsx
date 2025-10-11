@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Experience } from "@/types/api";
 
 const experienceSchema = z.object({
@@ -25,6 +26,7 @@ export function ExperiencesManager() {
   const { data: session } = useNextAuthSession();
   const userId = session?.user?.id;
   const { show } = useToast();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -86,15 +88,23 @@ export function ExperiencesManager() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar esta experiencia?")) return;
-    try {
-      await api.delete(`/users/${userId}/experiences/${id}`);
-      show({ message: "Experiencia eliminada", variant: "success" });
-      loadExperiences();
-    } catch (error: any) {
-      show({ message: error.message || "Error al eliminar", variant: "error" });
-    }
+  const handleDelete = async (id: string, role: string, company: string) => {
+    await showConfirm({
+      title: "¿Eliminar esta experiencia?",
+      message: `Estás a punto de eliminar "${role} en ${company}". Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${userId}/experiences/${id}`);
+          show({ message: "Experiencia eliminada correctamente", variant: "success" });
+          loadExperiences();
+        } catch (error: any) {
+          show({ message: error.message || "Error al eliminar", variant: "error" });
+        }
+      },
+    });
   };
 
   const handleCancel = () => {
@@ -113,6 +123,7 @@ export function ExperiencesManager() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialogComponent />
       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -238,7 +249,7 @@ export function ExperiencesManager() {
                     <Edit2 className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(exp.id)}
+                    onClick={() => handleDelete(exp.id, exp.role, exp.company)}
                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Certification, ImageKitAuthResponse } from "@/types/api";
 
 const certSchema = z.object({
@@ -24,6 +25,7 @@ export function CertificationsManager() {
   const { data: session } = useNextAuthSession();
   const userId = session?.user?.id;
   const { show } = useToast();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
   const [certs, setCerts] = useState<Certification[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -119,15 +121,23 @@ export function CertificationsManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar esta certificación?")) return;
-    try {
-      await api.delete(`/users/${userId}/certifications/${id}`);
-      show({ message: "Certificación eliminada", variant: "success" });
-      loadCertifications();
-    } catch (error: any) {
-      show({ message: error.message || "Error al eliminar", variant: "error" });
-    }
+  const handleDelete = async (id: string, certName: string) => {
+    await showConfirm({
+      title: "¿Eliminar esta certificación?",
+      message: `Estás a punto de eliminar "${certName}". Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${userId}/certifications/${id}`);
+          show({ message: "Certificación eliminada correctamente", variant: "success" });
+          loadCertifications();
+        } catch (error: any) {
+          show({ message: error.message || "Error al eliminar", variant: "error" });
+        }
+      },
+    });
   };
 
   if (loading) {
@@ -140,6 +150,7 @@ export function CertificationsManager() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialogComponent />
       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -285,7 +296,7 @@ export function CertificationsManager() {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleDelete(cert.id)}
+                  onClick={() => handleDelete(cert.id, cert.name)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />

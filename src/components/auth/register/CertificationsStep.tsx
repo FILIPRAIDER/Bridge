@@ -7,6 +7,7 @@ import { z } from "zod";
 import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
   Loader2,
   Plus,
@@ -43,6 +44,7 @@ export function CertificationsStep({ onNext, onSkip }: CertificationsStepProps) 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { user } = useSession();
   const { show } = useToast();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   const {
     register,
@@ -212,22 +214,30 @@ export function CertificationsStep({ onNext, onSkip }: CertificationsStepProps) 
     setSelectedFile(null);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, certName: string) => {
     if (!user?.id) return;
-    if (!confirm("¿Eliminar esta certificación?")) return;
 
-    try {
-      await api.delete(`/users/${user.id}/certifications/${id}`);
-      setCertifications((prev) => prev.filter((cert) => cert.id !== id));
-      show({ variant: "success", title: "Certificación eliminada", message: "" });
-    } catch (e) {
-      const error = e as Error;
-      show({
-        variant: "error",
-        title: "Error al eliminar",
-        message: error.message,
-      });
-    }
+    await showConfirm({
+      title: "¿Eliminar esta certificación?",
+      message: `Estás a punto de eliminar "${certName}". Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${user.id}/certifications/${id}`);
+          setCertifications((prev) => prev.filter((cert) => cert.id !== id));
+          show({ variant: "success", title: "Certificación eliminada", message: "" });
+        } catch (e) {
+          const error = e as Error;
+          show({
+            variant: "error",
+            title: "Error al eliminar",
+            message: error.message,
+          });
+        }
+      },
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,6 +290,7 @@ export function CertificationsStep({ onNext, onSkip }: CertificationsStepProps) 
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      <ConfirmDialogComponent />
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold mb-1">Certificaciones</h1>
@@ -357,7 +368,7 @@ export function CertificationsStep({ onNext, onSkip }: CertificationsStepProps) 
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(cert.id)}
+                    onClick={() => handleDelete(cert.id, cert.name)}
                     className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition"
                   >
                     <Trash2 className="w-4 h-4" />

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
 import { useSession } from "@/store/session";
 import { useToast } from "@/components/ui/toast";
+import { useConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Loader2, Plus, Trash2, Star, Search, X } from "lucide-react";
 import type { Skill, UserSkill } from "@/types/api";
 
@@ -29,6 +30,7 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
   
   const { user } = useSession();
   const { show } = useToast();
+  const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Cargar skills del usuario al inicio
   useEffect(() => {
@@ -175,26 +177,34 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
     }
   };
 
-  const handleDeleteSkill = async (userSkillId: string) => {
+  const handleDeleteSkill = async (userSkillId: string, skillName: string) => {
     if (!user?.id) return;
-    if (!confirm("¿Eliminar este skill?")) return;
 
-    try {
-      await api.delete(`/users/${user.id}/skills/${userSkillId}`);
-      setUserSkills((prev) => prev.filter((us) => us.id !== userSkillId));
-      show({
-        variant: "success",
-        title: "Skill eliminado",
-        message: "",
-      });
-    } catch (e) {
-      const error = e as Error;
-      show({
-        variant: "error",
-        title: "Error al eliminar",
-        message: error.message,
-      });
-    }
+    await showConfirm({
+      title: "¿Eliminar este skill?",
+      message: `Estás a punto de eliminar "${skillName}" de tu perfil. Esta acción no se puede deshacer.`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/users/${user.id}/skills/${userSkillId}`);
+          setUserSkills((prev) => prev.filter((us) => us.id !== userSkillId));
+          show({
+            variant: "success",
+            title: "Skill eliminado",
+            message: "",
+          });
+        } catch (e) {
+          const error = e as Error;
+          show({
+            variant: "error",
+            title: "Error al eliminar",
+            message: error.message,
+          });
+        }
+      },
+    });
   };
 
   const handleContinue = () => {
@@ -219,6 +229,7 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      <ConfirmDialogComponent />
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-1">Tus habilidades</h1>
         <p className="text-gray-600">
@@ -393,7 +404,7 @@ export function SkillsStep({ onNext, onSkip }: SkillsStepProps) {
 
               <button
                 type="button"
-                onClick={() => handleDeleteSkill(userSkill.id)}
+                onClick={() => handleDeleteSkill(userSkill.id, userSkill.skill?.name || "este skill")}
                 className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition"
               >
                 <Trash2 className="w-4 h-4" />
