@@ -177,21 +177,22 @@ export default function TeamConfigPage() {
       formData.append('image', file);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/teams/${teamData.id}/profile-image`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/teams/${teamData.id}/profile-image`,
         {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${(session as any)?.accessToken}`
-          },
+          // NO incluir Content-Type - el browser lo maneja automáticamente con el boundary
+          // NO incluir Authorization por ahora (el endpoint funciona sin auth temporalmente)
           body: formData
         }
       );
 
       if (!response.ok) {
-        throw new Error('Error al subir la imagen');
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Error al subir la imagen');
       }
 
       const data = await response.json();
+      console.log('✅ Upload exitoso:', data);
       
       setTeamData(prev => ({
         ...prev,

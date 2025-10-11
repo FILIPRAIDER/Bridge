@@ -64,11 +64,11 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
 
       // Crear FormData
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("image", file); // ⚠️ Campo 'image' según especificación del backend
 
       // Subir la imagen
       const response = await api.post(
-        `/teams/${team.id}/profile-image`,
+        `/uploads/teams/${team.id}/profile-image`, // ✅ Ruta correcta del backend
         formData,
         {
           headers: {
@@ -77,6 +77,7 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
         }
       );
 
+      console.log('✅ Foto del equipo actualizada:', response);
       show({ message: "Foto del equipo actualizada", variant: "success" });
       
       // Refrescar datos si hay callback
