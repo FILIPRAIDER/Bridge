@@ -12,7 +12,7 @@ import {
   X,
   Menu,
 } from "lucide-react";
-import { BridgeLogo } from "@/components/shared/BridgeLogo";
+// Logo SVG simple para sidebar
 
 interface EmpresarioSidebarProps {
   isOpen?: boolean;
@@ -68,7 +68,39 @@ export function EmpresarioSidebar({ isOpen = false, onClose }: EmpresarioSidebar
       >
         {/* Close button - solo en móvil */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between lg:hidden">
-          <BridgeLogo size="sm" showText={true} variant="light" />
+          <div className="flex items-center gap-3">
+            <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden="true">
+              <defs>
+                <linearGradient id="chrome-bg-emp" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#e8e8e8" />
+                  <stop offset="25%" stopColor="#f8f8f8" />
+                  <stop offset="50%" stopColor="#ffffff" />
+                  <stop offset="75%" stopColor="#f0f0f0" />
+                  <stop offset="100%" stopColor="#d8d8d8" />
+                </linearGradient>
+                <linearGradient id="chrome-text-emp" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#1a1a1a" />
+                  <stop offset="50%" stopColor="#000000" />
+                  <stop offset="100%" stopColor="#2a2a2a" />
+                </linearGradient>
+                <filter id="chrome-shadow-emp">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+                  <feOffset dx="0" dy="1" result="offsetblur"/>
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.3"/>
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <rect width="32" height="32" rx="6" fill="url(#chrome-bg-emp)" stroke="#c0c0c0" strokeWidth="0.5"/>
+              <rect x="1" y="1" width="30" height="15" rx="5" fill="white" opacity="0.3"/>
+              <text x="16" y="23" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="900" fill="url(#chrome-text-emp)" textAnchor="middle" filter="url(#chrome-shadow-emp)">B</text>
+            </svg>
+            <span className="text-lg font-bold text-white tracking-wide">Bridge</span>
+          </div>
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:bg-gray-800 rounded-lg transition-colors"
@@ -79,7 +111,39 @@ export function EmpresarioSidebar({ isOpen = false, onClose }: EmpresarioSidebar
 
         {/* Logo - solo en desktop */}
         <div className="hidden lg:block p-6 border-b border-gray-800">
-          <BridgeLogo size="sm" showText={true} variant="light" />
+          <div className="flex items-center gap-3">
+            <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden="true">
+              <defs>
+                <linearGradient id="chrome-bg-emp-desk" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#e8e8e8" />
+                  <stop offset="25%" stopColor="#f8f8f8" />
+                  <stop offset="50%" stopColor="#ffffff" />
+                  <stop offset="75%" stopColor="#f0f0f0" />
+                  <stop offset="100%" stopColor="#d8d8d8" />
+                </linearGradient>
+                <linearGradient id="chrome-text-emp-desk" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#1a1a1a" />
+                  <stop offset="50%" stopColor="#000000" />
+                  <stop offset="100%" stopColor="#2a2a2a" />
+                </linearGradient>
+                <filter id="chrome-shadow-emp-desk">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+                  <feOffset dx="0" dy="1" result="offsetblur"/>
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.3"/>
+                  </feComponentTransfer>
+                  <feMerge>
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <rect width="32" height="32" rx="6" fill="url(#chrome-bg-emp-desk)" stroke="#c0c0c0" strokeWidth="0.5"/>
+              <rect x="1" y="1" width="30" height="15" rx="5" fill="white" opacity="0.3"/>
+              <text x="16" y="23" fontFamily="Arial, sans-serif" fontSize="20" fontWeight="900" fill="url(#chrome-text-emp-desk)" textAnchor="middle" filter="url(#chrome-shadow-emp-desk)">B</text>
+            </svg>
+            <span className="text-lg font-bold text-white tracking-wide">Bridge</span>
+          </div>
         </div>
 
         {/* Navigation */}

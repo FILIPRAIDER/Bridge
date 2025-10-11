@@ -25,6 +25,7 @@ const ProfileSchema = z.object({
   availability: z.number().int().min(1).max(60).optional(), // Días disponibles
   stack: z.string().max(200).optional(),
   sectorId: z.string().optional(),
+  customSector: z.string().max(100).optional(), // Campo para "Otro"
   phone: z.string().min(7, "Número de teléfono inválido").max(30),
   phoneE164: z.string().optional(),
   phoneCountry: z.string().length(2).optional(),
@@ -48,6 +49,7 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [customSector, setCustomSector] = useState<string>(""); // Estado para campo "Otro"
   const { user } = useSession();
   const { show } = useToast();
 
@@ -227,13 +229,23 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
           )}
         </div>
 
-        {/* Sector Profesional - Desde API */}
+        {/* Sector Profesional - Con soporte para "Otro" */}
         <div>
           <label className="label">Sector Profesional (opcional)</label>
           <select
             {...register("sectorId")}
             className="input"
             disabled={sectorsLoading}
+            onChange={(e) => {
+              setValue("sectorId", e.target.value);
+              // Limpiar customSector si cambia de "Otro" a otro sector
+              const selectedSector = sectorsData?.sectors.find(s => s.id === e.target.value);
+              const isOther = selectedSector?.nameEs?.toLowerCase().includes("otro");
+              if (!isOther) {
+                setCustomSector("");
+                setValue("customSector", "");
+              }
+            }}
           >
             <option value="">
               {sectorsLoading ? "Cargando sectores..." : "Selecciona un sector"}
@@ -244,6 +256,37 @@ export function ProfileStep({ onNext, onSkip }: ProfileStepProps) {
               </option>
             ))}
           </select>
+
+          {/* Campo personalizado cuando selecciona "Otro" */}
+          {(() => {
+            const sectorId = watch("sectorId");
+            const selectedSector = sectorsData?.sectors.find(s => s.id === sectorId);
+            const isOtherSelected = selectedSector?.nameEs?.toLowerCase().includes("otro");
+            
+            return isOtherSelected ? (
+              <div className="mt-3 animate-in slide-in-from-top-2 duration-300">
+                <label htmlFor="customSector" className="label text-sm">
+                  Especifica tu sector
+                </label>
+                <input
+                  id="customSector"
+                  type="text"
+                  {...register("customSector")}
+                  value={customSector}
+                  onChange={(e) => {
+                    setCustomSector(e.target.value);
+                    setValue("customSector", e.target.value);
+                  }}
+                  placeholder="ej. Biotecnología, Gaming, Criptomonedas..."
+                  className="input"
+                  maxLength={100}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  💡 Describe el sector específico en el que trabajas
+                </p>
+              </div>
+            ) : null;
+          })()}
         </div>
 
         {/* País */}

@@ -7,16 +7,26 @@ import ChatInput from './ChatInput';
 import { ProjectProgressIndicator } from './ProjectProgressIndicator';
 import { ProjectProgressBanner } from './ProjectProgressBanner';
 import { ProjectSelector } from './ProjectSelector'; // 🔥 NUEVO
+import { MatchingResults } from '@/components/matching'; // 🎯 NUEVO: Componentes de matching
 import { sendChatMessage, getChatSession, deleteChatSession } from '@/lib/ai-api';
-import { BridgeLogo } from '@/components/ui/BridgeLogo';
+import { BridgeLogo } from '@/components/shared/BridgeLogo';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  type?: 'text' | 'project_selection'; // 🔥 NUEVO: Tipo de mensaje
+  type?: 'text' | 'project_selection' | 'team_matching'; // 🎯 NUEVO: Agregado team_matching
   projects?: any[]; // 🔥 NUEVO: Lista de proyectos (si es project_selection)
   totalProjects?: number; // 🔥 NUEVO: Total de proyectos
+  metadata?: {
+    action?: string;
+    projectId?: string;
+    companyId?: string;
+    matchingResults?: {
+      candidates: any[];
+      totalCandidates: number;
+    };
+  }; // 🎯 NUEVO: Metadata para matching de equipos
 }
 
 interface ProjectProgress {
@@ -204,14 +214,26 @@ export default function ChatIA({
       // 🔥 NUEVO: Detectar si es selector de proyectos
       const isProjectSelection = response.type === 'project_selection';
       
+      // 🎯 NUEVO: Detectar si es resultado de matching de equipos
+      const isTeamMatching = response.metadata?.action === 'SHOW_MATCHING_RESULTS';
+      
+      console.log('[ChatIA] 🔍 Tipo de mensaje detectado:', {
+        isProjectSelection,
+        isTeamMatching,
+        hasMetadata: !!response.metadata,
+        action: response.metadata?.action,
+        candidatesCount: response.metadata?.matchingResults?.totalCandidates
+      });
+      
       // Agregar respuesta del asistente
       const assistantMessage: Message = {
         role: 'assistant',
         content: response.message,
         timestamp: new Date(response.timestamp),
-        type: isProjectSelection ? 'project_selection' : 'text', // 🔥 NUEVO
+        type: isProjectSelection ? 'project_selection' : (isTeamMatching ? 'team_matching' : 'text'), // 🎯 Detectar tipo
         projects: isProjectSelection ? response.projects : undefined, // 🔥 NUEVO
         totalProjects: isProjectSelection ? response.totalProjects : undefined, // 🔥 NUEVO
+        metadata: isTeamMatching ? response.metadata : undefined, // 🎯 NUEVO: Pasar metadata de matching
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -319,9 +341,7 @@ export default function ChatIA({
       <div className="flex items-center justify-between px-4 lg:px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center shadow-sm">
-              <BridgeLogo variant="white" size="md" />
-            </div>
+            <img src="/favicon.svg" alt="Bridge AI" className="w-10 h-10 rounded-lg" />
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           <div>
@@ -361,9 +381,7 @@ export default function ChatIA({
 
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 max-w-2xl mx-auto">
-            <div className="w-20 h-20 bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-              <BridgeLogo variant="white" size="lg" />
-            </div>
+            <img src="/favicon.svg" alt="Bridge AI" className="w-24 h-24 rounded-2xl mb-6 shadow-xl" />
             <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
               ¡Hola! Soy tu asistente Bridge AI
             </h3>
@@ -392,6 +410,31 @@ export default function ChatIA({
         )}
 
         {messages.map((message, index) => {
+          // 🎯 NUEVO: If message is team_matching type, render ChatMessage and MatchingResults
+          if (message.type === 'team_matching' && message.metadata?.matchingResults) {
+            return (
+              <div key={index} className="space-y-6">
+                <ChatMessage
+                  role={message.role}
+                  content={message.content}
+                  timestamp={message.timestamp}
+                  isLatest={index === messages.length - 1 && message.role === 'assistant'}
+                  userAvatarUrl={userAvatarUrl}
+                  userName={userName}
+                />
+                {/* 🎯 NUEVO: Componente de Matching Results */}
+                <div className="mt-6">
+                  <MatchingResults
+                    projectId={message.metadata.projectId!}
+                    companyId={message.metadata.companyId!}
+                    candidates={message.metadata.matchingResults.candidates}
+                    useMockData={false} // 🎯 Usar datos reales del backend
+                  />
+                </div>
+              </div>
+            );
+          }
+
           // If message is project_selection type, render both ChatMessage and ProjectSelector
           if (message.type === 'project_selection' && message.projects) {
             return (

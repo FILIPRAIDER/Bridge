@@ -36,6 +36,15 @@ export interface ChatResponse {
     createdAt: string;
   }>; // 🔥 NUEVO: Lista de proyectos (para project_selection)
   totalProjects?: number; // 🔥 NUEVO: Total de proyectos
+  metadata?: {
+    action?: string;
+    projectId?: string;
+    companyId?: string;
+    matchingResults?: {
+      candidates: any[];
+      totalCandidates: number;
+    };
+  }; // 🎯 NUEVO: Metadata para matching de equipos
   toolCalls: Array<{
     name: string;
     arguments: string;

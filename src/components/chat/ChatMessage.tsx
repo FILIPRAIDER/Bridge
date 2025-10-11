@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
-import { BridgeLogo } from '@/components/ui/BridgeLogo';
+import { BridgeLogo } from '@/components/shared/BridgeLogo';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -76,9 +76,7 @@ export default function ChatMessage({
       {/* Avatar del asistente */}
       {!isUser && (
         <div className="flex-shrink-0 mr-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-md">
-            <BridgeLogo variant="white" size="sm" />
-          </div>
+          <img src="/favicon.svg" alt="Bridge AI" className="w-10 h-10 rounded-lg shadow-md" />
         </div>
       )}
 
@@ -126,11 +124,11 @@ export default function ChatMessage({
             <img
               src={userAvatarUrl}
               alt={userName || 'Usuario'}
-              className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+              className="w-10 h-10 rounded-lg object-cover shadow-md"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-sm">
-              <span className="text-white font-semibold text-xs">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-md">
+              <span className="text-white font-semibold text-sm">
                 {userName?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>

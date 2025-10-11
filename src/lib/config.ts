@@ -4,6 +4,8 @@ export const API_BASE_URL =
   process.env.NEXT_PUBLIC_CORE_API_BASE_URL ||
   "https://proyectoia-backend.onrender.com";
 
+
+
 // Frontend App URL
 export const APP_BASE_URL =
   process.env.NEXT_PUBLIC_APP_BASE_URL ||
