@@ -73,35 +73,57 @@ export default function TeamConfigPage() {
 
   // Cargar datos del equipo
   useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
+    if (status === 'authenticated' && session?.user?.id) {
       loadTeamData();
     }
-  }, [status, session]);
+  }, [status, session?.user?.id]);
 
   const loadTeamData = async () => {
     try {
       setLoading(true);
       
-      // TODO: Obtener el teamId del usuario (desde session o endpoint)
-      const teamId = (session?.user as any)?.teamId;
+      // 1. Obtener el teamId del usuario desde /users/:userId
+      const userResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/users/${session?.user?.id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${(session as any)?.accessToken}`
+          }
+        }
+      );
+
+      if (!userResponse.ok) {
+        throw new Error('Error al obtener información del usuario');
+      }
+
+      const userData = await userResponse.json();
       
-      if (!teamId) {
+      // 2. Buscar el equipo donde el usuario es LIDER
+      const membership = userData?.teamMemberships?.find((m: any) => m.role === 'LIDER');
+      
+      if (!membership?.teamId) {
         setErrorMessage('No se encontró el equipo asociado a tu cuenta');
         setLoading(false);
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/teams/${teamId}`, {
-        headers: {
-          'Authorization': `Bearer ${(session as any)?.accessToken}`
-        }
-      });
+      const teamId = membership.teamId;
 
-      if (!response.ok) {
+      // 3. Cargar datos del equipo
+      const teamResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/teams/${teamId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${(session as any)?.accessToken}`
+          }
+        }
+      );
+
+      if (!teamResponse.ok) {
         throw new Error('Error al cargar los datos del equipo');
       }
 
-      const data = await response.json();
+      const data = await teamResponse.json();
       setTeamData(data);
       setPreviewImage(data.profileImage);
     } catch (error) {
