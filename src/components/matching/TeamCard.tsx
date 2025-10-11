@@ -3,6 +3,7 @@
 import React from 'react';
 import { Star, MapPin, CheckCircle, Users } from 'lucide-react';
 import { TeamCandidate } from '@/types/matching';
+import { TeamAvatarWithCamera } from '@/components/shared/TeamAvatarWithCamera';
 
 interface TeamCardProps {
   candidate: TeamCandidate;
@@ -34,11 +35,13 @@ export const TeamCard: React.FC<TeamCardProps> = ({ candidate, onViewProfile }) 
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-4">
-          {/* Team Image */}
-          <img
-            src={team.profileImage || 'https://api.dicebear.com/7.x/initials/svg?seed=Team'}
-            alt={team.name}
-            className="w-16 h-16 rounded-full object-cover bg-gray-100"
+          {/* Team Avatar */}
+          <TeamAvatarWithCamera
+            avatarUrl={team.profileImage}
+            teamName={team.name}
+            size="md"
+            showCamera={false}
+            editable={false}
           />
           
           {/* Team Info */}

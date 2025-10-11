@@ -1,6 +1,7 @@
 "use client";
 
-import { Users, Mail, Calendar } from "lucide-react";
+import { Users, Mail, Calendar, Settings } from "lucide-react";
+import { TeamAvatarWithCamera } from "@/components/shared/TeamAvatarWithCamera";
 import type { Team, TeamMember } from "@/types/api";
 
 interface TeamInfoProps {
@@ -26,60 +27,102 @@ export function TeamInfo({ team, members, userId }: TeamInfoProps) {
 
   return (
     <div className="space-y-6">
-      {/* Team Info Card */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Información del Equipo
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-gray-900" />
-            <div>
-              <span className="text-sm text-gray-600">Nombre:</span>
-              <span className="ml-2 font-medium text-gray-900">
-                {team.name}
-              </span>
+      {/* Team Header Card with Photo */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+        {/* Gradient Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 sm:px-8 sm:py-10">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            {/* Team Avatar */}
+            <div className="flex-shrink-0">
+              <TeamAvatarWithCamera
+                avatarUrl={(team as any).profileImage}
+                teamName={team.name}
+                size="xl"
+                showCamera={false}
+                editable={false}
+                className="ring-4 ring-white/30"
+              />
             </div>
-          </div>
-          {team.description && (
-            <div className="flex items-start gap-3">
-              <Mail className="h-5 w-5 text-gray-900 mt-0.5" />
-              <div>
-                <span className="text-sm text-gray-600">Descripción:</span>
-                <p className="text-gray-900 mt-1">{team.description}</p>
+
+            {/* Team Info */}
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                    {team.name}
+                  </h1>
+                  {team.description && (
+                    <p className="text-blue-100 text-sm sm:text-base max-w-2xl">
+                      {team.description}
+                    </p>
+                  )}
+                </div>
+                
+                {currentMember && (
+                  <div className="flex flex-col items-center sm:items-end gap-2">
+                    <span className="text-xs text-blue-100">Tu rol</span>
+                    <span
+                      className={`px-4 py-2 rounded-full text-sm font-medium shadow-lg ${
+                        currentMember.role === "LIDER"
+                          ? "bg-purple-500 text-white"
+                          : "bg-white text-gray-900"
+                      }`}
+                    >
+                      {currentMember.role}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Stats */}
+              <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6">
+                <div className="flex items-center gap-2 text-white/90">
+                  <Users className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    {members.length} {members.length === 1 ? "miembro" : "miembros"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-sm">
+                    Desde {new Date(team.createdAt).toLocaleDateString("es-ES", {
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
               </div>
             </div>
-          )}
-          <div className="flex items-center gap-3">
-            <Calendar className="h-5 w-5 text-gray-900" />
-            <div>
-              <span className="text-sm text-gray-600">Creado:</span>
-              <span className="ml-2 text-gray-900">
-                {new Date(team.createdAt).toLocaleDateString("es-ES", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
           </div>
-          {currentMember && (
-            <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-gray-900" />
-              <div>
-                <span className="text-sm text-gray-600">Tu rol:</span>
-                <span
-                  className={`ml-2 px-3 py-1 rounded-full text-xs font-medium ${
-                    currentMember.role === "LIDER"
-                      ? "bg-purple-100 text-purple-700"
-                      : "bg-gray-200 text-gray-800"
-                  }`}
-                >
-                  {currentMember.role}
-                </span>
+        </div>
+
+        {/* Team Details */}
+        <div className="p-6 sm:p-8 bg-gray-50">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Líderes</p>
+                  <p className="text-lg font-bold text-gray-900">{leaders.length}</p>
+                </div>
               </div>
             </div>
-          )}
+
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Miembros</p>
+                  <p className="text-lg font-bold text-gray-900">{regularMembers.length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
