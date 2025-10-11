@@ -104,7 +104,12 @@ export default function MiembroDashboard() {
                   <ProfileManager profile={profile} onUpdate={loadData} />
                 )}
                 {activeTab === "team" && session?.user?.id && (
-                  <TeamInfo team={team} members={members} userId={session.user.id} />
+                  <TeamInfo 
+                    team={team} 
+                    members={members} 
+                    userId={session.user.id}
+                    onRefresh={loadData}
+                  />
                 )}
                 {activeTab === "members" && teamId && session?.user?.id && (
                   <TeamMembersPortfolio teamId={teamId} currentUserId={session.user.id} />

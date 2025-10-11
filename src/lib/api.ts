@@ -22,12 +22,25 @@ async function request<T = any>(
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
   
   try {
+    // ✅ Preparar headers, pero permitir que se sobrescriban
+    const defaultHeaders: Record<string, string> = {};
+    
+    // Solo agregar Content-Type si no está ya definido
+    if (init?.headers) {
+      const existingHeaders = init.headers as Record<string, string>;
+      if (!existingHeaders["Content-Type"]) {
+        defaultHeaders["Content-Type"] = "application/json";
+      }
+    } else {
+      defaultHeaders["Content-Type"] = "application/json";
+    }
+
     const res = await fetch(url, {
       ...init,
       signal: controller.signal,
       credentials: 'include', // Incluir cookies de autenticación
       headers: {
-        "Content-Type": "application/json",
+        ...defaultHeaders,
         ...(init?.headers || {}),
       },
     });
@@ -59,6 +72,15 @@ async function request<T = any>(
       }
       
       throw new ApiError(res.status, msg, errorDetails);
+    }
+
+    // ✅ Handle empty responses (e.g., 204 No Content or successful DELETE)
+    const contentType = res.headers.get("content-type");
+    const contentLength = res.headers.get("content-length");
+    
+    // Si la respuesta no tiene contenido, devolver objeto vacío
+    if (res.status === 204 || contentLength === "0" || !contentType?.includes("application/json")) {
+      return {} as T;
     }
 
     return res.json();
@@ -99,12 +121,19 @@ export const api = {
   get: <T = any>(path: string, init?: RequestInit) =>
     request<T>(path, { ...init, method: "GET" }),
 
-  post: <T = any>(path: string, body?: any, init?: RequestInit) =>
-    request<T>(path, {
+  post: <T = any>(path: string, body?: any, init?: RequestInit) => {
+    // ✅ Si body es FormData, no convertir a JSON y no enviar Content-Type
+    const isFormData = body instanceof FormData;
+    
+    return request<T>(path, {
       ...init,
       method: "POST",
-      body: body ? JSON.stringify(body) : undefined,
-    }),
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+      headers: isFormData 
+        ? { ...(init?.headers || {}) } // FormData maneja su propio Content-Type
+        : { "Content-Type": "application/json", ...(init?.headers || {}) },
+    });
+  },
 
   patch: <T = any>(path: string, body?: any, init?: RequestInit) =>
     request<T>(path, {

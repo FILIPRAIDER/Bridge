@@ -1,16 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { Users, Mail, Calendar, Settings } from "lucide-react";
 import { TeamAvatarWithCamera } from "@/components/shared/TeamAvatarWithCamera";
+import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
 import type { Team, TeamMember } from "@/types/api";
 
 interface TeamInfoProps {
   team: Team | null;
   members: TeamMember[];
   userId: string;
+  onRefresh?: () => void;
 }
 
-export function TeamInfo({ team, members, userId }: TeamInfoProps) {
+export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
+  const { show } = useToast();
+  const [uploading, setUploading] = useState(false);
+
   if (!team) {
     return (
       <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
@@ -22,8 +29,69 @@ export function TeamInfo({ team, members, userId }: TeamInfoProps) {
   }
 
   const currentMember = members.find((m) => m.userId === userId);
+  const isLeader = currentMember?.role === "LIDER";
   const leaders = members.filter((m) => m.role === "LIDER");
   const regularMembers = members.filter((m) => m.role === "MIEMBRO");
+
+  const handleCameraClick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/webp";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        await handleImageUpload(file);
+      }
+    };
+    input.click();
+  };
+
+  const handleImageUpload = async (file: File) => {
+    // Validar tamaño (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      show({ message: "La imagen no debe superar 5MB", variant: "error" });
+      return;
+    }
+
+    // Validar tipo
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      show({ message: "Solo se permiten imágenes JPG, PNG o WebP", variant: "error" });
+      return;
+    }
+
+    try {
+      setUploading(true);
+
+      // Crear FormData
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Subir la imagen
+      const response = await api.post(
+        `/teams/${team.id}/profile-image`,
+        formData,
+        {
+          headers: {
+            // Eliminar Content-Type para que el browser lo establezca automáticamente con el boundary
+          },
+        }
+      );
+
+      show({ message: "Foto del equipo actualizada", variant: "success" });
+      
+      // Refrescar datos si hay callback
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error: any) {
+      show({
+        message: error.message || "Error al subir la imagen",
+        variant: "error",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -38,10 +106,16 @@ export function TeamInfo({ team, members, userId }: TeamInfoProps) {
                 avatarUrl={(team as any).profileImage}
                 teamName={team.name}
                 size="xl"
-                showCamera={false}
-                editable={false}
+                showCamera={isLeader}
+                editable={isLeader}
+                onCameraClick={isLeader ? handleCameraClick : undefined}
                 className="ring-4 ring-white/30"
               />
+              {uploading && (
+                <p className="text-xs text-white/80 text-center mt-2">
+                  Subiendo...
+                </p>
+              )}
             </div>
 
             {/* Team Info */}
