@@ -267,9 +267,12 @@ export default function TeamConfigPage() {
         )}
 
         {/* Main Card */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50 relative">
+          {/* Subtle shine effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
+          
           {/* Profile Image Section */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12">
+          <div className="relative px-8 py-12">
             <div className="flex flex-col items-center">
               <div className="relative">
                 <TeamAvatarWithCamera
@@ -279,6 +282,7 @@ export default function TeamConfigPage() {
                   onCameraClick={handleImageClick}
                   showCamera={!uploadingImage}
                   editable={true}
+                  className="ring-4 ring-white/10 shadow-2xl"
                 />
                 
                 {uploadingImage && (
@@ -288,14 +292,14 @@ export default function TeamConfigPage() {
                 )}
               </div>
 
-              <p className="mt-4 text-sm text-blue-100 text-center max-w-md">
+              <p className="mt-4 text-sm text-gray-300 text-center max-w-md">
                 Haz click en el ícono de cámara para cambiar la foto de tu equipo
                 <br />
-                <span className="text-xs">JPG, PNG o WebP - Máx. 5MB</span>
+                <span className="text-xs text-gray-400">JPG, PNG o WebP - Máx. 5MB</span>
               </p>
 
               {teamData.verified && (
-                <div className="mt-3 inline-flex items-center space-x-2 bg-white bg-opacity-20 rounded-full px-4 py-2">
+                <div className="mt-3 inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 border border-gray-500/20">
                   <CheckCircle className="w-4 h-4 text-white" />
                   <span className="text-sm text-white font-medium">Equipo Verificado</span>
                 </div>
@@ -304,7 +308,7 @@ export default function TeamConfigPage() {
           </div>
 
           {/* Form Section */}
-          <div className="px-8 py-8 space-y-6">
+          <div className="px-8 py-8 space-y-6 bg-white">
             {/* Nombre del Equipo */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -418,11 +422,11 @@ export default function TeamConfigPage() {
           </div>
 
           {/* Actions */}
-          <div className="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-4">
+          <div className="px-8 py-6 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 border-t border-gray-300/50 flex justify-end space-x-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors"
             >
               Cancelar
             </button>
@@ -430,7 +434,7 @@ export default function TeamConfigPage() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-6 py-2 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-lg border border-gray-500/30"
             >
               {saving ? (
                 <>
@@ -448,12 +452,12 @@ export default function TeamConfigPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="mt-6 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-4 shadow-lg">
           <div className="flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">Sobre la foto de perfil del equipo</p>
-              <ul className="list-disc list-inside space-y-1 text-blue-700">
+            <AlertCircle className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-200">
+              <p className="font-medium mb-1 text-white">Sobre la foto de perfil del equipo</p>
+              <ul className="list-disc list-inside space-y-1 text-gray-300">
                 <li>La foto aparecerá en las búsquedas de matching</li>
                 <li>Se mostrará en las tarjetas de tu equipo</li>
                 <li>Ayuda a dar una imagen profesional y confiable</li>
