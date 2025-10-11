@@ -122,11 +122,28 @@ export function MySkills({ userId }: MySkillsProps) {
       variant: "danger",
       onConfirm: async () => {
         try {
+          console.log('🗑️ Intentando eliminar UserSkill:', { id, userId, skillName });
           await api.delete(`/users/${userId}/skills/${id}`);
           show({ message: "Skill eliminado correctamente", variant: "success" });
-          loadData();
+          // Actualizar lista inmediatamente sin recargar
+          setMySkills(prev => prev.filter(s => s.id !== id));
         } catch (error: any) {
-          show({ message: error.message || "Error al eliminar", variant: "error" });
+          console.error('❌ Error al eliminar skill:', error);
+          
+          // Si es 404, significa que ya fue eliminado o no existe
+          if (error.status === 404) {
+            show({ 
+              message: "El skill ya fue eliminado o no existe", 
+              variant: "warning" 
+            });
+            // Refrescar la lista por si acaso
+            loadData();
+          } else {
+            show({ 
+              message: error.message || "Error al eliminar", 
+              variant: "error" 
+            });
+          }
         }
       },
     });
@@ -350,45 +367,56 @@ export function MySkills({ userId }: MySkillsProps) {
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {mySkills.map((us) => (
-              <div
-                key={us.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Target className="h-5 w-5 text-gray-900" />
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {us.skill?.name || "Unknown"}
-                    </p>
-                    {us.skill?.category && (
-                      <p className="text-xs text-gray-500">{us.skill.category}</p>
-                    )}
-                    <div className="flex gap-0.5 mt-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg
-                          key={star}
-                          className={`h-4 w-4 ${
-                            star <= us.level
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "fill-gray-200 text-gray-200"
-                          }`}
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
+            {mySkills.map((us) => {
+              // Debug: Verificar estructura de datos
+              if (process.env.NODE_ENV === 'development' && !us.id) {
+                console.warn('⚠️ UserSkill sin ID:', us);
+              }
+              
+              return (
+                <div
+                  key={us.id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  data-userskill-id={us.id}
+                  data-skill-id={us.skillId}
+                >
+                  <div className="flex items-center gap-3">
+                    <Target className="h-5 w-5 text-gray-900" />
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {us.skill?.name || "Unknown"}
+                      </p>
+                      {us.skill?.category && (
+                        <p className="text-xs text-gray-500">{us.skill.category}</p>
+                      )}
+                      <div className="flex gap-0.5 mt-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <svg
+                            key={star}
+                            className={`h-4 w-4 ${
+                              star <= us.level
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "fill-gray-200 text-gray-200"
+                            }`}
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  <button
+                    onClick={() => handleDelete(us.id, us.skill?.name || "este skill")}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                    disabled={!us.id}
+                    title={us.id ? "Eliminar skill" : "ID no disponible"}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleDelete(us.id, us.skill?.name || "este skill")}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
