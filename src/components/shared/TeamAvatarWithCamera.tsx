@@ -64,17 +64,17 @@ export function TeamAvatarWithCamera({
   };
 
   return (
-    <div className={`relative inline-block ${className}`}>
+    <div className="relative inline-block">
       {/* Avatar Container */}
       <div 
         className={`
           ${sizes[size]} 
           rounded-full 
-          bg-gradient-to-br from-blue-100 to-purple-100 
+          bg-gradient-to-br from-gray-200 to-gray-300 
           flex items-center justify-center 
-          overflow-hidden 
-          ring-4 ring-blue-300
-          ${editable ? 'cursor-pointer hover:ring-blue-400 transition-all' : ''}
+          overflow-hidden
+          ${className}
+          ${editable ? 'cursor-pointer hover:brightness-95 transition-all' : ''}
         `}
         onClick={editable && showCamera ? onCameraClick : undefined}
       >
@@ -85,7 +85,7 @@ export function TeamAvatarWithCamera({
             className="h-full w-full object-cover"
           />
         ) : (
-          <Users className={`${iconSizes[size]} text-blue-400`} />
+          <Users className={`${iconSizes[size]} text-gray-500`} />
         )}
       </div>
 
@@ -99,12 +99,12 @@ export function TeamAvatarWithCamera({
           className={`
             absolute bottom-0 right-0 
             ${cameraSizes[size]} 
-            bg-blue-600 
+            bg-gradient-to-br from-gray-700 to-gray-800 
             rounded-full 
             flex items-center justify-center 
-            ring-2 ring-white 
-            hover:bg-blue-700 
-            transition-colors
+            ring-2 ring-white/20 
+            hover:from-gray-600 hover:to-gray-700
+            transition-all
             shadow-lg
           `}
           title="Cambiar foto del equipo"
