@@ -71,7 +71,7 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
   return (
     <div className="space-y-6">
       {/* Team Header Card with Photo */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden relative">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-md overflow-hidden relative">
         {/* Subtle shine effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
         

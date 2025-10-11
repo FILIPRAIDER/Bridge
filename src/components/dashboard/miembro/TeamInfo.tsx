@@ -97,7 +97,7 @@ export function TeamInfo({ team, members, userId, onRefresh }: TeamInfoProps) {
   return (
     <div className="space-y-6">
       {/* Team Header Card with Photo */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden relative">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden relative shadow-md">
         {/* Subtle shine effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
         
