@@ -475,7 +475,7 @@ export default function TeamConfigPage() {
         </div>
 
         {/* Info Box */}
-        <div className="mt-6 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-4 shadow-lg">
+        <div className="mt-6 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 rounded-xl p-4">
           <div className="flex items-start space-x-3">
             <AlertCircle className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-gray-200">

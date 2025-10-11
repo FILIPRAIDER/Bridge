@@ -104,7 +104,7 @@ export default function MiembroDashboard() {
                   <ProfileManager profile={profile} onUpdate={loadData} />
                 )}
                 {activeTab === "team" && session?.user?.id && (
-                  <TeamInfo 
+                  <TeamInfo
                     team={team} 
                     members={members} 
                     userId={session.user.id}
