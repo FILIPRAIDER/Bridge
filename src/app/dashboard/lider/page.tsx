@@ -107,9 +107,7 @@ export default function LiderDashboard() {
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
                 Dashboard del Líder
               </h1>
-              <p className="mt-2 text-sm lg:text-base text-gray-600">
-                Gestiona tu equipo: {team?.name || "Sin nombre"}
-              </p>
+        
             </div>
 
             {isLoading ? (

@@ -19,6 +19,8 @@ import {
 import { TeamAvatarWithCamera } from '@/components/shared/TeamAvatarWithCamera';
 import { BridgeLogo } from '@/components/shared/BridgeLogo';
 import { api } from '@/lib/api';
+import { useCountries } from '@/hooks/useCountries';
+import { useCities } from '@/hooks/useCities';
 
 /**
  * Página de Configuración del Equipo
@@ -57,6 +59,7 @@ export default function TeamConfigPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState('');
 
   const [teamData, setTeamData] = useState<TeamData>({
     id: '',
@@ -72,6 +75,10 @@ export default function TeamConfigPage() {
   });
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Hooks para cargar países y ciudades
+  const { data: countries, loading: countriesLoading } = useCountries();
+  const { data: citiesData, loading: citiesLoading, hasCities } = useCities(selectedCountry);
 
   // Cargar datos del equipo
   useEffect(() => {
@@ -112,6 +119,10 @@ export default function TeamConfigPage() {
       
       setTeamData(data);
       setPreviewImage(data.profileImage);
+      // Inicializar el país seleccionado para cargar ciudades
+      if (data.country) {
+        setSelectedCountry(data.country);
+      }
     } catch (error: any) {
       console.error('❌ Error loading team data:', error);
       setErrorMessage(error.message || 'Error al cargar los datos del equipo');
@@ -163,7 +174,7 @@ export default function TeamConfigPage() {
       formData.append('image', file);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/teams/${teamData.id}/profile-image`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/uploads/teams/${teamData.id}/profile-image`,
         {
           method: 'POST',
           // NO incluir Content-Type - el browser lo maneja automáticamente con el boundary
@@ -203,7 +214,7 @@ export default function TeamConfigPage() {
       setErrorMessage(null);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/teams/${teamData.id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/${teamData.id}`,
         {
           method: 'PUT',
           headers: {
@@ -251,11 +262,11 @@ export default function TeamConfigPage() {
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
             <BridgeLogo size="sm" showText={false} />
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-xl md:text-3xl font-bold text-gray-900">
               Configuración del Equipo
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm md:text-base">
             Gestiona la información y foto de perfil de tu equipo
           </p>
         </div>
@@ -276,7 +287,7 @@ export default function TeamConfigPage() {
         )}
 
         {/* Main Card */}
-        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50 relative">
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-md overflow-hidden relative">
           {/* Subtle shine effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none" />
           
@@ -351,32 +362,83 @@ export default function TeamConfigPage() {
 
             {/* Ubicación */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-1" />
-                  Ciudad *
-                </label>
-                <input
-                  type="text"
-                  value={teamData.city}
-                  onChange={(e) => setTeamData({ ...teamData, city: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Ej: Bogotá"
-                />
-              </div>
-
+              {/* País */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin className="w-4 h-4 inline mr-1" />
                   País *
                 </label>
-                <input
-                  type="text"
-                  value={teamData.country}
-                  onChange={(e) => setTeamData({ ...teamData, country: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Ej: Colombia"
-                />
+                <select
+                  value={teamData.country || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSelectedCountry(value);
+                    setTeamData({ ...teamData, country: value, city: '' }); // Reset ciudad
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer"
+                  disabled={countriesLoading}
+                >
+                  <option value="">
+                    {countriesLoading ? "Cargando países..." : "Selecciona un país"}
+                  </option>
+                  {countries?.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.flag} {country.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Ciudad */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  Ciudad *
+                </label>
+                
+                {/* Si no hay ciudades disponibles, mostrar input manual */}
+                {selectedCountry && !citiesLoading && !hasCities ? (
+                  <>
+                    <input
+                      type="text"
+                      value={teamData.city || ''}
+                      onChange={(e) => setTeamData({ ...teamData, city: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Escribe el nombre de tu ciudad"
+                    />
+                    <p className="text-amber-600 text-xs mt-1 flex items-center gap-1">
+                      <span>⚠️</span>
+                      <span>No hay ciudades precargadas. Escribe tu ciudad manualmente.</span>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <select
+                      value={teamData.city || ''}
+                      onChange={(e) => setTeamData({ ...teamData, city: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer"
+                      disabled={!selectedCountry || citiesLoading}
+                    >
+                      <option value="">
+                        {!selectedCountry
+                          ? "Primero selecciona un país"
+                          : citiesLoading
+                          ? "Cargando ciudades..."
+                          : "Selecciona una ciudad"}
+                      </option>
+                      {citiesData?.cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                    {!selectedCountry && (
+                      <p className="text-gray-500 text-xs mt-1">
+                        💡 Primero selecciona un país para ver las ciudades
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 

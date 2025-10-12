@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Users, TrendingUp, Mail, Award, Edit2, Check, X, Calendar, Settings } from "lucide-react";
+import { Users, TrendingUp, Mail, Award, Calendar, Settings } from "lucide-react";
 import { TeamAvatarWithCamera } from "@/components/shared/TeamAvatarWithCamera";
-import { api } from "@/lib/api";
-import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import type { Team, TeamMember } from "@/types/api";
 
@@ -15,58 +12,10 @@ interface TeamOverviewProps {
 }
 
 export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
-  const { show } = useToast();
   const router = useRouter();
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [description, setDescription] = useState("");
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [teamName, setTeamName] = useState("");
-  const [saving, setSaving] = useState(false);
   
   const regularMembers = members.filter((m) => m.role === "MIEMBRO").length;
   const leaders = members.filter((m) => m.role === "LIDER").length;
-
-  const handleEditDescription = () => {
-    setDescription(team?.description || "");
-    setIsEditingDescription(true);
-  };
-
-  const handleSaveDescription = async () => {
-    if (!team?.id) return;
-    
-    setSaving(true);
-    try {
-      await api.patch(`/teams/${team.id}`, { description });
-      show({ message: "Descripción actualizada", variant: "success" });
-      setIsEditingDescription(false);
-      onRefresh();
-    } catch (error: any) {
-      show({ message: error.message || "Error al guardar", variant: "error" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleEditName = () => {
-    setTeamName(team?.name || "");
-    setIsEditingName(true);
-  };
-
-  const handleSaveName = async () => {
-    if (!team?.id || !teamName.trim()) return;
-    
-    setSaving(true);
-    try {
-      await api.patch(`/teams/${team.id}`, { name: teamName });
-      show({ message: "Nombre actualizado", variant: "success" });
-      setIsEditingName(false);
-      onRefresh();
-    } catch (error: any) {
-      show({ message: error.message || "Error al guardar", variant: "error" });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -94,91 +43,12 @@ export function TeamOverview({ team, members, onRefresh }: TeamOverviewProps) {
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1">
-                  {isEditingName ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={teamName}
-                        onChange={(e) => setTeamName(e.target.value)}
-                        className="bg-white/10 border-2 border-gray-500/30 text-white placeholder-white/40 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/50 text-xl font-bold flex-1 backdrop-blur-sm"
-                        placeholder="Nombre del equipo"
-                        disabled={saving}
-                      />
-                      <button
-                        onClick={handleSaveName}
-                        disabled={saving || !teamName.trim()}
-                        className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors disabled:opacity-50 backdrop-blur-sm border border-gray-500/20"
-                        title="Guardar"
-                      >
-                        <Check className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => setIsEditingName(false)}
-                        disabled={saving}
-                        className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors backdrop-blur-sm border border-gray-500/20"
-                        title="Cancelar"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center sm:justify-start gap-3">
-                      <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
-                        {team?.name || "Sin nombre"}
-                      </h1>
-                      <button
-                        onClick={handleEditName}
-                        className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors backdrop-blur-sm"
-                        title="Editar nombre"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-
-                  {isEditingDescription ? (
-                    <div className="mt-3 space-y-2">
-                      <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="bg-white/10 border-2 border-gray-500/30 text-white placeholder-white/40 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400/50 text-sm w-full resize-none backdrop-blur-sm"
-                        rows={2}
-                        placeholder="Descripción del equipo..."
-                        disabled={saving}
-                      />
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={handleSaveDescription}
-                          disabled={saving}
-                          className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg disabled:opacity-50 text-sm font-medium transition-colors flex items-center gap-2 backdrop-blur-sm border border-gray-500/20"
-                        >
-                          <Check className="h-4 w-4" />
-                          {saving ? "Guardando..." : "Guardar"}
-                        </button>
-                        <button
-                          onClick={() => setIsEditingDescription(false)}
-                          disabled={saving}
-                          className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 backdrop-blur-sm border border-gray-500/20"
-                        >
-                          <X className="h-4 w-4" />
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-2 flex items-start justify-center sm:justify-start gap-2">
-                      <p className="text-gray-300 text-sm sm:text-base max-w-2xl">
-                        {team?.description || "Sin descripción. Click en editar para agregar una."}
-                      </p>
-                      <button
-                        onClick={handleEditDescription}
-                        className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex-shrink-0 backdrop-blur-sm"
-                        title="Editar descripción"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+                    {team?.name || "Sin nombre"}
+                  </h1>
+                  <p className="mt-2 text-gray-300 text-sm sm:text-base max-w-2xl text-center sm:text-left">
+                    {team?.description || "Sin descripción. Usa 'Configurar Equipo' para agregar una."}
+                  </p>
                 </div>
 
                 {/* Quick Actions */}
