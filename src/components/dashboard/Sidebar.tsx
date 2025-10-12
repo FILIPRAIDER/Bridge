@@ -15,6 +15,8 @@ import {
   UsersRound,
   FileCheck,
   Briefcase,
+  LayoutGrid,
+  FolderOpen,
 } from "lucide-react";
 import { useSession } from "@/store/session/useSession";
 // Logo SVG simple para sidebar
@@ -32,6 +34,7 @@ interface SidebarProps {
 const LIDER_TABS = [
   { id: "overview", label: "Resumen", icon: Users },
   { id: "profile", label: "Mi Perfil", icon: User },
+  { id: "manage-areas", label: "Gestionar Áreas", icon: LayoutGrid },
   { id: "manage-members", label: "Gestionar Miembros", icon: Settings },
   { id: "team-skills", label: "Skills del Equipo", icon: Target },
   { id: "invite", label: "Invitar Miembros", icon: UserPlus },
@@ -41,6 +44,7 @@ const LIDER_TABS = [
 const MIEMBRO_TABS = [
   { id: "profile", label: "Mi Perfil", icon: User },
   { id: "team", label: "Mi Equipo", icon: Users },
+  { id: "my-area", label: "Mi Área", icon: FolderOpen },
   { id: "members", label: "Miembros del Equipo", icon: UsersRound },
 ];
 
