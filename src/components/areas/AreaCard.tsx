@@ -17,12 +17,22 @@ export function AreaCard({ area, onEdit, onDelete, onAssignMember }: AreaCardPro
   const [expanded, setExpanded] = useState(false);
   
   // 🔥 Cargar miembros del área desde el endpoint
-  const { members, loading: loadingMembers } = useAreaMembers(
+  const { members, loading: loadingMembers, removeMember } = useAreaMembers(
     area.teamId,
     area.id,
     area.name,
     undefined // teamName no es crítico para el card
   );
+
+  // Handler para quitar miembro
+  const handleRemoveMember = async (userId: string, userName: string) => {
+    if (confirm(`¿Quitar a ${userName} del área?`)) {
+      const success = await removeMember(userId);
+      if (!success) {
+        alert("Error al quitar el miembro. Inténtalo de nuevo.");
+      }
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
@@ -128,15 +138,15 @@ export function AreaCard({ area, onEdit, onDelete, onAssignMember }: AreaCardPro
               members.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                  className="group flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="h-8 w-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-medium text-gray-700">
                         {member.user.name?.[0] || member.user.email[0].toUpperCase()}
                       </span>
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {member.user.name || member.user.email}
                       </p>
@@ -145,9 +155,18 @@ export function AreaCard({ area, onEdit, onDelete, onAssignMember }: AreaCardPro
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400 flex-shrink-0">
-                    {formatDistanceToNow(member.assignedAt)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400 flex-shrink-0">
+                      {formatDistanceToNow(member.assignedAt)}
+                    </span>
+                    <button
+                      onClick={() => handleRemoveMember(member.userId, member.user.name || member.user.email)}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 text-red-600 hover:bg-red-50 rounded transition-all"
+                      title="Quitar del área"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
