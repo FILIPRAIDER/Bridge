@@ -8,7 +8,9 @@ export type NotificationType =
   | "TEAM_MATCH"
   | "NEW_MEMBER"
   | "ROLE_CHANGE"
-  | "REMINDER";
+  | "REMINDER"
+  | "AREA_ASSIGNMENT"     // 🆕 Notificación de asignación a área
+  | "AREA_REMOVAL";       // 🆕 Notificación de remoción de área
 
 export interface Notification {
   id: string;

@@ -2,17 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { LayoutGrid, Users, FileText, MessageSquare } from "lucide-react";
+import { api } from "@/lib/api";
+import { formatDistanceToNow } from "@/utils/dates";
 
 interface MyAreaProps {
   userId: string;
   teamId: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4001";
-
 export function MyArea({ userId, teamId }: MyAreaProps) {
   const [areas, setAreas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadMyAreas();
@@ -22,20 +23,42 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
   const loadMyAreas = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas`, {
-        credentials: "include",
-      });
+      setError(null);
 
-      if (response.ok) {
-        const data = await response.json();
-        // Filtrar solo las áreas donde el usuario es miembro
-        const myAreas = data.areas.filter((area: any) =>
-          area.members?.some((member: any) => member.userId === userId)
-        );
-        setAreas(myAreas);
-      }
+      // 🔥 Obtener todas las áreas del equipo (ahora con JWT automático)
+      const data = await api.get<any>(`/teams/${teamId}/areas`);
+      
+      // 🔥 Para cada área, verificar si el usuario es miembro
+      const myAreasWithDetails = await Promise.all(
+        data.areas.map(async (area: any) => {
+          try {
+            // Cargar miembros del área
+            const membersData = await api.get<any>(`/teams/${teamId}/areas/${area.id}/members`);
+            const isMember = membersData.members.some((m: any) => m.userId === userId);
+            
+            if (isMember) {
+              // Encontrar la info de asignación del usuario
+              const myMembership = membersData.members.find((m: any) => m.userId === userId);
+              return {
+                ...area,
+                assignedAt: myMembership?.assignedAt,
+                role: myMembership?.role,
+              };
+            }
+            return null;
+          } catch (err) {
+            console.error(`Error loading members for area ${area.id}:`, err);
+            return null;
+          }
+        })
+      );
+
+      // Filtrar áreas nulas
+      const myAreas = myAreasWithDetails.filter((area) => area !== null);
+      setAreas(myAreas);
     } catch (error) {
       console.error("Error loading areas:", error);
+      setError(error instanceof Error ? error.message : "Error al cargar áreas");
     } finally {
       setLoading(false);
     }
@@ -46,6 +69,23 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
       <div className="text-center py-12">
         <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900" />
         <p className="mt-2 text-gray-600">Cargando áreas...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-12 text-center">
+        <h3 className="text-lg font-semibold text-red-900 mb-2">
+          Error al cargar áreas
+        </h3>
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={loadMyAreas}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Reintentar
+        </button>
       </div>
     );
   }

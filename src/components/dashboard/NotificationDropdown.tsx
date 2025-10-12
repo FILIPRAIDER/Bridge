@@ -39,6 +39,10 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
         return "⭐";
       case "REMINDER":
         return "⏰";
+      case "AREA_ASSIGNMENT":
+        return "📁";  // 🆕 Icono para asignación a área
+      case "AREA_REMOVAL":
+        return "🗑️";  // 🆕 Icono para remoción de área
       default:
         return "🔔";
     }
@@ -189,10 +193,28 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
                     >
                       {notification.title}
                     </h4>
-                    <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap flex items-center gap-0.5 flex-shrink-0">
-                      <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                      {getRelativeTime(notification.createdAt)}
-                    </span>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap flex items-center gap-0.5">
+                        <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                        {getRelativeTime(notification.createdAt)}
+                      </span>
+                      {/* Botón para eliminar notificación */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeNotification(notification.id);
+                          toast({
+                            variant: "success",
+                            title: "Notificación eliminada",
+                            message: "La notificación ha sido eliminada",
+                          });
+                        }}
+                        className="p-1 hover:bg-gray-200 rounded transition-colors group"
+                        title="Eliminar notificación"
+                      >
+                        <X className="h-3 w-3 text-gray-400 group-hover:text-gray-600" />
+                      </button>
+                    </div>
                   </div>
 
                   <p className="text-[11px] sm:text-sm text-gray-600 leading-snug">
