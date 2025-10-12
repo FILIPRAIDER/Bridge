@@ -15,6 +15,14 @@ interface AreaCardProps {
 
 export function AreaCard({ area, onEdit, onDelete, onAssignMember }: AreaCardProps) {
   const [expanded, setExpanded] = useState(false);
+  
+  // 🔥 Cargar miembros del área desde el endpoint
+  const { members, loading: loadingMembers } = useAreaMembers(
+    area.teamId,
+    area.id,
+    area.name,
+    undefined // teamName no es crítico para el card
+  );
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
@@ -112,8 +120,12 @@ export function AreaCard({ area, onEdit, onDelete, onAssignMember }: AreaCardPro
 
         {expanded && (
           <div className="mt-4 space-y-2">
-            {area.members && area.members.length > 0 ? (
-              area.members.map((member) => (
+            {loadingMembers ? (
+              <p className="text-sm text-gray-500 text-center py-4">
+                Cargando miembros...
+              </p>
+            ) : members && members.length > 0 ? (
+              members.map((member) => (
                 <div
                   key={member.id}
                   className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
