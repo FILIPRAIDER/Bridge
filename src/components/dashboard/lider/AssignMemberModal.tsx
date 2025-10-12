@@ -59,8 +59,10 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
           const data = await response.json();
           console.log("[AssignMemberModal] Team members response:", data);
           
-          // Validar que data.members existe
-          if (!data.members || !Array.isArray(data.members)) {
+          // El backend puede devolver un array directo o un objeto { members: [...] }
+          const membersArray = Array.isArray(data) ? data : data.members;
+          
+          if (!membersArray || !Array.isArray(membersArray)) {
             console.error("[AssignMemberModal] Invalid response format:", data);
             setAvailableMembers([]);
             return;
@@ -68,7 +70,7 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
           
           // Filtrar miembros que ya están en el área
           const assignedUserIds = members.map((m) => m.userId);
-          const available = data.members
+          const available = membersArray
             .filter((m: any) => !assignedUserIds.includes(m.userId))
             .map((m: any) => ({
               id: m.userId,
@@ -77,6 +79,7 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
               avatarUrl: m.user?.avatarUrl || null,
             }));
           
+          console.log("[AssignMemberModal] Available members:", available);
           setAvailableMembers(available);
         } else {
           console.error("[AssignMemberModal] Error response:", response.status, response.statusText);
