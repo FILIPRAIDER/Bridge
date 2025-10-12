@@ -159,11 +159,11 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
       </div>
 
       {/* Split Layout: Chat (60%) + Files (40%) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[60%_40%] gap-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[60%_40%] gap-0 overflow-hidden min-h-0">
         {/* Left: Chat Area */}
-        <div className="flex flex-col h-full">
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-4">
+        <div className="flex flex-col h-full min-h-0">
+          {/* Messages Area - Fixed height with elegant scroll */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-4 custom-scrollbar scroll-smooth">
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -198,14 +198,18 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
             {messages.map((message, index) => {
               // Safe check: message.userId might be undefined from WebSocket
               const isOwnMessage = message?.userId === userId || message?.user?.id === userId;
+              
+              // Safe check: messages might not have createdAt from WebSocket
+              const prevMessage = messages[index - 1];
               const showDate =
                 index === 0 ||
-                formatDate(messages[index - 1].createdAt) !== formatDate(message.createdAt);
+                (prevMessage?.createdAt && message?.createdAt && 
+                 formatDate(prevMessage.createdAt) !== formatDate(message.createdAt));
 
               return (
                 <div key={message.id}>
                   {/* Date Separator */}
-                  {showDate && (
+                  {showDate && message?.createdAt && (
                     <div className="flex items-center gap-4 my-6">
                       <div className="flex-1 h-px bg-gray-200" />
                       <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
@@ -241,9 +245,11 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
                         <span className="text-xs font-semibold text-gray-900">
                           {message.user?.name || "Usuario"}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {formatTime(message.createdAt)}
-                        </span>
+                        {message?.createdAt && (
+                          <span className="text-xs text-gray-500">
+                            {formatTime(message.createdAt)}
+                          </span>
+                        )}
                       </div>
 
                       <div className="group relative">
