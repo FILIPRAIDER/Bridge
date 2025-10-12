@@ -14,6 +14,7 @@ import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { ManageAreas } from "@/components/dashboard/lider/ManageAreas";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
+import { TokenDebugger } from "@/components/debug/TokenDebugger";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
 // 🔥 Tabs optimizadas - Sin redundancias
@@ -143,6 +144,8 @@ export default function LiderDashboard() {
           </div>
         </main>
       </div>
+      {/* Debug temporal - Remover después de verificar */}
+      <TokenDebugger />
     </div>
   );
 }
