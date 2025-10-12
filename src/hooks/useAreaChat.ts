@@ -213,11 +213,21 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
 
   // Conectar WebSocket
   useEffect(() => {
-    if (!areaId || !userId) return;
+    if (!areaId || !userId || !session) return;
+
+    const token = (session as any)?.accessToken;
+    if (!token) {
+      console.error("[useAreaChat] No se encontró token de autenticación");
+      return;
+    }
 
     console.log(`[useAreaChat] Conectando a WebSocket para área ${areaId}`);
+    console.log(`[useAreaChat] Token presente: ${token.substring(0, 20)}...`);
 
     const socket = io(`${WS_BASE_URL}/areas/${areaId}`, {
+      auth: {
+        token: token,
+      },
       transports: ["websocket", "polling"],
       withCredentials: true,
     });
@@ -281,7 +291,7 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [areaId, userId]);
+  }, [areaId, userId, session]);
 
   // Cargar mensajes al montar
   useEffect(() => {
