@@ -244,20 +244,23 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
     });
 
     // Nuevo mensaje
-    socket.on("new-message", (data: NewMessageEvent) => {
+    socket.on("new-message", (data: any) => {
       console.log("[useAreaChat] Nuevo mensaje recibido:", data);
       
-      // ✅ Validate data structure
-      if (!data || !data.message) {
+      // ✅ El backend puede enviar data.message o directamente el mensaje
+      const messageData = data.message || data;
+      
+      if (!messageData || !messageData.id) {
         console.error("[useAreaChat] Invalid message data received:", data);
         return;
       }
       
-      // ✅ Ensure createdAt exists (fallback to current time if missing)
-      const messageWithDate = {
-        ...data.message,
-        createdAt: data.message.createdAt || new Date().toISOString(),
-        userId: data.message.userId || data.message.user?.id, // Also ensure userId
+      // ✅ Normalizar el mensaje con valores por defecto
+      const messageWithDate: AreaMessage = {
+        ...messageData,
+        createdAt: messageData.createdAt || new Date().toISOString(),
+        userId: messageData.userId || messageData.user?.id,
+        user: messageData.user || { id: messageData.userId, name: 'Usuario', email: '', avatarUrl: null },
       };
       
       console.log("[useAreaChat] Mensaje procesado:", messageWithDate);

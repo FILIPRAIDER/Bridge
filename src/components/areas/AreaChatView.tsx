@@ -104,7 +104,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div className="flex flex-col h-screen max-h-screen bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
@@ -159,11 +159,11 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
       </div>
 
       {/* Split Layout: Chat (60%) + Files (40%) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[60%_40%] gap-0 overflow-hidden min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[60%_40%] gap-0 overflow-hidden">
         {/* Left: Chat Area */}
-        <div className="flex flex-col h-full min-h-0">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Messages Area - Fixed height with elegant scroll */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-4 custom-scrollbar scroll-smooth">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar scroll-smooth">
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
