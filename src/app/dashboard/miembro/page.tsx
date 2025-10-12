@@ -7,13 +7,14 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { TeamInfo } from "@/components/dashboard/miembro/TeamInfo";
+import { MyArea } from "@/components/dashboard/miembro/MyArea";
 import { TeamMembersPortfolio } from "@/components/dashboard/shared/TeamMembersPortfolio";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
 // 🔥 Tabs optimizadas - Sin redundancias
-type TabType = "profile" | "team" | "members";
+type TabType = "profile" | "team" | "my-area" | "members";
 
 export default function MiembroDashboard() {
   const { data: session } = useNextAuthSession();
@@ -110,6 +111,9 @@ export default function MiembroDashboard() {
                     userId={session.user.id}
                     onRefresh={loadData}
                   />
+                )}
+                {activeTab === "my-area" && teamId && session?.user?.id && (
+                  <MyArea userId={session.user.id} teamId={teamId} />
                 )}
                 {activeTab === "members" && teamId && session?.user?.id && (
                   <TeamMembersPortfolio teamId={teamId} currentUserId={session.user.id} />

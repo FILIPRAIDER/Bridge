@@ -1,11 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import type { AreaMember, AreaMembersResponse, AssignMemberRequest } from "@/types/areas";
+import { sendAreaAssignmentEmail, sendAreaRemovalEmail } from "@/actions/send-area-emails";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4001";
 
-export function useAreaMembers(teamId: string | null, areaId: string | null) {
+export function useAreaMembers(
+  teamId: string | null,
+  areaId: string | null,
+  areaName?: string,
+  teamName?: string
+) {
+  const { data: session } = useSession();
   const [members, setMembers] = useState<AreaMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +67,22 @@ export function useAreaMembers(teamId: string | null, areaId: string | null) {
       const newMember: AreaMember = await response.json();
       setMembers((prev) => [...prev, newMember]);
 
+      // 📧 Enviar email de notificación (no bloquea la operación si falla)
+      if (newMember.user?.email && session?.user?.name && areaName && teamName) {
+        sendAreaAssignmentEmail({
+          to: newMember.user.email,
+          userName: newMember.user.name || newMember.user.email,
+          areaName,
+          teamName,
+          inviterName: session.user.name,
+          areaId,
+          teamId,
+        }).catch((error) => {
+          console.error("[useAreaMembers] Error enviando email de asignación:", error);
+          // No fallar la operación si el email falla
+        });
+      }
+
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al asignar miembro");
@@ -70,6 +94,9 @@ export function useAreaMembers(teamId: string | null, areaId: string | null) {
   // Remover miembro
   const removeMember = async (userId: string): Promise<boolean> => {
     if (!teamId || !areaId) return false;
+
+    // Guardar info del miembro antes de removerlo (para el email)
+    const memberToRemove = members.find((m) => m.userId === userId);
 
     try {
       const response = await fetch(
@@ -85,6 +112,20 @@ export function useAreaMembers(teamId: string | null, areaId: string | null) {
       }
 
       setMembers((prev) => prev.filter((m) => m.userId !== userId));
+
+      // 📧 Enviar email de notificación (no bloquea la operación si falla)
+      if (memberToRemove?.user?.email && session?.user?.name && areaName && teamName) {
+        sendAreaRemovalEmail({
+          to: memberToRemove.user.email,
+          userName: memberToRemove.user.name || memberToRemove.user.email,
+          areaName,
+          teamName,
+          removerName: session.user.name,
+        }).catch((error) => {
+          console.error("[useAreaMembers] Error enviando email de remoción:", error);
+          // No fallar la operación si el email falla
+        });
+      }
 
       return true;
     } catch (err) {

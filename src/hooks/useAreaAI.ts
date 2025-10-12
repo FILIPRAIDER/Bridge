@@ -91,7 +91,8 @@ export function useAreaAI(): UseAreaAIReturn {
   const [loadingBottlenecks, setLoadingBottlenecks] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  // 🔥 IMPORTANTE: Backend IA corre en puerto 4101
+  const apiBaseUrl = process.env.NEXT_PUBLIC_IA_API_URL || 'http://localhost:4101';
 
   // 1. Sugerencias de asignación inteligente
   const getSuggestions = async (areaId: string): Promise<MemberSuggestion[]> => {
@@ -99,7 +100,11 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/suggest-members`, {
+      const response = await fetch(`${apiBaseUrl}/api/areas/${areaId}/suggest-members`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
       });
 
@@ -124,7 +129,11 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ai/teams/${teamId}/area-insights`, {
+      const response = await fetch(`${apiBaseUrl}/api/teams/${teamId}/area-insights`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
       });
 
@@ -152,9 +161,11 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/chat-suggestions`, {
+      const response = await fetch(`${apiBaseUrl}/api/areas/${areaId}/chat-suggestions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
         body: JSON.stringify({ message }),
       });
@@ -180,9 +191,11 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ai/areas/generate-description`, {
+      const response = await fetch(`${apiBaseUrl}/api/areas/generate-description`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
         body: JSON.stringify({ areaName, context }),
       });
@@ -208,7 +221,11 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ai/teams/${teamId}/predictions`, {
+      const response = await fetch(`${apiBaseUrl}/api/teams/${teamId}/predictions`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
       });
 
@@ -233,7 +250,11 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/bottlenecks`, {
+      const response = await fetch(`${apiBaseUrl}/api/areas/${areaId}/bottlenecks`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
       });
 

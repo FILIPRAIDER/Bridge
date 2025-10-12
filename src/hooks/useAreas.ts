@@ -26,6 +26,10 @@ export function useAreas(teamId: string | null) {
 
     try {
       const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
         credentials: "include",
       });
 

@@ -23,7 +23,8 @@ interface TeamMember {
 }
 
 export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: AssignMemberModalProps) {
-  const { members, assignMember } = useAreaMembers(teamId, area.id);
+  const [teamName, setTeamName] = useState<string>("");
+  const { members, assignMember } = useAreaMembers(teamId, area.id, area.name, teamName);
   const [availableMembers, setAvailableMembers] = useState<TeamMember[]>([]);
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<AreaRole>(AreaRoleEnum.MEMBER);
@@ -58,8 +59,25 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
       }
     };
 
+    const loadTeamInfo = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/${teamId}`, {
+          credentials: "include",
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setTeamName(data.name || "Equipo");
+        }
+      } catch (error) {
+        console.error("Error loading team info:", error);
+        setTeamName("Equipo");
+      }
+    };
+
     if (isOpen && teamId && area.id) {
       loadTeamMembers();
+      loadTeamInfo();
     }
   }, [isOpen, teamId, area.id, members]);
 

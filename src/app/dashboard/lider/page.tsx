@@ -11,12 +11,13 @@ import { ManageSkills } from "@/components/dashboard/lider/ManageSkills";
 import { ViewInvites } from "@/components/dashboard/lider/ViewInvites";
 import { TeamMembersManager } from "@/components/dashboard/lider/TeamMembersManager";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
+import { ManageAreas } from "@/components/dashboard/lider/ManageAreas";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
 // 🔥 Tabs optimizadas - Sin redundancias
-type TabType = "overview" | "profile" | "manage-members" | "team-skills" | "invite" | "invites";
+type TabType = "overview" | "profile" | "manage-areas" | "manage-members" | "team-skills" | "invite" | "invites";
 
 export default function LiderDashboard() {
   const { data: session } = useNextAuthSession();
@@ -119,6 +120,9 @@ export default function LiderDashboard() {
                 )}
                 {activeTab === "profile" && (
                   <ProfileManager profile={profile} onUpdate={loadProfile} />
+                )}
+                {activeTab === "manage-areas" && teamId && (
+                  <ManageAreas teamId={teamId} />
                 )}
                 {activeTab === "manage-members" && teamId && session?.user?.id && (
                   <TeamMembersManager teamId={teamId} currentUserId={session.user.id} />
