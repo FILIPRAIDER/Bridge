@@ -57,6 +57,15 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
         
         if (response.ok) {
           const data = await response.json();
+          console.log("[AssignMemberModal] Team members response:", data);
+          
+          // Validar que data.members existe
+          if (!data.members || !Array.isArray(data.members)) {
+            console.error("[AssignMemberModal] Invalid response format:", data);
+            setAvailableMembers([]);
+            return;
+          }
+          
           // Filtrar miembros que ya están en el área
           const assignedUserIds = members.map((m) => m.userId);
           const available = data.members
@@ -69,6 +78,8 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
             }));
           
           setAvailableMembers(available);
+        } else {
+          console.error("[AssignMemberModal] Error response:", response.status, response.statusText);
         }
       } catch (error) {
         console.error("Error loading team members:", error);
