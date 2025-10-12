@@ -12,13 +12,14 @@ import { ViewInvites } from "@/components/dashboard/lider/ViewInvites";
 import { TeamMembersManager } from "@/components/dashboard/lider/TeamMembersManager";
 import { ProfileManager } from "@/components/dashboard/miembro/ProfileManager";
 import { ManageAreas } from "@/components/dashboard/lider/ManageAreas";
+import { AreasDashboard } from "@/components/areas/AreasDashboard";
 import { Loader } from "@/components/ui";
 import { useLoadAvatar } from "@/hooks/useLoadAvatar";
 import { TokenDebugger } from "@/components/debug/TokenDebugger";
 import type { Team, TeamMember, MemberProfile } from "@/types/api";
 
 // 🔥 Tabs optimizadas - Sin redundancias
-type TabType = "overview" | "profile" | "manage-areas" | "manage-members" | "team-skills" | "invite" | "invites";
+type TabType = "overview" | "profile" | "areas-chat" | "manage-areas" | "manage-members" | "team-skills" | "invite" | "invites";
 
 export default function LiderDashboard() {
   const { data: session } = useNextAuthSession();
@@ -121,6 +122,9 @@ export default function LiderDashboard() {
                 )}
                 {activeTab === "profile" && (
                   <ProfileManager profile={profile} onUpdate={loadProfile} />
+                )}
+                {activeTab === "areas-chat" && teamId && (
+                  <AreasDashboard teamId={teamId} />
                 )}
                 {activeTab === "manage-areas" && teamId && (
                   <ManageAreas teamId={teamId} />

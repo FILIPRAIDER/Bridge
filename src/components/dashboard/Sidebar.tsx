@@ -34,6 +34,7 @@ interface SidebarProps {
 const LIDER_TABS = [
   { id: "overview", label: "Resumen", icon: Users },
   { id: "profile", label: "Mi Perfil", icon: User },
+  { id: "areas-chat", label: "Chat de Áreas", icon: FolderOpen },
   { id: "manage-areas", label: "Gestionar Áreas", icon: LayoutGrid },
   { id: "manage-members", label: "Gestionar Miembros", icon: Settings },
   { id: "team-skills", label: "Skills del Equipo", icon: Target },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import { io, Socket } from "socket.io-client";
 import type {
   AreaMessage,
@@ -16,6 +17,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || "http://localhost:4001";
 
 export function useAreaChat(teamId: string | null, areaId: string | null, userId: string | null) {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<AreaMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,19 +30,31 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
 
   // Cargar mensajes iniciales
   const loadMessages = async (before?: string) => {
-    if (!teamId || !areaId) return;
+    if (!teamId || !areaId || !session) return;
 
     setLoading(true);
     setError(null);
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const params = new URLSearchParams();
       if (before) params.append("before", before);
       params.append("limit", "50");
 
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/messages?${params}`,
-        { credentials: "include" }
+        { 
+          headers,
+          credentials: "include" 
+        }
       );
 
       if (!response.ok) {
@@ -66,14 +80,23 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
 
   // Enviar mensaje
   const sendMessage = async (data: SendMessageRequest): Promise<boolean> => {
-    if (!teamId || !areaId) return false;
+    if (!teamId || !areaId || !session) return false;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/messages`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           credentials: "include",
           body: JSON.stringify(data),
         }
@@ -94,14 +117,23 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
 
   // Editar mensaje
   const editMessage = async (messageId: string, content: string): Promise<boolean> => {
-    if (!teamId || !areaId) return false;
+    if (!teamId || !areaId || !session) return false;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/messages/${messageId}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           credentials: "include",
           body: JSON.stringify({ content }),
         }
@@ -121,13 +153,21 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
 
   // Eliminar mensaje
   const deleteMessage = async (messageId: string): Promise<boolean> => {
-    if (!teamId || !areaId) return false;
+    if (!teamId || !areaId || !session) return false;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {};
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/messages/${messageId}`,
         {
           method: "DELETE",
+          headers,
           credentials: "include",
         }
       );
@@ -245,10 +285,11 @@ export function useAreaChat(teamId: string | null, areaId: string | null, userId
 
   // Cargar mensajes al montar
   useEffect(() => {
-    if (teamId && areaId) {
+    if (teamId && areaId && session) {
       loadMessages();
     }
-  }, [teamId, areaId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamId, areaId, session]);
 
   return {
     messages,
