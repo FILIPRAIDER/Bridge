@@ -100,7 +100,7 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/areas/${areaId}/suggest-members`, {
+      const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/suggest-members`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/teams/${teamId}/area-insights`, {
+      const response = await fetch(`${apiBaseUrl}/api/ai/teams/${teamId}/area-insights`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/areas/${areaId}/chat-suggestions`, {
+      const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/chat-suggestions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/areas/generate-description`, {
+      const response = await fetch(`${apiBaseUrl}/api/ai/areas/generate-description`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/teams/${teamId}/predictions`, {
+      const response = await fetch(`${apiBaseUrl}/api/ai/teams/${teamId}/predictions`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ export function useAreaAI(): UseAreaAIReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/api/areas/${areaId}/bottlenecks`, {
+      const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/bottlenecks`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
