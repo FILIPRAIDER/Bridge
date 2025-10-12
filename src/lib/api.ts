@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_TIMEOUT } from "./config";
+import { getSession } from "next-auth/react";
 
 class ApiError extends Error {
   constructor(
@@ -24,6 +25,18 @@ async function request<T = any>(
   try {
     // ✅ Preparar headers, pero permitir que se sobrescriban
     const defaultHeaders: Record<string, string> = {};
+    
+    // 🔑 Obtener token JWT automáticamente
+    try {
+      const session = await getSession();
+      const token = (session as any)?.accessToken;
+      
+      if (token) {
+        defaultHeaders["Authorization"] = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.warn("[api] No se pudo obtener token de sesión:", error);
+    }
     
     // Solo agregar Content-Type si no está ya definido
     if (init?.headers) {
