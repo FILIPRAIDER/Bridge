@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { X, UserPlus, Search } from "lucide-react";
 import type { TeamArea, AreaRole } from "@/types/areas";
 import { useAreaMembers } from "@/hooks/useAreaMembers";
 import { AreaRole as AreaRoleEnum } from "@/types/areas";
+import { useToast } from "@/components/ui/toast";
 
 interface AssignMemberModalProps {
   isOpen: boolean;
@@ -23,6 +25,8 @@ interface TeamMember {
 }
 
 export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: AssignMemberModalProps) {
+  const { data: session } = useSession();
+  const { show } = useToast();
   const [teamName, setTeamName] = useState<string>("");
   const { members, assignMember } = useAreaMembers(teamId, area.id, area.name, teamName);
   const [availableMembers, setAvailableMembers] = useState<TeamMember[]>([]);
@@ -34,8 +38,20 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
   // Cargar miembros disponibles del equipo
   useEffect(() => {
     const loadTeamMembers = async () => {
+      if (!session) return;
+      
       try {
+        const token = (session as any)?.accessToken;
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/${teamId}/members`, {
+          headers,
           credentials: "include",
         });
         
@@ -60,8 +76,20 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
     };
 
     const loadTeamInfo = async () => {
+      if (!session) return;
+      
       try {
+        const token = (session as any)?.accessToken;
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/teams/${teamId}`, {
+          headers,
           credentials: "include",
         });
         
@@ -75,11 +103,11 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
       }
     };
 
-    if (isOpen && teamId && area.id) {
+    if (isOpen && teamId && area.id && session) {
       loadTeamMembers();
       loadTeamInfo();
     }
-  }, [isOpen, teamId, area.id, members]);
+  }, [isOpen, teamId, area.id, members, session]);
 
   const handleAssign = async () => {
     if (!selectedMember) return;
@@ -92,10 +120,25 @@ export function AssignMemberModal({ isOpen, area, teamId, onClose, onAssign }: A
       });
 
       if (success) {
+        const memberName = availableMembers.find(m => m.id === selectedMember)?.name || "Miembro";
+        show({
+          variant: "success",
+          message: `${memberName} ha sido asignado al área "${area.name}"`
+        });
         onAssign();
+        onClose();
+      } else {
+        show({
+          variant: "error",
+          message: "Error al asignar el miembro. Por favor, intenta de nuevo."
+        });
       }
     } catch (error) {
       console.error("Error assigning member:", error);
+      show({
+        variant: "error",
+        message: "Error al asignar el miembro. Por favor, intenta de nuevo."
+      });
     } finally {
       setLoading(false);
     }

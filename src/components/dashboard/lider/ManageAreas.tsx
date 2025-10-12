@@ -9,6 +9,7 @@ import { EditAreaModal } from "./EditAreaModal";
 import { AssignMemberModal } from "./AssignMemberModal";
 import { AreaCard } from "@/components/areas/AreaCard";
 import { AIInsightsPanel } from "@/components/areas/AIInsightsPanel";
+import { useToast } from "@/components/ui/toast";
 
 interface ManageAreasProps {
   teamId: string;
@@ -16,6 +17,7 @@ interface ManageAreasProps {
 
 export function ManageAreas({ teamId }: ManageAreasProps) {
   const { areas, stats, loading, createArea, updateArea, deleteArea, loadAreas } = useAreas(teamId);
+  const { show } = useToast();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingArea, setEditingArea] = useState<TeamArea | null>(null);
@@ -26,6 +28,15 @@ export function ManageAreas({ teamId }: ManageAreasProps) {
     const newArea = await createArea(data);
     if (newArea) {
       setShowCreateModal(false);
+      show({
+        variant: "success",
+        message: `Área "${newArea.name}" creada correctamente`
+      });
+    } else {
+      show({
+        variant: "error",
+        message: "Error al crear el área. Por favor, intenta de nuevo."
+      });
     }
   };
 
@@ -33,12 +44,32 @@ export function ManageAreas({ teamId }: ManageAreasProps) {
     const success = await updateArea(areaId, data);
     if (success) {
       setEditingArea(null);
+      show({
+        variant: "success",
+        message: "Área actualizada correctamente"
+      });
+    } else {
+      show({
+        variant: "error",
+        message: "Error al actualizar el área"
+      });
     }
   };
 
   const handleDeleteArea = async (areaId: string) => {
     if (confirm("¿Estás seguro de eliminar esta área? Se perderán todos los archivos y mensajes.")) {
-      await deleteArea(areaId);
+      const success = await deleteArea(areaId);
+      if (success) {
+        show({
+          variant: "success",
+          message: "Área eliminada correctamente"
+        });
+      } else {
+        show({
+          variant: "error",
+          message: "Error al eliminar el área"
+        });
+      }
     }
   };
 

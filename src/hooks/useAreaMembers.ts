@@ -20,15 +20,27 @@ export function useAreaMembers(
 
   // Cargar miembros
   const loadMembers = async () => {
-    if (!teamId || !areaId) return;
+    if (!teamId || !areaId || !session) return;
 
     setLoading(true);
     setError(null);
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/members`,
-        { credentials: "include" }
+        { 
+          headers,
+          credentials: "include" 
+        }
       );
 
       if (!response.ok) {
@@ -47,14 +59,23 @@ export function useAreaMembers(
 
   // Asignar miembro
   const assignMember = async (data: AssignMemberRequest): Promise<boolean> => {
-    if (!teamId || !areaId) return false;
+    if (!teamId || !areaId || !session) return false;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/members`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           credentials: "include",
           body: JSON.stringify(data),
         }
@@ -93,16 +114,24 @@ export function useAreaMembers(
 
   // Remover miembro
   const removeMember = async (userId: string): Promise<boolean> => {
-    if (!teamId || !areaId) return false;
+    if (!teamId || !areaId || !session) return false;
 
     // Guardar info del miembro antes de removerlo (para el email)
     const memberToRemove = members.find((m) => m.userId === userId);
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {};
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/members/${userId}`,
         {
           method: "DELETE",
+          headers,
           credentials: "include",
         }
       );
@@ -136,10 +165,11 @@ export function useAreaMembers(
   };
 
   useEffect(() => {
-    if (teamId && areaId) {
+    if (teamId && areaId && session) {
       loadMembers();
     }
-  }, [teamId, areaId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamId, areaId, session]);
 
   return {
     members,
