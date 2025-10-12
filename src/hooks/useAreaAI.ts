@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 interface MemberSuggestion {
   memberId: string;
@@ -83,6 +84,7 @@ interface UseAreaAIReturn {
 }
 
 export function useAreaAI(): UseAreaAIReturn {
+  const { data: session } = useSession();
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [loadingInsights, setLoadingInsights] = useState(false);
   const [loadingChatSuggestions, setLoadingChatSuggestions] = useState(false);
@@ -94,6 +96,22 @@ export function useAreaAI(): UseAreaAIReturn {
   // 🔥 IMPORTANTE: Backend IA corre en puerto 4101
   const apiBaseUrl = process.env.NEXT_PUBLIC_IA_API_URL || 'http://localhost:4101';
 
+  // Helper para obtener headers con autenticación
+  // ⚠️ NOTA: Todos los endpoints de IA requieren autenticación según el equipo backend
+  const getAuthHeaders = (): HeadersInit => {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Obtener token JWT de la sesión
+    const token = (session as any)?.accessToken;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  };
+
   // 1. Sugerencias de asignación inteligente
   const getSuggestions = async (areaId: string): Promise<MemberSuggestion[]> => {
     setLoadingSuggestions(true);
@@ -102,9 +120,7 @@ export function useAreaAI(): UseAreaAIReturn {
     try {
       const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/suggest-members`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
 
@@ -131,9 +147,7 @@ export function useAreaAI(): UseAreaAIReturn {
     try {
       const response = await fetch(`${apiBaseUrl}/api/ai/teams/${teamId}/area-insights`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
 
@@ -163,9 +177,7 @@ export function useAreaAI(): UseAreaAIReturn {
     try {
       const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/chat-suggestions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify({ message }),
       });
@@ -193,9 +205,7 @@ export function useAreaAI(): UseAreaAIReturn {
     try {
       const response = await fetch(`${apiBaseUrl}/api/ai/areas/generate-description`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: JSON.stringify({ areaName, context }),
       });
@@ -223,9 +233,7 @@ export function useAreaAI(): UseAreaAIReturn {
     try {
       const response = await fetch(`${apiBaseUrl}/api/ai/teams/${teamId}/predictions`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
 
@@ -252,9 +260,7 @@ export function useAreaAI(): UseAreaAIReturn {
     try {
       const response = await fetch(`${apiBaseUrl}/api/ai/areas/${areaId}/bottlenecks`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         credentials: 'include',
       });
 
