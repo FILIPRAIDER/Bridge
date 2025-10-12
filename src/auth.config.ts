@@ -24,13 +24,28 @@ const authOptions = {
         const parsed = schema.safeParse(creds);
         if (!parsed.success) return null;
 
-        // core-api devuelve { id, name, email, role }
-        const user = await coreFetch("/auth/login", {
+        // core-api devuelve { user: {...}, token: "..." } o directamente { id, name, email, role, token }
+        const response = await coreFetch("/auth/login", {
           method: "POST",
           body: JSON.stringify(parsed.data),
         });
 
+        if (!response) return null;
+
+        // Extraer usuario y token según el formato del backend
+        // Backend puede devolver: { user: {...}, token: "..." } o directamente { id, name, ..., token: "..." }
+        const user = response.user || response;
+        const accessToken = response.token || response.accessToken || response.jwt;
+
         if (!user) return null;
+
+        // Guardar el token en el objeto user para pasarlo al callback jwt
+        if (accessToken) {
+          user.accessToken = accessToken;
+          console.log('[NextAuth] ✅ AccessToken capturado del backend');
+        } else {
+          console.warn('[NextAuth] ⚠️ Backend aún no devuelve token JWT - Ver RESPUESTA_BACKEND_AUTH.md');
+        }
 
         // 🔥 Obtener companyId y avatarUrl del usuario
         try {
@@ -68,6 +83,7 @@ const authOptions = {
         token.avatarUrl = (user as any).avatarUrl || null;
         token.companyId = (user as any).companyId || null;
         token.companyLogoUrl = (user as any).companyLogoUrl || null;
+        token.accessToken = (user as any).accessToken || null; // ✅ Guardar token del backend
       }
       
       // Actualizar avatar cuando se llama update() desde el cliente
@@ -96,6 +112,8 @@ const authOptions = {
         // @ts-ignore
         session.user.id = token.sub as string; // <-- importante para usar userId luego
       }
+      // ✅ Exponer el accessToken en la sesión para que esté disponible en el cliente
+      (session as any).accessToken = token.accessToken;
       return session;
     },
   },

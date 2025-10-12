@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import type {
   TeamArea,
   AreasListResponse,
@@ -12,6 +13,7 @@ import type {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4001";
 
 export function useAreas(teamId: string | null) {
+  const { data: session } = useSession();
   const [areas, setAreas] = useState<TeamArea[]>([]);
   const [stats, setStats] = useState<AreaStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,17 +21,36 @@ export function useAreas(teamId: string | null) {
 
   // Cargar áreas
   const loadAreas = async () => {
-    if (!teamId) return;
+    if (!teamId || !session) {
+      console.log("[useAreas] No teamId or session", { teamId, session: !!session });
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
+      const token = (session as any)?.accessToken;
+      console.log("[useAreas] Token info:", { 
+        hasToken: !!token, 
+        tokenLength: token?.length,
+        tokenStart: token?.substring(0, 20) + "..."
+      });
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      console.log("[useAreas] Making request to:", `${API_BASE_URL}/teams/${teamId}/areas`);
+      console.log("[useAreas] Headers:", headers);
+
       const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         credentials: "include",
       });
 
@@ -62,12 +83,21 @@ export function useAreas(teamId: string | null) {
 
   // Crear área
   const createArea = async (data: CreateAreaRequest): Promise<TeamArea | null> => {
-    if (!teamId) return null;
+    if (!teamId || !session) return null;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         credentials: "include",
         body: JSON.stringify(data),
       });
@@ -97,12 +127,21 @@ export function useAreas(teamId: string | null) {
 
   // Actualizar área
   const updateArea = async (areaId: string, data: UpdateAreaRequest): Promise<boolean> => {
-    if (!teamId) return false;
+    if (!teamId || !session) return false;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas/${areaId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
         credentials: "include",
         body: JSON.stringify(data),
       });
@@ -124,11 +163,19 @@ export function useAreas(teamId: string | null) {
 
   // Eliminar área
   const deleteArea = async (areaId: string): Promise<boolean> => {
-    if (!teamId) return false;
+    if (!teamId || !session) return false;
 
     try {
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {};
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas/${areaId}`, {
         method: "DELETE",
+        headers,
         credentials: "include",
       });
 
@@ -155,10 +202,11 @@ export function useAreas(teamId: string | null) {
   };
 
   useEffect(() => {
-    if (teamId) {
+    if (teamId && session) {
       loadAreas();
     }
-  }, [teamId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamId, session]);
 
   return {
     areas,
