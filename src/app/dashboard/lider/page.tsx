@@ -62,11 +62,24 @@ export default function LiderDashboard() {
   }, [teamId, session?.user?.id]);
 
   const loadTeamData = async () => {
+    if (!session) return;
+    
     try {
       setIsLoading(true);
+      
+      // Obtener token JWT
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      
       const [teamData, membersData] = await Promise.all([
-        api.get<Team>(`/teams/${teamId}`),
-        api.get<TeamMember[]>(`/teams/${teamId}/members`),
+        api.get<Team>(`/teams/${teamId}`, { headers }),
+        api.get<TeamMember[]>(`/teams/${teamId}/members`, { headers }),
       ]);
       setTeam(teamData);
       setMembers(membersData);
@@ -79,8 +92,19 @@ export default function LiderDashboard() {
 
   const loadProfile = async () => {
     if (!session?.user?.id) return;
+    
     try {
-      const userData = await api.get<any>(`/users/${session.user.id}`);
+      // Obtener token JWT
+      const token = (session as any)?.accessToken;
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      
+      const userData = await api.get<any>(`/users/${session.user.id}`, { headers });
       setProfile(userData.profile || userData);
     } catch (error) {
       console.error("Error loading profile:", error);
