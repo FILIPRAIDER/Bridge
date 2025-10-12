@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { LayoutGrid, Users, FileText, MessageSquare } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatDistanceToNow } from "@/utils/dates";
+import { AreaChatView } from "@/components/areas/AreaChatView";
+import { useSession } from "next-auth/react";
 
 interface MyAreaProps {
   userId: string;
@@ -11,9 +13,11 @@ interface MyAreaProps {
 }
 
 export function MyArea({ userId, teamId }: MyAreaProps) {
+  const { data: session } = useSession();
   const [areas, setAreas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedArea, setSelectedArea] = useState<any | null>(null);
 
   useEffect(() => {
     loadMyAreas();
@@ -63,6 +67,19 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
       setLoading(false);
     }
   };
+
+  // 🔥 Si hay un área seleccionada, mostrar el chat completo
+  if (selectedArea && session?.user) {
+    return (
+      <AreaChatView
+        teamId={teamId}
+        area={selectedArea}
+        userId={session.user.id}
+        userName={session.user.name || session.user.email || "Usuario"}
+        onBack={() => setSelectedArea(null)}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -169,13 +186,11 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
             {/* Actions */}
             <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
               <button
-                className="w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all"
-                onClick={() => {
-                  // TODO: Navegar a la vista detallada del área con chat y archivos
-                  alert(`Abriendo área: ${area.name}\n\nPróximamente: Chat y archivos en tiempo real`);
-                }}
+                className="w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
+                onClick={() => setSelectedArea(area)}
               >
-                Abrir Área
+                <MessageSquare className="h-4 w-4" />
+                <span>Abrir Chat y Archivos</span>
               </button>
             </div>
           </div>
