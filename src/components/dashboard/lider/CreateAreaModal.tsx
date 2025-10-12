@@ -121,23 +121,24 @@ export function CreateAreaModal({ isOpen, onClose, onCreate }: CreateAreaModalPr
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Color
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
               {AREA_COLORS.map((color) => (
                 <button
                   key={color.value}
                   type="button"
                   onClick={() => setFormData({ ...formData, color: color.value })}
-                  className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                  className={`flex items-center justify-center sm:justify-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border-2 transition-all ${
                     formData.color === color.value
                       ? "border-gray-900 shadow-sm"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
+                  title={color.label}
                 >
                   <div
                     className="h-6 w-6 rounded-full flex-shrink-0"
                     style={{ backgroundColor: color.value }}
                   />
-                  <span className="text-sm font-medium text-gray-700">{color.label}</span>
+                  <span className="hidden sm:inline text-sm font-medium text-gray-700">{color.label}</span>
                 </button>
               ))}
             </div>
