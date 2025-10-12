@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Smile, MoreVertical, Edit2, Trash2, ArrowLeft } from "lucide-react";
+import { Send, Paperclip, Smile, MoreVertical, Edit2, Trash2, ArrowLeft, ChevronDown, Users } from "lucide-react";
 import { useAreaChat } from "@/hooks/useAreaChat";
 import type { TeamArea, AreaMessage, MessageType } from "@/types/areas";
 import { useToast } from "@/components/ui/toast";
+import AreaFilePanel from "./AreaFilePanel";
 
 interface AreaChatViewProps {
   teamId: string;
@@ -31,6 +32,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
 
   const [messageInput, setMessageInput] = useState("");
   const [editingMessage, setEditingMessage] = useState<string | null>(null);
+  const [filesExpanded, setFilesExpanded] = useState(false); // Para mobile accordion
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -104,7 +106,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
   return (
     <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
           <button
             onClick={onBack}
@@ -131,8 +133,37 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-4">
+      {/* Mobile: Files Accordion */}
+      <div className="lg:hidden border-b border-gray-200">
+        <button
+          onClick={() => setFilesExpanded(!filesExpanded)}
+          className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-900">📁 Archivos Compartidos</span>
+            {area.fileCount !== undefined && (
+              <span className="text-xs text-gray-500">({area.fileCount})</span>
+            )}
+          </div>
+          <ChevronDown
+            className={`h-5 w-5 text-gray-600 transition-transform ${
+              filesExpanded ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+        {filesExpanded && (
+          <div className="border-t border-gray-200 bg-gray-50 max-h-80 overflow-y-auto">
+            <AreaFilePanel teamId={teamId} areaId={area.id} currentUserId={userId} />
+          </div>
+        )}
+      </div>
+
+      {/* Split Layout: Chat (60%) + Files (40%) */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[60%_40%] gap-0 overflow-hidden">
+        {/* Left: Chat Area */}
+        <div className="flex flex-col h-full">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 space-y-4">
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -165,7 +196,8 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
 
             {/* Messages */}
             {messages.map((message, index) => {
-              const isOwnMessage = message.userId === userId;
+              // Safe check: message.userId might be undefined from WebSocket
+              const isOwnMessage = message?.userId === userId || message?.user?.id === userId;
               const showDate =
                 index === 0 ||
                 formatDate(messages[index - 1].createdAt) !== formatDate(message.createdAt);
@@ -262,52 +294,59 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
             <div ref={messagesEndRef} />
           </>
         )}
-      </div>
-
-      {/* Input Area */}
-      <div className="px-4 md:px-6 py-3 md:py-4 border-t border-gray-200 bg-gray-50">
-        <div className="flex items-end gap-2 md:gap-3">
-          <button
-            type="button"
-            className="p-2 md:p-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
-            title="Adjuntar archivo"
-          >
-            <Paperclip className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
-
-          <div className="flex-1 relative min-w-0">
-            <textarea
-              ref={inputRef}
-              value={messageInput}
-              onChange={(e) => {
-                setMessageInput(e.target.value);
-                startTyping();
-              }}
-              onKeyDown={handleKeyDown}
-              onBlur={stopTyping}
-              placeholder="Escribe un mensaje..."
-              rows={1}
-              className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none resize-none max-h-32 text-sm md:text-base"
-              style={{ minHeight: "38px" }}
-            />
           </div>
 
-          <button
-            type="button"
-            onClick={handleSendMessage}
-            disabled={!messageInput.trim() || !isConnected}
-            className="p-2 md:p-2.5 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          >
-            <Send className="h-4 w-4 md:h-5 md:w-5" />
-          </button>
+          {/* Input Area */}
+          <div className="px-4 md:px-6 py-3 md:py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+            <div className="flex items-end gap-2 md:gap-3">
+              <button
+                type="button"
+                className="p-2 md:p-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
+                title="Adjuntar archivo"
+              >
+                <Paperclip className="h-4 w-4 md:h-5 md:w-5" />
+              </button>
+
+              <div className="flex-1 relative min-w-0">
+                <textarea
+                  ref={inputRef}
+                  value={messageInput}
+                  onChange={(e) => {
+                    setMessageInput(e.target.value);
+                    startTyping();
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onBlur={stopTyping}
+                  placeholder="Escribe un mensaje..."
+                  rows={1}
+                  className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none resize-none max-h-32 text-sm md:text-base"
+                  style={{ minHeight: "38px" }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSendMessage}
+                disabled={!messageInput.trim() || !isConnected}
+                className="p-2 md:p-2.5 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              >
+                <Send className="h-4 w-4 md:h-5 md:w-5" />
+              </button>
+            </div>
+
+            {!isConnected && (
+              <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                <span className="h-2 w-2 bg-amber-600 rounded-full" />
+                Reconectando al chat...
+              </p>
+            )}
+          </div>
         </div>
 
-        {!isConnected && (
-          <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-            <span className="h-2 w-2 bg-amber-600 rounded-full" />
-            Reconectando al chat...
-          </p>
-        )}
+        {/* Right: Files Area (Desktop Only) */}
+        <div className="hidden lg:block h-full border-l border-gray-200">
+          <AreaFilePanel teamId={teamId} areaId={area.id} currentUserId={userId} />
+        </div>
       </div>
     </div>
   );

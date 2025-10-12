@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LayoutGrid, Users, FileText, MessageSquare } from "lucide-react";
+import { LayoutGrid, Users, FileText, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatDistanceToNow } from "@/utils/dates";
 import { AreaChatView } from "@/components/areas/AreaChatView";
 import { useSession } from "next-auth/react";
+import { useAreaMembers } from "@/hooks/useAreaMembers";
 
 interface MyAreaProps {
   userId: string;
@@ -18,6 +19,7 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedArea, setSelectedArea] = useState<any | null>(null);
+  const [expandedAreaId, setExpandedAreaId] = useState<string | null>(null);
 
   useEffect(() => {
     loadMyAreas();
@@ -184,7 +186,7 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
             </div>
 
             {/* Actions */}
-            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 space-y-3">
               <button
                 className="w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
                 onClick={() => setSelectedArea(area)}
@@ -192,10 +194,102 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
                 <MessageSquare className="h-4 w-4" />
                 <span>Abrir Chat y Archivos</span>
               </button>
+
+              {/* Toggle Members */}
+              <button
+                onClick={() =>
+                  setExpandedAreaId(
+                    expandedAreaId === area.id ? null : area.id
+                  )
+                }
+                className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                <span>Ver Miembros</span>
+                {expandedAreaId === area.id ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+
+              {/* Members List */}
+              {expandedAreaId === area.id && (
+                <AreaMembersList teamId={teamId} areaId={area.id} />
+              )}
             </div>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// Componente interno para mostrar miembros (sin botón de eliminar)
+function AreaMembersList({ teamId, areaId }: { teamId: string; areaId: string }) {
+  const { members, loading, error } = useAreaMembers(teamId, areaId);
+
+  if (loading) {
+    return (
+      <div className="py-4 text-center">
+        <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-2 text-sm text-red-600 text-center">
+        Error al cargar miembros
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <div className="py-4 text-sm text-gray-500 text-center">
+        No hay miembros asignados
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+      {members.map((member) => (
+        <div
+          key={member.userId}
+          className="flex items-center gap-3 p-2 bg-white border border-gray-100 rounded-lg"
+        >
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            {member.user?.avatarUrl ? (
+              <img
+                src={member.user.avatarUrl}
+                alt={member.user.name || "Usuario"}
+                className="h-8 w-8 rounded-lg object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
+                <span className="text-white font-semibold text-xs">
+                  {member.user?.name?.[0]?.toUpperCase() || "?"}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Member Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {member.user?.name || member.user?.email || "Usuario"}
+            </p>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="capitalize">{member.role}</span>
+              <span>•</span>
+              <span>{formatDistanceToNow(member.assignedAt)}</span>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
