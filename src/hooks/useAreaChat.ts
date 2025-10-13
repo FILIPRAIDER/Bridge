@@ -14,7 +14,10 @@ import type {
 } from "@/types/areas";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4001";
-const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || "http://localhost:4001";
+// WebSocket: usar variable específica o caer back a API_BASE_URL
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || 
+                    process.env.NEXT_PUBLIC_API_BASE_URL || 
+                    "http://localhost:4001";
 
 export function useAreaChat(teamId: string | null, areaId: string | null, userId: string | null) {
   const { data: session } = useSession();
