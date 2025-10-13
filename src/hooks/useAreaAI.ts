@@ -93,8 +93,8 @@ export function useAreaAI(): UseAreaAIReturn {
   const [loadingBottlenecks, setLoadingBottlenecks] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔥 IMPORTANTE: Backend IA corre en puerto 4101
-  const apiBaseUrl = process.env.NEXT_PUBLIC_IA_API_URL || 'http://localhost:4101';
+  // 🔥 IMPORTANTE: Backend IA corre en puerto 4101 (dev) o bridge-ai-api.onrender.com (prod)
+  const apiBaseUrl = process.env.NEXT_PUBLIC_AI_API_URL || 'http://localhost:4101';
 
   // Helper para obtener headers con autenticación
   // ⚠️ NOTA: Todos los endpoints de IA requieren autenticación según el equipo backend
