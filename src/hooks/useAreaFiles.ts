@@ -108,27 +108,24 @@ export function useAreaFiles(teamId: string | null, areaId: string | null) {
 
   // Descargar archivo
   const downloadFile = async (fileId: string, fileName: string) => {
-    if (!teamId || !areaId || !session) return;
+    if (!teamId || !areaId) return;
 
     try {
-      const token = (session as any)?.accessToken;
-      if (!token) {
-        console.error("[useAreaFiles] No token found for download");
+      // Buscar el archivo en la lista para obtener su URL
+      const file = files.find(f => f.id === fileId);
+      
+      if (!file || !file.fileUrl) {
+        console.error("[useAreaFiles] File not found or missing URL");
+        setError("No se pudo encontrar el archivo");
         return;
       }
 
-      const response = await fetch(
-        `${API_BASE_URL}/teams/${teamId}/areas/${areaId}/files/${fileId}/download`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) throw new Error("Error al descargar archivo");
+      // Descargar directamente desde ImageKit URL
+      const response = await fetch(file.fileUrl);
+      
+      if (!response.ok) {
+        throw new Error("Error al obtener el archivo");
+      }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -139,6 +136,8 @@ export function useAreaFiles(teamId: string | null, areaId: string | null) {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      
+      console.log("[useAreaFiles] ✅ File downloaded:", fileName);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al descargar archivo");
       console.error("[useAreaFiles] Error downloading file:", err);

@@ -45,7 +45,7 @@ const LIDER_TABS = [
 const MIEMBRO_TABS = [
   { id: "profile", label: "Mi Perfil", icon: User },
   { id: "team", label: "Mi Equipo", icon: Users },
-  { id: "my-area", label: "Mi Área", icon: FolderOpen },
+  { id: "my-area", label: "Mis Áreas", icon: FolderOpen },
   { id: "members", label: "Miembros del Equipo", icon: UsersRound },
 ];
 

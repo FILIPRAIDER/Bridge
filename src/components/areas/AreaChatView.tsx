@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Smile, MoreVertical, Edit2, Trash2, ArrowLeft, ChevronDown, Users } from "lucide-react";
+import { Send, Paperclip, Smile, MoreVertical, Edit2, Trash2, ArrowLeft, ChevronDown, Users, FileText, Mic, Brain } from "lucide-react";
 import { useAreaChat } from "@/hooks/useAreaChat";
 import type { TeamArea, AreaMessage, MessageType } from "@/types/areas";
 import { useToast } from "@/components/ui/toast";
 import AreaFilePanel from "./AreaFilePanel";
+import { useAIAssistant } from "@/hooks/useAIAssistant";
+import { AIAssistantMessage } from "@/components/chat/AIAssistantMessage";
+import { ConversationSummaryModal } from "@/components/chat/ConversationSummaryModal";
+import { MeetingRecorder } from "@/components/chat/MeetingRecorder";
 
 interface AreaChatViewProps {
   teamId: string;
@@ -30,6 +34,10 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
     loadMessages,
   } = useAreaChat(teamId, area.id, userId);
 
+  // IA Features - ⚠️ ACTUALIZADO: Ahora pasa teamId
+  const { response: aiResponse, loading: aiLoading, askAI, clearResponse } = useAIAssistant(teamId, area.id);
+  const [showSummary, setShowSummary] = useState(false);
+
   const [messageInput, setMessageInput] = useState("");
   const [editingMessage, setEditingMessage] = useState<string | null>(null);
   const [filesExpanded, setFilesExpanded] = useState(false); // Para mobile accordion
@@ -44,8 +52,29 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
   const handleSendMessage = async () => {
     if (!messageInput.trim()) return;
 
+    const trimmed = messageInput.trim();
+
+    // Detectar comando @IA
+    if (trimmed.startsWith("@IA ") || trimmed.startsWith("@ia ")) {
+      const question = trimmed.replace(/@IA\s+/i, "").trim();
+      
+      if (question.length > 0) {
+        await askAI(question);
+        setMessageInput("");
+        stopTyping();
+        return;
+      } else {
+        show({
+          variant: "error",
+          message: "Debes escribir una pregunta después de @IA",
+        });
+        return;
+      }
+    }
+
+    // Enviar mensaje normal
     const success = await sendMessage({
-      content: messageInput.trim(),
+      content: trimmed,
       type: "TEXT" as MessageType,
     });
 
@@ -106,30 +135,77 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
   return (
     <div className="flex flex-col h-screen max-h-screen bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
-        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+      <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-600" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
           </button>
           
           <div
-            className="h-10 w-10 md:h-12 md:w-12 rounded-lg flex items-center justify-center text-xl md:text-2xl shadow-sm flex-shrink-0"
+            className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-lg flex items-center justify-center text-lg sm:text-xl md:text-2xl shadow-sm flex-shrink-0"
             style={{ backgroundColor: area.color || "#6B7280" }}
           >
             {area.icon}
           </div>
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-base md:text-xl font-bold text-gray-900 truncate">{area.name}</h2>
-            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
-              <span className={`h-2 w-2 rounded-full ${isConnected ? "bg-green-500" : "bg-gray-400"}`} />
-              <span className="hidden sm:inline">{isConnected ? "Conectado" : "Desconectado"}</span>
-              {area.memberCount && <span className="hidden sm:inline">• {area.memberCount} miembros</span>}
+            <h2 className="text-sm sm:text-base md:text-xl font-bold text-gray-900 truncate">{area.name}</h2>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-600">
+              <span className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full ${isConnected ? "bg-green-500" : "bg-gray-400"}`} />
+              <span className="hidden sm:inline text-xs md:text-sm">{isConnected ? "Conectado" : "Desconectado"}</span>
+              {area.memberCount && <span className="hidden sm:inline text-xs md:text-sm">• {area.memberCount} miembros</span>}
             </div>
           </div>
+        </div>
+
+        {/* Botones de IA */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Botón Resumir */}
+          <button
+            onClick={() => setShowSummary(true)}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm text-sm font-medium"
+            title="Generar resumen inteligente"
+          >
+            <FileText className="h-4 w-4" />
+            <span className="hidden md:inline">Resumir</span>
+          </button>
+
+          <button
+            onClick={() => setShowSummary(true)}
+            className="sm:hidden p-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-sm"
+            title="Generar resumen"
+          >
+            <FileText className="h-4 w-4" />
+          </button>
+
+          {/* Botón Minuta - Desktop */}
+          <button
+            onClick={() => {
+              // Toggle recording state
+              const recorder = document.getElementById('meeting-recorder-btn');
+              if (recorder) recorder.click();
+            }}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg hover:from-red-700 hover:to-orange-700 transition-all shadow-sm text-sm font-medium"
+            title="Grabar minuta de reunión"
+          >
+            <Mic className="h-4 w-4" />
+            <span className="hidden md:inline">Minuta</span>
+          </button>
+
+          {/* Botón Minuta - Mobile */}
+          <button
+            onClick={() => {
+              const recorder = document.getElementById('meeting-recorder-btn');
+              if (recorder) recorder.click();
+            }}
+            className="sm:hidden p-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg hover:from-red-700 hover:to-orange-700 transition-all shadow-sm"
+            title="Minuta"
+          >
+            <Mic className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
@@ -163,7 +239,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
         {/* Left: Chat Area */}
         <div className="flex flex-col h-full overflow-hidden">
           {/* Messages Area - Fixed height with elegant scroll */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 custom-scrollbar scroll-smooth">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 custom-scrollbar scroll-smooth">
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -220,18 +296,18 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
                   )}
 
                   {/* Message */}
-                  <div className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : ""} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                  <div className={`flex gap-2 sm:gap-3 ${isOwnMessage ? "flex-row-reverse" : ""} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                     {/* Avatar */}
                     <div className="flex-shrink-0">
                       {message.user?.avatarUrl ? (
                         <img
                           src={message.user.avatarUrl}
                           alt={message.user.name || "Usuario"}
-                          className="h-10 w-10 rounded-lg object-cover shadow-md"
+                          className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg object-cover shadow-md"
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-md">
-                          <span className="text-white font-semibold text-sm">
+                        <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center shadow-md">
+                          <span className="text-white font-semibold text-xs sm:text-sm">
                             {message.user?.name?.[0]?.toUpperCase() || "?"}
                           </span>
                         </div>
@@ -239,7 +315,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
                     </div>
 
                     {/* Message Content */}
-                    <div className={`flex flex-col max-w-[85%] md:max-w-[75%] ${isOwnMessage ? "items-end" : "items-start"}`}>
+                    <div className={`flex flex-col max-w-[80%] sm:max-w-[85%] md:max-w-[75%] ${isOwnMessage ? "items-end" : "items-start"}`}>
                       {/* User info */}
                       <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
                         <span className="text-xs font-semibold text-gray-900">
@@ -254,13 +330,13 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
 
                       <div className="group relative">
                         <div
-                          className={`px-4 py-3 rounded-2xl shadow-sm ${
+                          className={`px-3 py-2 sm:px-4 sm:py-3 rounded-2xl shadow-sm ${
                             isOwnMessage
                               ? "bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-tr-sm"
                               : "bg-white text-gray-900 rounded-tl-sm border border-gray-200"
                           }`}
                         >
-                          <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                          <p className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed">
                             {message.content}
                           </p>
                           {message.editedAt && (
@@ -285,6 +361,33 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
               );
             })}
 
+            {/* Respuesta del Asistente IA */}
+            {aiResponse && (
+              <AIAssistantMessage 
+                response={aiResponse} 
+                onClose={clearResponse}
+              />
+            )}
+
+            {/* Loading del Asistente IA */}
+            {aiLoading && (
+              <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Brain className="h-5 w-5 text-white animate-pulse" />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <span className="text-xs font-semibold text-purple-900 mb-2">Asistente IA está analizando...</span>
+                  <div className="bg-purple-50 border border-purple-200 rounded-2xl rounded-tl-sm p-4 max-w-md">
+                    <div className="flex gap-2">
+                      <div className="h-2 w-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                      <div className="h-2 w-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                      <div className="h-2 w-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Typing Indicator */}
             {typingUsers.length > 0 && (
               <div className="flex items-center gap-2 text-sm text-gray-600 animate-pulse">
@@ -303,14 +406,14 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
           </div>
 
           {/* Input Area */}
-          <div className="px-4 md:px-6 py-3 md:py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-            <div className="flex items-end gap-2 md:gap-3">
+          <div className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+            <div className="flex items-end gap-2 sm:gap-2.5 md:gap-3">
               <button
                 type="button"
-                className="p-2 md:p-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
+                className="p-1.5 sm:p-2 md:p-2.5 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
                 title="Adjuntar archivo"
               >
-                <Paperclip className="h-4 w-4 md:h-5 md:w-5" />
+                <Paperclip className="h-4 w-4 sm:h-4.5 sm:w-4.5 md:h-5 md:w-5" />
               </button>
 
               <div className="flex-1 relative min-w-0">
@@ -325,8 +428,8 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
                   onBlur={stopTyping}
                   placeholder="Escribe un mensaje..."
                   rows={1}
-                  className="w-full px-3 md:px-4 py-2 md:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none resize-none max-h-32 text-sm md:text-base"
-                  style={{ minHeight: "38px" }}
+                  className="w-full px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 outline-none resize-none max-h-32 text-sm md:text-base"
+                  style={{ minHeight: "36px" }}
                 />
               </div>
 
@@ -334,18 +437,26 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
                 type="button"
                 onClick={handleSendMessage}
                 disabled={!messageInput.trim() || !isConnected}
-                className="p-2 md:p-2.5 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className="p-2 sm:p-2.5 bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-md"
               >
-                <Send className="h-4 w-4 md:h-5 md:w-5" />
+                <Send className="h-4 w-4 sm:h-4.5 sm:w-4.5 md:h-5 md:w-5" />
               </button>
             </div>
 
-            {!isConnected && (
-              <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                <span className="h-2 w-2 bg-amber-600 rounded-full" />
-                Reconectando al chat...
-              </p>
-            )}
+            {/* Hints */}
+            <div className="mt-2 flex items-center justify-between">
+              {!isConnected ? (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <span className="h-2 w-2 bg-amber-600 rounded-full" />
+                  Reconectando al chat...
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <Brain className="h-3 w-3 text-purple-600" />
+                  Escribe <code className="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-xs font-mono">@IA pregunta</code> para consultar al asistente
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -354,6 +465,20 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
           <AreaFilePanel teamId={teamId} areaId={area.id} currentUserId={userId} />
         </div>
       </div>
+
+      {/* Modales y Componentes IA - ⚠️ ACTUALIZADO: Ahora pasa teamId */}
+      <ConversationSummaryModal
+        teamId={teamId}
+        areaId={area.id}
+        isOpen={showSummary}
+        onClose={() => setShowSummary(false)}
+      />
+
+      <MeetingRecorder 
+        teamId={teamId}
+        areaId={area.id} 
+        areaName={area.name}
+      />
     </div>
   );
 }
