@@ -103,7 +103,19 @@ export interface AreaMessage {
   content: string;
   type: MessageType;
   
+  // 🆕 Origen del mensaje (web o telegram)
+  source?: 'web' | 'telegram';
+  
   user: AreaUser;
+  
+  // 🆕 Info de Telegram (si source === 'telegram')
+  telegram?: {
+    messageId: number;
+    fromId: number;
+    fromUsername?: string;
+    fromFirstName?: string;
+    fromLastName?: string;
+  };
   
   // Para menciones, archivos adjuntos, etc.
   metadata?: {

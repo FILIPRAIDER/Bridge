@@ -11,6 +11,13 @@ import { AIAssistantMessage } from "@/components/chat/AIAssistantMessage";
 import { ConversationSummaryModal } from "@/components/chat/ConversationSummaryModal";
 import { MeetingRecorder } from "@/components/chat/MeetingRecorder";
 
+// 🆕 Telegram Integration
+import { useTelegramGroup } from "@/hooks/useTelegramGroup";
+import { TelegramService } from "@/services/telegram.service";
+import { TelegramSetupWizard, TelegramBadge } from "@/components/telegram";
+import { getTelegramUserDisplayName } from "@/utils/telegram.utils";
+import type { TelegramMember, TelegramGroup as TelegramGroupType } from "@/types/telegram";
+
 interface AreaChatViewProps {
   teamId: string;
   area: TeamArea;
@@ -34,13 +41,24 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
     loadMessages,
   } = useAreaChat(teamId, area.id, userId);
 
-  // IA Features - ⚠️ ACTUALIZADO: Ahora pasa teamId
+  // IA Features
   const { response: aiResponse, loading: aiLoading, askAI, clearResponse } = useAIAssistant(teamId, area.id);
   const [showSummary, setShowSummary] = useState(false);
 
+  // 🆕 Telegram Integration
+  const { 
+    group: telegramGroup, 
+    loading: telegramLoading, 
+    linkGroup, 
+    validateCode,
+    isLinked 
+  } = useTelegramGroup(area.id);
+  const [showTelegramWizard, setShowTelegramWizard] = useState(false);
+  const [telegramMembers, setTelegramMembers] = useState<TelegramMember[]>([]);
+
   const [messageInput, setMessageInput] = useState("");
   const [editingMessage, setEditingMessage] = useState<string | null>(null);
-  const [filesExpanded, setFilesExpanded] = useState(false); // Para mobile accordion
+  const [filesExpanded, setFilesExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -48,6 +66,49 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // 🆕 Cargar miembros del área para Telegram
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        const members = await TelegramService.getAreaMembers(area.id);
+        setTelegramMembers(members);
+      } catch (err) {
+        console.error("Error loading members:", err);
+      }
+    };
+    loadMembers();
+  }, [area.id]);
+
+  // 🆕 Handlers de Telegram
+  const handleLinkTelegramGroup = async (
+    chatId: string,
+    chatTitle: string,
+    chatType: 'group' | 'supergroup' | 'channel',
+    teamId: string,
+    inviteLink?: string
+  ) => {
+    return await linkGroup(chatId, chatTitle, chatType, teamId, inviteLink);
+  };
+
+  const handleSendTelegramInvites = async (memberIds: string[], message?: string) => {
+    if (!telegramGroup) {
+      throw new Error("No hay grupo vinculado");
+    }
+
+    await TelegramService.sendInvites({
+      groupId: telegramGroup.id,
+      memberIds,
+      message,
+    });
+  };
+
+  const handleTelegramSetupComplete = (group: TelegramGroupType) => {
+    show({
+      variant: "success",
+      message: `Telegram configurado exitosamente`,
+    });
+  };
 
   const handleSendMessage = async () => {
     if (!messageInput.trim()) return;
@@ -161,8 +222,36 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
           </div>
         </div>
 
-        {/* Botones de IA */}
+        {/* Botones de Acción */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* 🆕 Botón Telegram */}
+          <button
+            onClick={() => setShowTelegramWizard(true)}
+            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shadow-sm text-sm font-medium ${
+              isLinked
+                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+                : "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800"
+            }`}
+            title={isLinked ? "Configurar Telegram" : "Conectar con Telegram"}
+          >
+            <Send className="h-4 w-4" />
+            <span className="hidden md:inline">
+              {isLinked ? "Telegram" : "Conectar"}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setShowTelegramWizard(true)}
+            className={`sm:hidden p-2 rounded-lg transition-all shadow-sm ${
+              isLinked
+                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                : "bg-gradient-to-r from-gray-600 to-gray-700 text-white"
+            }`}
+            title="Telegram"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+
           {/* Botón Resumir */}
           <button
             onClick={() => setShowSummary(true)}
@@ -319,8 +408,17 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
                       {/* User info */}
                       <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
                         <span className="text-xs font-semibold text-gray-900">
-                          {message.user?.name || "Usuario"}
+                          {/* 🆕 Mostrar nombre de Telegram si viene de allá */}
+                          {message.source === 'telegram' && message.telegram
+                            ? getTelegramUserDisplayName(
+                                message.telegram.fromFirstName,
+                                message.telegram.fromLastName,
+                                message.telegram.fromUsername
+                              )
+                            : (message.user?.name || "Usuario")}
                         </span>
+                        {/* 🆕 Badge de Telegram */}
+                        <TelegramBadge source={message.source || 'web'} size="sm" />
                         {message?.createdAt && (
                           <span className="text-xs text-gray-500">
                             {formatTime(message.createdAt)}
@@ -466,7 +564,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
         </div>
       </div>
 
-      {/* Modales y Componentes IA - ⚠️ ACTUALIZADO: Ahora pasa teamId */}
+      {/* Modales y Componentes IA */}
       <ConversationSummaryModal
         teamId={teamId}
         areaId={area.id}
@@ -478,6 +576,20 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
         teamId={teamId}
         areaId={area.id} 
         areaName={area.name}
+      />
+
+      {/* 🆕 Telegram Setup Wizard */}
+      <TelegramSetupWizard
+        isOpen={showTelegramWizard}
+        onClose={() => setShowTelegramWizard(false)}
+        areaId={area.id}
+        areaName={area.name}
+        teamId={teamId}
+        members={telegramMembers}
+        onLinkGroup={handleLinkTelegramGroup}
+        validateCode={validateCode}
+        onSendInvites={handleSendTelegramInvites}
+        onComplete={handleTelegramSetupComplete}
       />
     </div>
   );
