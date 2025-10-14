@@ -53,8 +53,8 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
   const { 
     group: telegramGroup, 
     loading: telegramLoading, 
-    linkGroup, 
-    validateCode,
+    linkGroup,
+    validateAndLinkCode,
     isLinked 
   } = useTelegramGroup(area.id, teamId);
   const [showTelegramWizard, setShowTelegramWizard] = useState(false);
@@ -624,7 +624,7 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
           teamId={teamId}
           members={telegramMembers}
           onLinkGroup={handleLinkTelegramGroup}
-          validateCode={validateCode}
+          validateAndLinkCode={validateAndLinkCode}
           onSendInvites={handleSendTelegramInvites}
           onComplete={handleTelegramSetupComplete}
         />

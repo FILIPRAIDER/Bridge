@@ -231,37 +231,31 @@ export class TelegramService {
   // ============================================
 
   /**
-   * Valida un código de vinculación generado por el bot
-   * 🔥 ACTUALIZADO: Usa el endpoint de link con código - el backend lo validará
+   * Valida un código de vinculación Y vincula el grupo
+   * El bot de Telegram genera el código cuando el usuario escribe /vincular
+   * El usuario copia ese código y lo ingresa aquí para vincular el grupo
    */
-  static async validateLinkCode(code: string, areaId: string, teamId?: string): Promise<{
-    valid: boolean;
-    chatId?: string;
-    chatTitle?: string;
-    chatType?: 'group' | 'supergroup' | 'channel';
+  static async validateAndLinkWithCode(code: string, areaId: string, teamId: string): Promise<{
+    success: boolean;
+    group?: TelegramGroup;
     message?: string;
   }> {
     try {
-      // Si no hay teamId, intentar obtenerlo de la sesión o contexto
-      // Por ahora asumimos que el backend lo extraerá del JWT
+      // Usar el endpoint de link con el código
       const result = await this.linkGroup({
         code,
         areaId,
-        teamId: teamId || '', // El backend puede extraerlo del token si no se provee
+        teamId,
       });
 
-      // Si llegamos aquí, el código era válido y se vinculó
       return {
-        valid: true,
-        chatId: result.group.chatId,
-        chatTitle: result.group.chatTitle,
-        chatType: result.group.chatType,
+        success: true,
+        group: result.group,
         message: "Grupo vinculado correctamente",
       };
     } catch (error: any) {
-      // Si falla, devolver error
       return {
-        valid: false,
+        success: false,
         message: error.message || "Código inválido o expirado",
       };
     }

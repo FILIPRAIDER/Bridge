@@ -19,20 +19,9 @@ interface TelegramLinkModalProps {
   onClose: () => void;
   
   /**
-   * Callback cuando se valida el código exitosamente
+   * Callback cuando se envía el código (el wizard maneja la validación)
    */
-  onCodeValidated: (chatId: string, chatTitle: string, chatType: 'group' | 'supergroup' | 'channel') => void;
-  
-  /**
-   * Función para validar el código con el backend
-   */
-  validateCode: (code: string) => Promise<{
-    valid: boolean;
-    chatId?: string;
-    chatTitle?: string;
-    chatType?: 'group' | 'supergroup' | 'channel';
-    message?: string;
-  }>;
+  onCodeSubmitted: (code: string) => Promise<void>;
 }
 
 /**
@@ -41,8 +30,7 @@ interface TelegramLinkModalProps {
 export function TelegramLinkModal({
   isOpen,
   onClose,
-  onCodeValidated,
-  validateCode,
+  onCodeSubmitted,
 }: TelegramLinkModalProps) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,9 +44,9 @@ export function TelegramLinkModal({
   };
 
   const handleSubmit = async () => {
-    // Validar formato
-    if (!isValidLinkCode(code)) {
-      setError("Código inválido. Debe tener formato TG-XXX-XXX-XXX");
+    // Validar que el código no esté vacío
+    if (!code || code.length < 6) {
+      setError("Por favor ingresa un código válido de 6 dígitos");
       return;
     }
 
@@ -66,22 +54,11 @@ export function TelegramLinkModal({
     setError(null);
 
     try {
-      // 🔥 Intentar vincular directamente - el backend validará el código
-      // Si el código es válido, el backend devolverá la info del grupo
-      const result = await validateCode(code);
-
-      if (result.valid && result.chatId && result.chatTitle && result.chatType) {
-        toast.success("Grupo vinculado correctamente");
-        onCodeValidated(result.chatId, result.chatTitle, result.chatType);
-        handleClose();
-      } else {
-        setError(result.message || "Código inválido o expirado");
-      }
+      await onCodeSubmitted(code);
+      handleClose();
     } catch (err: any) {
-      // Manejar errores específicos
       const errorMsg = err.message || "Error vinculando grupo";
       setError(errorMsg);
-      console.error("Error linking group:", err);
     } finally {
       setLoading(false);
     }
@@ -93,9 +70,6 @@ export function TelegramLinkModal({
     setLoading(false);
     onClose();
   };
-
-  const formattedCode = formatLinkCode(code);
-  const isValid = isValidLinkCode(code);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -123,22 +97,18 @@ export function TelegramLinkModal({
             <input
               type="text"
               value={code}
-              onChange={(e) => handleCodeChange(e.target.value.toUpperCase())}
-              placeholder="TG-ABC-123-XYZ"
+              onChange={(e) => handleCodeChange(e.target.value)}
+              placeholder="123456"
               disabled={loading}
+              maxLength={6}
               className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 rounded-xl font-mono text-center text-lg tracking-wider focus:outline-none transition text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
                 error
                   ? "border-red-500 focus:border-red-500"
-                  : code && isValid
+                  : code && code.length === 6
                   ? "border-green-500 focus:border-green-500"
                   : "border-gray-300 dark:border-gray-700 focus:border-blue-500"
               }`}
             />
-            {formattedCode && formattedCode !== code && (
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 text-center">
-                Formato: {formattedCode}
-              </p>
-            )}
           </div>
 
           {/* Error */}
@@ -150,11 +120,11 @@ export function TelegramLinkModal({
           )}
 
           {/* Success indicator */}
-          {code && isValid && !error && (
+          {code && code.length === 6 && !error && (
             <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
               <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
               <p className="text-sm text-green-700 dark:text-green-300">
-                Código con formato válido
+                Código listo para vincular
               </p>
             </div>
           )}
@@ -165,9 +135,9 @@ export function TelegramLinkModal({
               ¿Dónde encuentro el código?
             </p>
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
-              <li>Abre el bot de Bridge en Telegram</li>
+              <li>Ve al grupo de Telegram</li>
               <li>Envía el comando <code className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded">/vincular</code></li>
-              <li>El bot te enviará un código de 12 caracteres</li>
+              <li>El bot te responderá con un código de 6 dígitos</li>
               <li>Copia e ingresa ese código aquí</li>
             </ol>
           </div>
@@ -184,7 +154,7 @@ export function TelegramLinkModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !isValid}
+            disabled={loading || code.length !== 6}
             className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

@@ -65,15 +65,10 @@ interface TelegramSetupWizardProps {
   ) => Promise<TelegramGroup>;
   
   /**
-   * Función para validar código
+   * Función para validar código y vincular grupo
+   * El código es generado por el bot de Telegram, el usuario lo copia y lo pega aquí
    */
-  validateCode: (code: string) => Promise<{
-    valid: boolean;
-    chatId?: string;
-    chatTitle?: string;
-    chatType?: 'group' | 'supergroup' | 'channel';
-    message?: string;
-  }>;
+  validateAndLinkCode: (code: string) => Promise<TelegramGroup>;
   
   /**
    * Función para enviar invitaciones
@@ -97,7 +92,7 @@ export function TelegramSetupWizard({
   teamId,
   members,
   onLinkGroup,
-  validateCode,
+  validateAndLinkCode,
   onSendInvites,
   onComplete,
 }: TelegramSetupWizardProps) {
@@ -137,16 +132,13 @@ export function TelegramSetupWizard({
     }
   };
 
-  const handleCodeValidated = async (
-    chatId: string,
-    chatTitle: string,
-    chatType: 'group' | 'supergroup' | 'channel'
-  ) => {
+  const handleCodeValidated = async (code: string) => {
     setLoading(true);
     try {
-      const group = await onLinkGroup(chatId, chatTitle, chatType, teamId);
+      const group = await validateAndLinkCode(code);
       setLinkedGroup(group);
       setShowLinkModal(false);
+      toast.success("Grupo vinculado correctamente!");
       handleNext(); // Ir a invite-members
     } catch (err: any) {
       toast.error(err.message || "Error vinculando grupo");
@@ -378,7 +370,7 @@ export function TelegramSetupWizard({
                   </p>
                   <ol className="space-y-3 list-decimal list-inside text-gray-700 dark:text-gray-300">
                     <li>En el grupo de Telegram, escribe el comando: <code className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">/vincular</code></li>
-                    <li>El bot responderá con un código de 12 caracteres (ej: TG-ABC-123-XYZ)</li>
+                    <li>El bot responderá con un código de 6 dígitos (ej: 123456)</li>
                     <li>Copia ese código</li>
                     <li>Haz clic en el botón de abajo e ingresa el código</li>
                   </ol>
@@ -579,8 +571,7 @@ export function TelegramSetupWizard({
       <TelegramLinkModal
         isOpen={showLinkModal}
         onClose={() => setShowLinkModal(false)}
-        onCodeValidated={handleCodeValidated}
-        validateCode={validateCode}
+        onCodeSubmitted={handleCodeValidated}
       />
 
       {linkedGroup && (

@@ -109,26 +109,32 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
   };
 
   /**
-   * Valida un código de vinculación
+   * Valida un código de vinculación Y vincula el grupo
+   * El código es generado por el bot de Telegram cuando el usuario escribe /vincular
    */
-  const validateCode = async (code: string) => {
+  const validateAndLinkCode = async (code: string) => {
+    if (!teamId) {
+      throw new Error("TeamId es requerido");
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const result = await TelegramService.validateLinkCode(code, areaId, teamId);
+      const result = await TelegramService.validateAndLinkWithCode(code, areaId, teamId);
       
-      if (!result.valid) {
+      if (!result.success || !result.group) {
         throw new Error(result.message || "Código inválido");
       }
 
-      // Si fue exitoso, recargar el grupo
-      await fetchGroup();
+      // Actualizar el grupo local
+      setGroup(result.group);
+      toast.success("Grupo vinculado correctamente!");
 
-      return result;
+      return result.group;
     } catch (err: any) {
-      console.error("Error validating link code:", err);
-      const errorMsg = err.message || "Código inválido";
+      console.error("Error validating and linking with code:", err);
+      const errorMsg = err.message || "Código inválido o expirado";
       setError(errorMsg);
       toast.error(errorMsg);
       throw err;
@@ -155,7 +161,7 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
     error,
     linkGroup,
     unlinkGroup,
-    validateCode,
+    validateAndLinkCode,
     refresh,
     isLinked: !!group,
   };
