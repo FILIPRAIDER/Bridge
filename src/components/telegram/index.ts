@@ -7,3 +7,4 @@ export { TelegramMemberList } from "./TelegramMemberList";
 export { TelegramLinkModal } from "./TelegramLinkModal";
 export { TelegramInviteModal } from "./TelegramInviteModal";
 export { TelegramSetupWizard } from "./TelegramSetupWizard";
+export { TelegramInfoModal } from "./TelegramInfoModal";

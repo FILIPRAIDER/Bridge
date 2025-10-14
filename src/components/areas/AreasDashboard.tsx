@@ -32,6 +32,7 @@ export function AreasDashboard({ teamId }: AreasDashboardProps) {
         area={selectedArea}
         userId={session.user.id}
         userName={session.user.name || session.user.email || "Usuario"}
+        userRole={session.user.role as "LIDER" | "ESTUDIANTE" | "EMPRESARIO"}
         onBack={() => setSelectedArea(null)}
       />
     );

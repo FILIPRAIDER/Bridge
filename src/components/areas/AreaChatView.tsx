@@ -14,7 +14,7 @@ import { MeetingRecorder } from "@/components/chat/MeetingRecorder";
 // 🆕 Telegram Integration
 import { useTelegramGroup } from "@/hooks/useTelegramGroup";
 import { TelegramService } from "@/services/telegram.service";
-import { TelegramSetupWizard, TelegramBadge } from "@/components/telegram";
+import { TelegramSetupWizard, TelegramBadge, TelegramInfoModal } from "@/components/telegram";
 import { getTelegramUserDisplayName } from "@/utils/telegram.utils";
 import type { TelegramMember, TelegramGroup as TelegramGroupType } from "@/types/telegram";
 
@@ -23,11 +23,15 @@ interface AreaChatViewProps {
   area: TeamArea;
   userId: string;
   userName: string;
+  userRole?: "LIDER" | "ESTUDIANTE" | "EMPRESARIO"; // Rol del usuario
   onBack: () => void;
 }
 
-export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaChatViewProps) {
+export function AreaChatView({ teamId, area, userId, userName, userRole, onBack }: AreaChatViewProps) {
   const { show } = useToast();
+  
+  // ✅ Solo el LÍDER puede configurar Telegram
+  const canConfigureTelegram = userRole === "LIDER";
   const {
     messages,
     loading,
@@ -54,6 +58,7 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
     isLinked 
   } = useTelegramGroup(area.id);
   const [showTelegramWizard, setShowTelegramWizard] = useState(false);
+  const [showTelegramInfo, setShowTelegramInfo] = useState(false);
   const [telegramMembers, setTelegramMembers] = useState<TelegramMember[]>([]);
 
   const [messageInput, setMessageInput] = useState("");
@@ -231,32 +236,57 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
         {/* Botones de Acción */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* 🆕 Botón Telegram */}
-          <button
-            onClick={() => setShowTelegramWizard(true)}
-            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shadow-sm text-sm font-medium ${
-              isLinked
-                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
-                : "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800"
-            }`}
-            title={isLinked ? "Configurar Telegram" : "Conectar con Telegram"}
-          >
-            <Send className="h-4 w-4" />
-            <span className="hidden md:inline">
-              {isLinked ? "Telegram" : "Conectar"}
-            </span>
-          </button>
+          {canConfigureTelegram ? (
+            // LÍDER: Puede configurar Telegram
+            <>
+              <button
+                onClick={() => setShowTelegramWizard(true)}
+                className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shadow-sm text-sm font-medium ${
+                  isLinked
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+                    : "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800"
+                }`}
+                title={isLinked ? "Configurar Telegram" : "Conectar con Telegram"}
+              >
+                <Send className="h-4 w-4" />
+                <span className="hidden md:inline">
+                  {isLinked ? "Telegram" : "Conectar"}
+                </span>
+              </button>
 
-          <button
-            onClick={() => setShowTelegramWizard(true)}
-            className={`sm:hidden p-2 rounded-lg transition-all shadow-sm ${
-              isLinked
-                ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
-                : "bg-gradient-to-r from-gray-600 to-gray-700 text-white"
-            }`}
-            title="Telegram"
-          >
-            <Send className="h-4 w-4" />
-          </button>
+              <button
+                onClick={() => setShowTelegramWizard(true)}
+                className={`sm:hidden p-2 rounded-lg transition-all shadow-sm ${
+                  isLinked
+                    ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                    : "bg-gradient-to-r from-gray-600 to-gray-700 text-white"
+                }`}
+                title="Telegram"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </>
+          ) : isLinked && telegramGroup ? (
+            // MIEMBRO: Solo puede ver info si ya está configurado
+            <>
+              <button
+                onClick={() => setShowTelegramInfo(true)}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shadow-sm text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+                title="Ver grupo de Telegram"
+              >
+                <Send className="h-4 w-4" />
+                <span className="hidden md:inline">Telegram</span>
+              </button>
+
+              <button
+                onClick={() => setShowTelegramInfo(true)}
+                className="sm:hidden p-2 rounded-lg transition-all shadow-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
+                title="Ver grupo de Telegram"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </>
+          ) : null}
 
           {/* Botón Resumir */}
           <button
@@ -584,19 +614,31 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
         areaName={area.name}
       />
 
-      {/* 🆕 Telegram Setup Wizard */}
-      <TelegramSetupWizard
-        isOpen={showTelegramWizard}
-        onClose={() => setShowTelegramWizard(false)}
-        areaId={area.id}
-        areaName={area.name}
-        teamId={teamId}
-        members={telegramMembers}
-        onLinkGroup={handleLinkTelegramGroup}
-        validateCode={validateCode}
-        onSendInvites={handleSendTelegramInvites}
-        onComplete={handleTelegramSetupComplete}
-      />
+      {/* 🆕 Telegram Setup Wizard (Solo LÍDER) */}
+      {canConfigureTelegram && (
+        <TelegramSetupWizard
+          isOpen={showTelegramWizard}
+          onClose={() => setShowTelegramWizard(false)}
+          areaId={area.id}
+          areaName={area.name}
+          teamId={teamId}
+          members={telegramMembers}
+          onLinkGroup={handleLinkTelegramGroup}
+          validateCode={validateCode}
+          onSendInvites={handleSendTelegramInvites}
+          onComplete={handleTelegramSetupComplete}
+        />
+      )}
+
+      {/* 🆕 Telegram Info Modal (Para MIEMBROS) */}
+      {!canConfigureTelegram && telegramGroup && (
+        <TelegramInfoModal
+          isOpen={showTelegramInfo}
+          onClose={() => setShowTelegramInfo(false)}
+          group={telegramGroup}
+          areaName={area.name}
+        />
+      )}
     </div>
   );
 }
