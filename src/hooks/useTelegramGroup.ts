@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/toast";
 /**
  * Hook para gestionar grupos de Telegram vinculados a áreas
  */
-export function useTelegramGroup(areaId: string) {
+export function useTelegramGroup(areaId: string, teamId?: string) {
   const [group, setGroup] = useState<TelegramGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,11 +116,14 @@ export function useTelegramGroup(areaId: string) {
     setError(null);
 
     try {
-      const result = await TelegramService.validateLinkCode(code, areaId);
+      const result = await TelegramService.validateLinkCode(code, areaId, teamId);
       
       if (!result.valid) {
         throw new Error(result.message || "Código inválido");
       }
+
+      // Si fue exitoso, recargar el grupo
+      await fetchGroup();
 
       return result;
     } catch (err: any) {

@@ -118,12 +118,18 @@ export interface TelegramMember {
 // ============================================
 
 export interface LinkTelegramGroupRequest {
-  chatId: string;
+  // 🔥 Opción 1: Vincular con información completa del grupo
+  chatId?: string;
+  chatTitle?: string;
+  chatType?: 'group' | 'supergroup' | 'channel';
+  inviteLink?: string;
+  
+  // 🔥 Opción 2: Vincular con código de vinculación
+  code?: string;
+  
+  // Siempre requeridos
   areaId: string;
   teamId: string;
-  chatTitle: string;
-  chatType: 'group' | 'supergroup' | 'channel';
-  inviteLink?: string;
 }
 
 export interface LinkTelegramGroupResponse {

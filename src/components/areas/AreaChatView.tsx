@@ -56,7 +56,7 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
     linkGroup, 
     validateCode,
     isLinked 
-  } = useTelegramGroup(area.id);
+  } = useTelegramGroup(area.id, teamId);
   const [showTelegramWizard, setShowTelegramWizard] = useState(false);
   const [showTelegramInfo, setShowTelegramInfo] = useState(false);
   const [telegramMembers, setTelegramMembers] = useState<TelegramMember[]>([]);

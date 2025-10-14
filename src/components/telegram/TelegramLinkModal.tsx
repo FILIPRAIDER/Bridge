@@ -66,17 +66,22 @@ export function TelegramLinkModal({
     setError(null);
 
     try {
+      // 🔥 Intentar vincular directamente - el backend validará el código
+      // Si el código es válido, el backend devolverá la info del grupo
       const result = await validateCode(code);
 
       if (result.valid && result.chatId && result.chatTitle && result.chatType) {
-        toast.success("Código válido");
+        toast.success("Grupo vinculado correctamente");
         onCodeValidated(result.chatId, result.chatTitle, result.chatType);
         handleClose();
       } else {
-        setError(result.message || "Código inválido");
+        setError(result.message || "Código inválido o expirado");
       }
     } catch (err: any) {
-      setError(err.message || "Error validando código");
+      // Manejar errores específicos
+      const errorMsg = err.message || "Error vinculando grupo";
+      setError(errorMsg);
+      console.error("Error linking group:", err);
     } finally {
       setLoading(false);
     }
