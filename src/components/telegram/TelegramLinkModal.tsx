@@ -121,7 +121,7 @@ export function TelegramLinkModal({
               onChange={(e) => handleCodeChange(e.target.value.toUpperCase())}
               placeholder="TG-ABC-123-XYZ"
               disabled={loading}
-              className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 rounded-xl font-mono text-center text-lg tracking-wider focus:outline-none transition ${
+              className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 rounded-xl font-mono text-center text-lg tracking-wider focus:outline-none transition text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
                 error
                   ? "border-red-500 focus:border-red-500"
                   : code && isValid

@@ -66,9 +66,9 @@ NEXTAUTH_SECRET=genera-un-secret-seguro
 
 #### 6. Telegram Bot Username
 ```env
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bridgeIA_bot
 ```
-📝 Si no la configuras, usa "BridgeAppBot" por defecto
+📝 Si no la configuras, usa "bridgeIA_bot" por defecto
 
 ---
 

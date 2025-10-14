@@ -90,7 +90,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  * Obtiene el username del bot desde env o usa default
  */
 export function getTelegramBotUsername(): string {
-  return process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BridgeAppBot';
+  return process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'bridgeIA_bot';
 }
 
 /**

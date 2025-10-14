@@ -89,14 +89,14 @@ O visita: https://generate-secret.vercel.app/32
 
 ### 6. Telegram Bot Username
 ```env
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bridgeIA_bot
 ```
 **¿Para qué?**
 - Wizard de configuración de Telegram
 - Links al bot
 - Instrucciones de setup
 
-**💡 Default:** Si no la configuras, usa `BridgeAppBot` automáticamente
+**💡 Default:** Si no la configuras, usa `bridgeIA_bot` automáticamente
 
 **📝 ¿Cuándo configurarla?**
 - Si tu bot de Telegram tiene otro nombre
@@ -132,7 +132,7 @@ NEXTAUTH_SECRET=GENERA-UNO-CON-openssl-rand-base64-32
 # OPCIONALES - Solo si las necesitas
 # ============================================
 
-# NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
+# NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bridgeIA_bot
 # NEXT_PUBLIC_IMAGEKIT_URL=https://ik.imagekit.io/tu-id
 ```
 

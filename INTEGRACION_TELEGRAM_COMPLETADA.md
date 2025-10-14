@@ -144,7 +144,7 @@ src/components/telegram/TelegramSetupWizard.tsx
 **6 Pasos del Wizard:**
 1. ✅ **Intro** - Presentación y beneficios
 2. ✅ **Create Group** - Instrucciones para crear grupo
-3. ✅ **Add Bot** - Instrucciones para agregar bot (@BridgeAppBot)
+3. ✅ **Add Bot** - Instrucciones para agregar bot (@bridgeIA_bot)
 4. ✅ **Link Code** - Modal para ingresar código de vinculación
 5. ✅ **Invite Members** - Modal para invitar al equipo
 6. ✅ **Success** - Confirmación y próximos pasos
@@ -310,7 +310,7 @@ const [telegramMembers, setTelegramMembers] = useState<TelegramMember[]>([]);
 2. Click en botón "Conectar" (si no hay grupo) o "Telegram" (si hay grupo)
 3. Seguir wizard de 6 pasos:
    - Crear grupo en Telegram
-   - Agregar bot @BridgeAppBot
+   - Agregar bot @bridgeIA_bot
    - Usar comando `/link` en Telegram
    - Ingresar código en Bridge
    - Invitar miembros
@@ -339,7 +339,7 @@ NEXT_PUBLIC_API_BASE_URL=https://proyectoia-backend.onrender.com
 NEXT_PUBLIC_WS_BASE_URL=https://proyectoia-backend.onrender.com
 
 # Telegram (opcional)
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bridgeIA_bot
 ```
 
 ### **Backend (Pendiente del equipo Telegram)**

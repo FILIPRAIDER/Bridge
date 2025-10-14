@@ -76,7 +76,7 @@ NEXTAUTH_SECRET=tu-secret-super-seguro-aqui
 
 ### 6. **Telegram Bot Username** (Opcional)
 ```env
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bridgeIA_bot
 ```
 **Descripción:** Username del bot de Telegram (sin @)
 **Usado en:**
@@ -84,9 +84,9 @@ NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
 - Links al bot
 - Instrucciones de setup
 
-**Valor por defecto:** `BridgeAppBot` si no se configura
+**Valor por defecto:** `bridgeIA_bot` si no se configura
 
-**📝 Nota:** Esta variable es opcional. Si no la configuras, se usará "BridgeAppBot" como placeholder.
+**📝 Nota:** Esta variable es opcional. Si no la configuras, se usará "bridgeIA_bot" como placeholder.
 
 ---
 
@@ -214,7 +214,7 @@ NEXT_PUBLIC_APP_BASE_URL=https://tu-dominio.vercel.app
 # ============================================
 # TELEGRAM (OPCIONAL)
 # ============================================
-NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=BridgeAppBot
+NEXT_PUBLIC_TELEGRAM_BOT_USERNAME=bridgeIA_bot
 
 # ============================================
 # IMAGEKIT (OPCIONAL)
