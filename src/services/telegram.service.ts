@@ -75,6 +75,7 @@ export class TelegramService {
 
   /**
    * Obtiene el grupo de Telegram vinculado a un área
+   * ✅ CORREGIDO: Backend siempre retorna 200 OK con { ok: true, group: null } cuando no existe
    */
   static async getGroupByAreaId(areaId: string): Promise<TelegramGroup | null> {
     const headers = await this.getAuthHeaders();
@@ -84,17 +85,15 @@ export class TelegramService {
       headers,
     });
 
-    if (response.status === 404) {
-      return null;
-    }
-
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Error obteniendo grupo");
     }
 
     const data = await response.json();
-    return data.group;
+    // Backend retorna { ok: true, group: null } cuando no existe grupo
+    // No es un error, simplemente el área no tiene grupo vinculado
+    return data.group || null;
   }
 
   /**
@@ -147,12 +146,13 @@ export class TelegramService {
 
   /**
    * Obtiene lista de miembros del área con estado de invitación
-   * ✅ ACTUALIZADO: Usa el endpoint correcto con teamId
+   * ✅ CORREGIDO: Usa /teams sin /api (según indicaciones del backend)
    */
   static async getAreaMembers(teamId: string, areaId: string): Promise<TelegramMember[]> {
     const headers = await this.getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/teams/${teamId}/areas/${areaId}/members`, {
+    // ⚠️ IMPORTANTE: Este endpoint NO tiene /api en la ruta
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}/areas/${areaId}/members`, {
       method: "GET",
       headers,
     });
