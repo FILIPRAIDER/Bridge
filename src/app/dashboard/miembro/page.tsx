@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession as useNextAuthSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
@@ -18,13 +19,32 @@ type TabType = "profile" | "team" | "my-area" | "members";
 
 export default function MiembroDashboard() {
   const { data: session } = useNextAuthSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   useLoadAvatar(); // Cargar avatar automáticamente
-  const [activeTab, setActiveTab] = useState<TabType>("profile");
+  
+  // ✅ Leer vista desde query params (con fallback a 'profile')
+  const viewFromUrl = searchParams.get('view') as TabType | null;
+  const [activeTab, setActiveTab] = useState<TabType>(viewFromUrl || "profile");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [team, setTeam] = useState<Team | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [teamId, setTeamId] = useState<string | null>(null);
+
+  // ✅ Sincronizar activeTab cuando cambian los query params
+  useEffect(() => {
+    if (viewFromUrl && viewFromUrl !== activeTab) {
+      setActiveTab(viewFromUrl);
+    }
+  }, [viewFromUrl]);
+
+  // ✅ Actualizar URL cuando cambia activeTab
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    router.push(`?view=${tab}`, { scroll: false });
+  };
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -32,8 +52,6 @@ export default function MiembroDashboard() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id]);
-
-  const [teamId, setTeamId] = useState<string | null>(null);
 
   const loadData = async () => {
     if (!session?.user?.id) return;
@@ -65,7 +83,7 @@ export default function MiembroDashboard() {
       {/* Sidebar ocupa todo el alto */}
       <Sidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         role="ESTUDIANTE"
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

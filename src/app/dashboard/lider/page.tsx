@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession as useNextAuthSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/dashboard/Sidebar";
@@ -23,14 +24,32 @@ type TabType = "overview" | "profile" | "areas-chat" | "manage-areas" | "manage-
 
 export default function LiderDashboard() {
   const { data: session } = useNextAuthSession();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   useLoadAvatar(); // Cargar avatar automáticamente
-  const [activeTab, setActiveTab] = useState<TabType>("overview");
+  
+  // ✅ Leer vista desde query params (con fallback a 'overview')
+  const viewFromUrl = searchParams.get('view') as TabType | null;
+  const [activeTab, setActiveTab] = useState<TabType>(viewFromUrl || "overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [team, setTeam] = useState<Team | null>(null);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [profile, setProfile] = useState<MemberProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // ✅ Sincronizar activeTab cuando cambian los query params
+  useEffect(() => {
+    if (viewFromUrl && viewFromUrl !== activeTab) {
+      setActiveTab(viewFromUrl);
+    }
+  }, [viewFromUrl]);
+
+  // ✅ Actualizar URL cuando cambia activeTab
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    router.push(`?view=${tab}`, { scroll: false });
+  };
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -116,7 +135,7 @@ export default function LiderDashboard() {
       {/* Sidebar ocupa todo el alto */}
       <Sidebar
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         role="LIDER"
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
