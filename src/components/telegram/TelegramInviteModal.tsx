@@ -37,12 +37,13 @@ interface TelegramInviteModalProps {
   onSendInvites: (memberIds: string[], message?: string) => Promise<void>;
   
   /**
-   * Tab inicial a mostrar (por defecto: "email")
+   * Tab inicial a mostrar (por defecto: "qr")
+   * 🔥 NOTA: El tab "email" está temporalmente deshabilitado
    */
-  defaultTab?: "email" | "qr" | "link";
+  defaultTab?: "qr" | "link"; // "email" removido temporalmente
 }
 
-type Tab = "email" | "qr" | "link";
+type Tab = "email" | "qr" | "link"; // Mantenemos "email" en el tipo para futuro
 
 /**
  * Modal para invitar miembros a Telegram (3 tabs: Email, QR, Link)
@@ -53,7 +54,7 @@ export function TelegramInviteModal({
   inviteLink,
   members,
   onSendInvites,
-  defaultTab = "email",
+  defaultTab = "qr", // 🔥 CAMBIADO: Por defecto QR (el email está deshabilitado)
 }: TelegramInviteModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
@@ -62,6 +63,9 @@ export function TelegramInviteModal({
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
+
+  // 🔥 Validación: Si no hay inviteLink, mostrar mensaje
+  const hasInviteLink = inviteLink && inviteLink.trim().length > 0;
 
   const handleSendEmails = async () => {
     if (selectedMemberIds.length === 0) {
@@ -100,8 +104,9 @@ export function TelegramInviteModal({
     onClose();
   };
 
+  // 🔥 TEMPORAL: Ocultamos el tab de Email hasta que esté completamente implementado
   const tabs: Array<{ id: Tab; label: string; icon: any }> = [
-    { id: "email", label: "Por Email", icon: Mail },
+    // { id: "email", label: "Por Email", icon: Mail }, // ❌ Deshabilitado temporalmente
     { id: "qr", label: "Código QR", icon: QrCode },
     { id: "link", label: "Link Directo", icon: Link2 },
   ];
@@ -182,70 +187,90 @@ export function TelegramInviteModal({
           {/* Tab: QR */}
           {activeTab === "qr" && (
             <div className="flex flex-col items-center">
-              <TelegramQRCode url={inviteLink} size={256} showActions />
-              <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 w-full">
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <strong>Instrucciones:</strong> Los miembros pueden escanear este código QR 
-                  desde Telegram para unirse al grupo automáticamente.
-                </p>
-              </div>
+              {hasInviteLink ? (
+                <>
+                  <TelegramQRCode url={inviteLink} size={256} showActions />
+                  <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 w-full">
+                    <p className="text-sm text-blue-900 dark:text-blue-100">
+                      <strong>Instrucciones:</strong> Los miembros pueden escanear este código QR 
+                      desde Telegram para unirse al grupo automáticamente.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6 w-full">
+                  <p className="text-sm text-yellow-900 dark:text-yellow-100">
+                    ⚠️ No hay link de invitación disponible. Por favor, verifica que el grupo esté correctamente vinculado.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           {/* Tab: Link */}
           {activeTab === "link" && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Link de Invitación
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={inviteLink}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl font-mono text-sm"
-                  />
-                  <button
-                    onClick={handleCopyLink}
-                    className={`px-4 py-3 rounded-xl font-medium transition flex items-center gap-2 ${
-                      copied
-                        ? "bg-green-500 text-white"
-                        : "bg-blue-500 text-white hover:bg-blue-600"
-                    }`}
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="h-4 w-4" />
-                        Copiado
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        Copiar
-                      </>
-                    )}
-                  </button>
+              {hasInviteLink ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Link de Invitación
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={inviteLink}
+                        readOnly
+                        className="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
+                      />
+                      <button
+                        onClick={handleCopyLink}
+                        className={`px-4 py-3 rounded-xl font-medium transition flex items-center gap-2 ${
+                          copied
+                            ? "bg-green-500 text-white"
+                            : "bg-blue-500 text-white hover:bg-blue-600"
+                        }`}
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="h-4 w-4" />
+                            Copiado
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4" />
+                            Copiar
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4">
+                    <p className="text-sm text-amber-900 dark:text-amber-100">
+                      <strong>⚠️ Importante:</strong> Este link permite a cualquier persona unirse al grupo. 
+                      Compártelo solo con miembros de confianza.
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Opciones de Compartir:
+                    </p>
+                    <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+                      <li>Compartir por WhatsApp, email o redes sociales</li>
+                      <li>Incluir en documentos o presentaciones</li>
+                      <li>Publicar en canales internos de comunicación</li>
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6">
+                  <p className="text-sm text-yellow-900 dark:text-yellow-100">
+                    ⚠️ No hay link de invitación disponible. Por favor, verifica que el grupo esté correctamente vinculado.
+                  </p>
                 </div>
-              </div>
-
-              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4">
-                <p className="text-sm text-amber-900 dark:text-amber-100">
-                  <strong>⚠️ Importante:</strong> Este link permite a cualquier persona unirse al grupo. 
-                  Compártelo solo con miembros de confianza.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Opciones de Compartir:
-                </p>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
-                  <li>Compartir por WhatsApp, email o redes sociales</li>
-                  <li>Incluir en documentos o presentaciones</li>
-                  <li>Publicar en canales internos de comunicación</li>
-                </ul>
-              </div>
+              )}
             </div>
           )}
         </div>
