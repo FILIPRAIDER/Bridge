@@ -78,9 +78,10 @@ export function TelegramInfoModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              title="Cerrar"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </button>
           </div>
         </div>
