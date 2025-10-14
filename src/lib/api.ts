@@ -66,18 +66,29 @@ async function request<T = any>(
       
       try {
         const text = await res.text();
-        console.error("Raw error response:", text);
+        
+        // 🔥 Silenciar errores 403 esperados (cuando usuario no es miembro del área)
+        const is403MembersError = res.status === 403 && url.includes('/members');
+        
+        if (!is403MembersError) {
+          console.error("Raw error response:", text);
+        }
         
         if (text) {
           try {
             errorDetails = JSON.parse(text);
             // Extraer mensaje anidado: { error: { message: "..." } }
             msg = errorDetails?.error?.message || errorDetails?.message || errorDetails?.error || errorDetails?.details || msg;
-            console.error("API Error Details:", { status: res.status, url, response: errorDetails });
+            
+            if (!is403MembersError) {
+              console.error("API Error Details:", { status: res.status, url, response: errorDetails });
+            }
           } catch {
             // No es JSON válido, usar el texto directamente
             msg = text || msg;
-            console.error("Non-JSON error:", text);
+            if (!is403MembersError) {
+              console.error("Non-JSON error:", text);
+            }
           }
         }
       } catch (parseError) {

@@ -52,8 +52,12 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
               };
             }
             return null;
-          } catch (err) {
-            console.error(`Error loading members for area ${area.id}:`, err);
+          } catch (err: any) {
+            // 403 es normal - significa que no eres miembro de esa área
+            // Solo logueamos otros errores
+            if (err?.status !== 403 && !err?.message?.includes("No tienes acceso")) {
+              console.error(`Error loading members for area ${area.id}:`, err);
+            }
             return null;
           }
         })
@@ -225,6 +229,17 @@ export function MyArea({ userId, teamId }: MyAreaProps) {
   );
 }
 
+// Función helper para traducir roles
+function translateRole(role: string): string {
+  const translations: Record<string, string> = {
+    'LEADER': 'Líder',
+    'MEMBER': 'Miembro',
+    'ESTUDIANTE': 'Estudiante',
+    'LIDER': 'Líder',
+  };
+  return translations[role] || role;
+}
+
 // Componente interno para mostrar miembros (sin botón de eliminar)
 function AreaMembersList({ teamId, areaId }: { teamId: string; areaId: string }) {
   const { members, loading, error } = useAreaMembers(teamId, areaId);
@@ -283,7 +298,7 @@ function AreaMembersList({ teamId, areaId }: { teamId: string; areaId: string })
               {member.user?.name || member.user?.email || "Usuario"}
             </p>
             <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span className="capitalize">{member.role}</span>
+              <span>{translateRole(member.role)}</span>
               <span>•</span>
               <span>{formatDistanceToNow(member.assignedAt)}</span>
             </div>
