@@ -123,20 +123,29 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
     try {
       const result = await TelegramService.validateAndLinkWithCode(code, areaId, teamId);
       
-      if (!result.success || !result.group) {
-        throw new Error(result.message || "Código inválido");
+      // ✅ CORREGIDO: Verificar success antes de lanzar error
+      if (!result.success) {
+        // Es un error real del backend
+        const errorMsg = result.message || "Código inválido o expirado";
+        setError(errorMsg);
+        toast.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
-      // Actualizar el grupo local
-      setGroup(result.group);
-      toast.success("Grupo vinculado correctamente!");
-
-      return result.group;
+      // ✅ Éxito - actualizar el grupo local
+      if (result.group) {
+        setGroup(result.group);
+        toast.success("¡Grupo vinculado exitosamente!");
+        return result.group;
+      } else {
+        throw new Error("No se recibió información del grupo");
+      }
     } catch (err: any) {
-      console.error("Error validating and linking with code:", err);
-      const errorMsg = err.message || "Código inválido o expirado";
-      setError(errorMsg);
-      toast.error(errorMsg);
+      // Solo loggear errores reales (no los que ya manejamos arriba)
+      if (err.message !== "Código inválido o expirado") {
+        console.error("Error validating and linking with code:", err);
+      }
+      // Re-lanzar el error para que el componente lo maneje
       throw err;
     } finally {
       setLoading(false);
