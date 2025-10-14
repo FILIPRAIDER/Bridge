@@ -140,7 +140,11 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
         toast.success("¡Grupo vinculado exitosamente!");
         return result.group;
       } else {
-        throw new Error("No se recibió información del grupo");
+        console.error("[useTelegramGroup] Respuesta exitosa pero sin grupo. Result completo:", result);
+        console.error("[useTelegramGroup] result.success:", result.success);
+        console.error("[useTelegramGroup] result.group:", result.group);
+        console.error("[useTelegramGroup] result.message:", result.message);
+        throw new Error("El backend respondió correctamente pero no retornó información del grupo. Verifica la configuración del backend.");
       }
     } catch (err: any) {
       console.error("[useTelegramGroup] Error completo:", err);

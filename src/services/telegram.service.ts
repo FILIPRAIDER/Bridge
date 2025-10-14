@@ -66,6 +66,15 @@ export class TelegramService {
 
     const result = await response.json();
     console.log('[TelegramService] linkGroup - Success result:', result);
+    console.log('[TelegramService] linkGroup - result.group:', result.group);
+    console.log('[TelegramService] linkGroup - result keys:', Object.keys(result));
+    
+    // Si el backend retorna el grupo en una estructura diferente, adaptarlo
+    if (!result.group && result.data) {
+      console.log('[TelegramService] Adaptando respuesta: result.data existe');
+      return { success: true, group: result.data, message: result.message };
+    }
+    
     return result;
   }
 
@@ -265,11 +274,19 @@ export class TelegramService {
         teamId,
       });
 
-      console.log('[TelegramService] Vinculación exitosa:', result);
+      console.log('[TelegramService] Vinculación exitosa - result completo:', result);
+      console.log('[TelegramService] result.group:', result.group);
+      console.log('[TelegramService] result.data:', (result as any).data);
+      console.log('[TelegramService] result keys:', Object.keys(result));
+      
+      // El backend puede retornar el grupo en diferentes formatos
+      const group = result.group || (result as any).data || null;
+      console.log('[TelegramService] Grupo extraído:', group);
+      
       return {
         success: true,
-        group: result.group,
-        message: "Grupo vinculado correctamente",
+        group: group,
+        message: result.message || "Grupo vinculado correctamente",
       };
     } catch (error: any) {
       console.error('[TelegramService] Error en validateAndLinkWithCode:', error);
