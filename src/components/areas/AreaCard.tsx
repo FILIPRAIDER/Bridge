@@ -141,11 +141,19 @@ export function AreaCard({ area, onEdit, onDelete, onAssignMember }: AreaCardPro
                   className="group flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-8 w-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-gray-700">
-                        {member.user.name?.[0] || member.user.email[0].toUpperCase()}
-                      </span>
-                    </div>
+                    {member.user.avatarUrl ? (
+                      <img
+                        src={member.user.avatarUrl}
+                        alt={member.user.name || member.user.email}
+                        className="h-8 w-8 rounded-full object-cover flex-shrink-0 ring-2 ring-gray-200"
+                      />
+                    ) : (
+                      <div className="h-8 w-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium text-gray-700">
+                          {member.user.name?.[0] || member.user.email[0].toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {member.user.name || member.user.email}
