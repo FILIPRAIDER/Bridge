@@ -153,19 +153,21 @@ export function MeetingRecorder({ teamId, areaId, areaName, onRecordingStateChan
             {/* Contenido */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)] space-y-6 custom-scrollbar">
               {/* Participantes */}
-              <section className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-orange-600" />
-                  Participantes ({minutes.participants.length})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {minutes.participants.map((participant, i) => (
-                    <span key={i} className="px-3 py-1.5 bg-white border border-orange-200 rounded-lg text-sm font-medium text-gray-700">
-                      {participant}
-                    </span>
-                  ))}
-                </div>
-              </section>
+              {minutes.participants && minutes.participants.length > 0 && (
+                <section className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-orange-600" />
+                    Participantes ({minutes.participants.length})
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {minutes.participants.map((participant, i) => (
+                      <span key={i} className="px-3 py-1.5 bg-white border border-orange-200 rounded-lg text-sm font-medium text-gray-700">
+                        {participant}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* Resumen */}
               <section>
@@ -176,7 +178,7 @@ export function MeetingRecorder({ teamId, areaId, areaName, onRecordingStateChan
               </section>
 
               {/* Temas Discutidos */}
-              {minutes.topics.length > 0 && (
+              {minutes.topics && minutes.topics.length > 0 && (
                 <section>
                   <h3 className="font-bold text-gray-900 mb-4">💬 Temas Discutidos</h3>
                   <div className="space-y-4">
@@ -184,7 +186,7 @@ export function MeetingRecorder({ teamId, areaId, areaName, onRecordingStateChan
                       <div key={i} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <h4 className="font-semibold text-gray-900 mb-2">{topic.topic}</h4>
                         <p className="text-sm text-gray-700 mb-3">{topic.discussion}</p>
-                        {topic.decisions.length > 0 && (
+                        {topic.decisions && topic.decisions.length > 0 && (
                           <div className="bg-green-50 border-l-4 border-green-500 p-3 rounded">
                             <p className="text-xs font-semibold text-green-900 mb-2">Decisiones:</p>
                             <ul className="text-sm text-green-800 space-y-1">
@@ -204,7 +206,7 @@ export function MeetingRecorder({ teamId, areaId, areaName, onRecordingStateChan
               )}
 
               {/* Tareas y Compromisos */}
-              {minutes.actionItems.length > 0 && (
+              {minutes.actionItems && minutes.actionItems.length > 0 && (
                 <section>
                   <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-yellow-600" />
