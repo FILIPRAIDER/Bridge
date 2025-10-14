@@ -69,19 +69,17 @@ export function AreaChatView({ teamId, area, userId, userName, onBack }: AreaCha
 
   // 🆕 Cargar miembros del área para Telegram
   // ✅ CORREGIDO: Ahora usa el endpoint correcto con teamId
+  // ⚠️ NOTA: Si el backend aún no implementó este endpoint, continuará sin miembros
   useEffect(() => {
     const loadMembers = async () => {
       try {
         const members = await TelegramService.getAreaMembers(teamId, area.id);
         setTelegramMembers(members);
       } catch (err) {
-        console.error("Error loading members:", err);
-        // Mostrar toast solo si no es un error de red común
-        if (err instanceof Error && !err.message.includes('Failed to fetch')) {
-          show({
-            variant: "error",
-            message: "Error cargando miembros del área"
-          });
+        // Silenciamos 404 hasta que el backend implemente el endpoint
+        // La app funcionará sin la lista de miembros para Telegram
+        if (err instanceof Error && !err.message.includes('404') && !err.message.includes('Failed to fetch')) {
+          console.warn("Error loading members (non-critical):", err.message);
         }
       }
     };
