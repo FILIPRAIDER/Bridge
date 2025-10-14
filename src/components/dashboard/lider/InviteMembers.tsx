@@ -341,14 +341,14 @@ export function InviteMembers({ teamId, onInviteSent, teamName }: InviteMembersP
                         <div className="flex items-center gap-3">
                           <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center">
                             <span className="text-white font-semibold text-sm">
-                              {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                              {user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U'}
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {user.name || "Usuario sin nombre"}
                             </p>
-                            <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                            <p className="text-xs text-gray-600 truncate">{user.email || "Sin email"}</p>
                           </div>
                           <div className="flex-shrink-0">
                             <span className="inline-flex px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">

@@ -138,7 +138,7 @@ export function TelegramSetupWizard({
       const group = await validateAndLinkCode(code);
       setLinkedGroup(group);
       setShowLinkModal(false);
-      toast.success("Grupo vinculado correctamente!");
+      // ✅ NO mostrar toast aquí - el hook ya lo muestra
       handleNext(); // Ir a invite-members
     } catch (err: any) {
       toast.error(err.message || "Error vinculando grupo");

@@ -58,9 +58,15 @@ export class TelegramService {
       
       try {
         const error = JSON.parse(errorText);
-        throw new Error(error.message || error.error || "Código no encontrado. Verifica que sea correcto.");
+        // Usar el mensaje del backend si existe
+        const errorMessage = error.message || error.error || "Error vinculando grupo";
+        throw new Error(errorMessage);
       } catch (e) {
-        throw new Error("Código no encontrado. Verifica que sea correcto.");
+        // Si no se puede parsear el JSON, mostrar el texto raw
+        if (e instanceof Error && e.message !== errorText) {
+          throw e; // Re-lanzar el error parseado
+        }
+        throw new Error(errorText || "Error vinculando grupo");
       }
     }
 
