@@ -39,14 +39,16 @@ export function TelegramLinkModal({
   if (!isOpen) return null;
 
   const handleCodeChange = (value: string) => {
-    setCode(value);
+    // Convertir a mayúsculas automáticamente
+    const upperValue = value.toUpperCase();
+    setCode(upperValue);
     setError(null);
   };
 
   const handleSubmit = async () => {
-    // Validar que el código no esté vacío
-    if (!code || code.length < 6) {
-      setError("Por favor ingresa un código válido de 6 dígitos");
+    // Validar formato del código (12 caracteres: TG-XXX-XXXXXXX)
+    if (!code || !isValidLinkCode(code)) {
+      setError("Por favor ingresa un código válido con formato: TG-XXX-XXXXXXX");
       return;
     }
 
@@ -98,13 +100,13 @@ export function TelegramLinkModal({
               type="text"
               value={code}
               onChange={(e) => handleCodeChange(e.target.value)}
-              placeholder="123456"
+              placeholder="TG-XXX-XXXXXXX"
               disabled={loading}
-              maxLength={6}
+              maxLength={14}
               className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 rounded-xl font-mono text-center text-lg tracking-wider focus:outline-none transition text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
                 error
                   ? "border-red-500 focus:border-red-500"
-                  : code && code.length === 6
+                  : code && isValidLinkCode(code)
                   ? "border-green-500 focus:border-green-500"
                   : "border-gray-300 dark:border-gray-700 focus:border-blue-500"
               }`}
@@ -120,11 +122,11 @@ export function TelegramLinkModal({
           )}
 
           {/* Success indicator */}
-          {code && code.length === 6 && !error && (
+          {code && isValidLinkCode(code) && !error && (
             <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
               <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
               <p className="text-sm text-green-700 dark:text-green-300">
-                Código listo para vincular
+                Código válido - listo para vincular
               </p>
             </div>
           )}
@@ -137,7 +139,7 @@ export function TelegramLinkModal({
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
               <li>Ve al grupo de Telegram</li>
               <li>Envía el comando <code className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded">/vincular</code></li>
-              <li>El bot te responderá con un código de 6 dígitos</li>
+              <li>El bot te responderá con un código de 12 caracteres (TG-XXX-XXXXXXX)</li>
               <li>Copia e ingresa ese código aquí</li>
             </ol>
           </div>
@@ -154,7 +156,7 @@ export function TelegramLinkModal({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || code.length !== 6}
+            disabled={loading || !isValidLinkCode(code)}
             className="flex-1 px-4 py-2.5 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

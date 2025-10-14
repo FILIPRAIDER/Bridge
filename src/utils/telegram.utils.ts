@@ -10,8 +10,8 @@
 
 /**
  * Formatea un código de vinculación de Telegram
- * @param code Código sin formato (ej: "TGABC123XYZ")
- * @returns Código formateado (ej: "TG-ABC-123-XYZ")
+ * @param code Código sin formato (ej: "TGABCXYZ1234")
+ * @returns Código formateado (ej: "TG-ABC-XYZ1234")
  */
 export function formatLinkCode(code: string): string {
   if (!code) return '';
@@ -19,9 +19,10 @@ export function formatLinkCode(code: string): string {
   // Remover espacios y guiones
   const clean = code.replace(/[\s-]/g, '').toUpperCase();
   
-  // Formato: TG-ABC-123-XYZ
+  // Formato: TG-XXX-XXXXXXX (12 caracteres total)
+  // TG (2) + XXX (3) + XXXXXXX (7) = 12 caracteres
   if (clean.length === 12 && clean.startsWith('TG')) {
-    return `${clean.slice(0, 2)}-${clean.slice(2, 5)}-${clean.slice(5, 8)}-${clean.slice(8, 11)}`;
+    return `${clean.slice(0, 2)}-${clean.slice(2, 5)}-${clean.slice(5, 12)}`;
   }
   
   return clean;
@@ -29,6 +30,7 @@ export function formatLinkCode(code: string): string {
 
 /**
  * Valida si un código de vinculación es válido
+ * Formato esperado: TG-XXX-XXXXXXX (12 caracteres sin guiones)
  * @param code Código a validar
  * @returns true si es válido
  */
@@ -37,14 +39,14 @@ export function isValidLinkCode(code: string): boolean {
   
   const clean = code.replace(/[\s-]/g, '').toUpperCase();
   
-  // Debe tener 12 caracteres y empezar con TG
+  // Debe tener exactamente 12 caracteres y empezar con TG
   if (clean.length !== 12 || !clean.startsWith('TG')) {
     return false;
   }
   
-  // Resto debe ser alfanumérico
+  // Los 10 caracteres restantes deben ser alfanuméricos (A-Z, 0-9)
   const rest = clean.slice(2);
-  return /^[A-Z0-9]+$/.test(rest);
+  return /^[A-Z0-9]{10}$/.test(rest);
 }
 
 // ============================================
