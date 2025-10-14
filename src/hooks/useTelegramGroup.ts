@@ -121,14 +121,16 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
     setError(null);
 
     try {
+      console.log('[useTelegramGroup] Intentando vincular con código:', code);
       const result = await TelegramService.validateAndLinkWithCode(code, areaId, teamId);
+      console.log('[useTelegramGroup] Resultado:', result);
       
       // ✅ CORREGIDO: Verificar success antes de lanzar error
       if (!result.success) {
         // Es un error real del backend
-        const errorMsg = result.message || "Código inválido o expirado";
+        const errorMsg = result.message || "Código no encontrado. Verifica que sea correcto.";
         setError(errorMsg);
-        toast.error(errorMsg);
+        // ❌ NO mostrar toast aquí - dejar que el modal lo maneje
         throw new Error(errorMsg);
       }
 
@@ -141,10 +143,7 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
         throw new Error("No se recibió información del grupo");
       }
     } catch (err: any) {
-      // Solo loggear errores reales (no los que ya manejamos arriba)
-      if (err.message !== "Código inválido o expirado") {
-        console.error("Error validating and linking with code:", err);
-      }
+      console.error("[useTelegramGroup] Error completo:", err);
       // Re-lanzar el error para que el componente lo maneje
       throw err;
     } finally {

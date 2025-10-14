@@ -39,6 +39,10 @@ export class TelegramService {
    */
   static async linkGroup(data: LinkTelegramGroupRequest): Promise<LinkTelegramGroupResponse> {
     const headers = await this.getAuthHeaders();
+    
+    console.log('[TelegramService] linkGroup - URL:', `${API_BASE_URL}/api/telegram/link`);
+    console.log('[TelegramService] linkGroup - Data:', data);
+    console.log('[TelegramService] linkGroup - Headers:', headers);
 
     const response = await fetch(`${API_BASE_URL}/api/telegram/link`, {
       method: "POST",
@@ -46,12 +50,23 @@ export class TelegramService {
       body: JSON.stringify(data),
     });
 
+    console.log('[TelegramService] linkGroup - Response status:', response.status);
+
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Error vinculando grupo de Telegram");
+      const errorText = await response.text();
+      console.error('[TelegramService] linkGroup - Error response:', errorText);
+      
+      try {
+        const error = JSON.parse(errorText);
+        throw new Error(error.message || error.error || "Código no encontrado. Verifica que sea correcto.");
+      } catch (e) {
+        throw new Error("Código no encontrado. Verifica que sea correcto.");
+      }
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log('[TelegramService] linkGroup - Success result:', result);
+    return result;
   }
 
   /**
@@ -241,6 +256,8 @@ export class TelegramService {
     message?: string;
   }> {
     try {
+      console.log('[TelegramService] validateAndLinkWithCode llamado con:', { code, areaId, teamId });
+      
       // Usar el endpoint de link con el código
       const result = await this.linkGroup({
         code,
@@ -248,15 +265,17 @@ export class TelegramService {
         teamId,
       });
 
+      console.log('[TelegramService] Vinculación exitosa:', result);
       return {
         success: true,
         group: result.group,
         message: "Grupo vinculado correctamente",
       };
     } catch (error: any) {
+      console.error('[TelegramService] Error en validateAndLinkWithCode:', error);
       return {
         success: false,
-        message: error.message || "Código inválido o expirado",
+        message: error.message || "Código no encontrado. Verifica que sea correcto.",
       };
     }
   }
