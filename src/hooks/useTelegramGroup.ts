@@ -112,7 +112,7 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
    * Valida un código de vinculación Y vincula el grupo
    * El código es generado por el bot de Telegram cuando el usuario escribe /vincular
    */
-  const validateAndLinkCode = async (code: string) => {
+  const validateAndLinkCode = async (code: string): Promise<{ group: TelegramGroup, alreadyLinked?: boolean }> => {
     if (!teamId) {
       throw new Error("TeamId es requerido");
     }
@@ -137,8 +137,17 @@ export function useTelegramGroup(areaId: string, teamId?: string) {
       // ✅ Éxito - actualizar el grupo local
       if (result.group) {
         setGroup(result.group);
-        toast.success("¡Grupo vinculado exitosamente!");
-        return result.group;
+        
+        // ✅ NUEVO: Si el grupo ya estaba vinculado (409), no mostrar mensaje de éxito
+        // El wizard se encargará de mostrar la vista de invitación
+        if (!result.alreadyLinked) {
+          toast.success("¡Grupo vinculado exitosamente!");
+        }
+        
+        return { 
+          group: result.group, 
+          alreadyLinked: result.alreadyLinked 
+        };
       } else {
         console.error("[useTelegramGroup] Respuesta exitosa pero sin grupo. Result completo:", result);
         console.error("[useTelegramGroup] result.success:", result.success);

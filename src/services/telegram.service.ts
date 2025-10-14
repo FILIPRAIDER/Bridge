@@ -52,6 +52,35 @@ export class TelegramService {
 
     console.log('[TelegramService] linkGroup - Response status:', response.status);
 
+    // ✅ CASO ESPECIAL: 409 = Área ya tiene grupo vinculado
+    if (response.status === 409) {
+      console.log('[TelegramService] linkGroup - Área ya vinculada (409), obteniendo grupo existente...');
+      
+      try {
+        const errorData = await response.json();
+        console.log('[TelegramService] linkGroup - Error 409 data:', errorData);
+        
+        // Obtener el grupo existente
+        const existingGroup = await this.getGroupByAreaId(data.areaId);
+        
+        if (existingGroup) {
+          console.log('[TelegramService] linkGroup - Grupo existente encontrado:', existingGroup);
+          // Retornar como éxito con el grupo existente
+          return {
+            success: true,
+            group: existingGroup,
+            message: "Grupo ya vinculado",
+            alreadyLinked: true, // Flag especial
+          } as LinkTelegramGroupResponse & { alreadyLinked?: boolean };
+        } else {
+          throw new Error("El área está vinculada pero no se pudo obtener el grupo");
+        }
+      } catch (err: any) {
+        console.error('[TelegramService] linkGroup - Error obteniendo grupo existente:', err);
+        throw new Error("Esta área ya tiene un grupo vinculado pero no se pudo obtener la información");
+      }
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[TelegramService] linkGroup - Error response:', errorText);
@@ -269,6 +298,7 @@ export class TelegramService {
     success: boolean;
     group?: TelegramGroup;
     message?: string;
+    alreadyLinked?: boolean;
   }> {
     try {
       console.log('[TelegramService] validateAndLinkWithCode llamado con:', { code, areaId, teamId });
@@ -278,11 +308,12 @@ export class TelegramService {
         code,
         areaId,
         teamId,
-      });
+      }) as LinkTelegramGroupResponse & { alreadyLinked?: boolean };
 
       console.log('[TelegramService] Vinculación exitosa - result completo:', result);
       console.log('[TelegramService] result.group:', result.group);
       console.log('[TelegramService] result.data:', (result as any).data);
+      console.log('[TelegramService] result.alreadyLinked:', result.alreadyLinked);
       console.log('[TelegramService] result keys:', Object.keys(result));
       
       // El backend puede retornar el grupo en diferentes formatos
@@ -293,6 +324,7 @@ export class TelegramService {
         success: true,
         group: group,
         message: result.message || "Grupo vinculado correctamente",
+        alreadyLinked: result.alreadyLinked,
       };
     } catch (error: any) {
       console.error('[TelegramService] Error en validateAndLinkWithCode:', error);

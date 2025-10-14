@@ -35,6 +35,11 @@ interface TelegramInviteModalProps {
    * Callback para enviar invitaciones por email
    */
   onSendInvites: (memberIds: string[], message?: string) => Promise<void>;
+  
+  /**
+   * Tab inicial a mostrar (por defecto: "email")
+   */
+  defaultTab?: "email" | "qr" | "link";
 }
 
 type Tab = "email" | "qr" | "link";
@@ -48,8 +53,9 @@ export function TelegramInviteModal({
   inviteLink,
   members,
   onSendInvites,
+  defaultTab = "email",
 }: TelegramInviteModalProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("email");
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [customMessage, setCustomMessage] = useState("");
   const [sending, setSending] = useState(false);

@@ -14,7 +14,7 @@ import { MeetingRecorder } from "@/components/chat/MeetingRecorder";
 // 🆕 Telegram Integration
 import { useTelegramGroup } from "@/hooks/useTelegramGroup";
 import { TelegramService } from "@/services/telegram.service";
-import { TelegramSetupWizard, TelegramBadge, TelegramInfoModal } from "@/components/telegram";
+import { TelegramSetupWizard, TelegramBadge, TelegramInfoModal, TelegramInviteModal } from "@/components/telegram";
 import { getTelegramUserDisplayName } from "@/utils/telegram.utils";
 import type { TelegramMember, TelegramGroup as TelegramGroupType } from "@/types/telegram";
 
@@ -59,6 +59,7 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
   } = useTelegramGroup(area.id, teamId);
   const [showTelegramWizard, setShowTelegramWizard] = useState(false);
   const [showTelegramInfo, setShowTelegramInfo] = useState(false);
+  const [showTelegramInvite, setShowTelegramInvite] = useState(false); // 🆕 Modal de invitación para líder
   const [telegramMembers, setTelegramMembers] = useState<TelegramMember[]>([]);
 
   const [messageInput, setMessageInput] = useState("");
@@ -240,13 +241,21 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
             // LÍDER: Puede configurar Telegram
             <>
               <button
-                onClick={() => setShowTelegramWizard(true)}
+                onClick={() => {
+                  // Si ya está vinculado, mostrar directamente el modal de invitación con QR
+                  // Si no está vinculado, mostrar el wizard completo
+                  if (isLinked && telegramGroup) {
+                    setShowTelegramInvite(true);
+                  } else {
+                    setShowTelegramWizard(true);
+                  }
+                }}
                 className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shadow-sm text-sm font-medium ${
                   isLinked
                     ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
                     : "bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800"
                 }`}
-                title={isLinked ? "Configurar Telegram" : "Conectar con Telegram"}
+                title={isLinked ? "Invitar Miembros" : "Conectar con Telegram"}
               >
                 <Send className="h-4 w-4" />
                 <span className="hidden md:inline">
@@ -255,7 +264,13 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
               </button>
 
               <button
-                onClick={() => setShowTelegramWizard(true)}
+                onClick={() => {
+                  if (isLinked && telegramGroup) {
+                    setShowTelegramInvite(true);
+                  } else {
+                    setShowTelegramWizard(true);
+                  }
+                }}
                 className={`sm:hidden p-2 rounded-lg transition-all shadow-sm ${
                   isLinked
                     ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white"
@@ -637,6 +652,18 @@ export function AreaChatView({ teamId, area, userId, userName, userRole, onBack 
           onClose={() => setShowTelegramInfo(false)}
           group={telegramGroup}
           areaName={area.name}
+        />
+      )}
+
+      {/* 🆕 Telegram Invite Modal (Para LÍDER cuando ya está vinculado) */}
+      {canConfigureTelegram && telegramGroup && (
+        <TelegramInviteModal
+          isOpen={showTelegramInvite}
+          onClose={() => setShowTelegramInvite(false)}
+          inviteLink={telegramGroup.inviteLink || ""}
+          members={telegramMembers}
+          onSendInvites={handleSendTelegramInvites}
+          defaultTab="qr"
         />
       )}
     </div>

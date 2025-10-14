@@ -68,7 +68,7 @@ interface TelegramSetupWizardProps {
    * Función para validar código y vincular grupo
    * El código es generado por el bot de Telegram, el usuario lo copia y lo pega aquí
    */
-  validateAndLinkCode: (code: string) => Promise<TelegramGroup>;
+  validateAndLinkCode: (code: string) => Promise<{ group: TelegramGroup, alreadyLinked?: boolean }>;
   
   /**
    * Función para enviar invitaciones
@@ -135,11 +135,22 @@ export function TelegramSetupWizard({
   const handleCodeValidated = async (code: string) => {
     setLoading(true);
     try {
-      const group = await validateAndLinkCode(code);
-      setLinkedGroup(group);
+      const result = await validateAndLinkCode(code);
+      setLinkedGroup(result.group);
       setShowLinkModal(false);
-      // ✅ NO mostrar toast aquí - el hook ya lo muestra
-      handleNext(); // Ir a invite-members
+      
+      // ✅ NUEVO: Si el grupo ya estaba vinculado, ir directamente a invitar miembros
+      // y abrir el modal de invitación con QR activo
+      if (result.alreadyLinked) {
+        console.log('[TelegramSetupWizard] Grupo ya vinculado, saltando a invitación con QR');
+        toast.info("Este grupo ya está vinculado. Puedes invitar miembros ahora.");
+        setCurrentStep("invite-members"); // Ir directamente al paso de invitación
+        // Abrir el modal de invitación automáticamente
+        setTimeout(() => setShowInviteModal(true), 300);
+      } else {
+        // ✅ NO mostrar toast aquí - el hook ya lo muestra
+        handleNext(); // Ir al siguiente paso normalmente
+      }
     } catch (err: any) {
       toast.error(err.message || "Error vinculando grupo");
     } finally {
@@ -581,6 +592,7 @@ export function TelegramSetupWizard({
           inviteLink={linkedGroup.inviteLink || ""}
           members={members}
           onSendInvites={onSendInvites}
+          defaultTab="qr"
         />
       )}
     </>
