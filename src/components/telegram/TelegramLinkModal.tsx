@@ -39,9 +39,33 @@ export function TelegramLinkModal({
   if (!isOpen) return null;
 
   const handleCodeChange = (value: string) => {
-    // Convertir a mayúsculas automáticamente
-    const upperValue = value.toUpperCase();
-    setCode(upperValue);
+    // Remover todos los guiones y espacios para procesar
+    let clean = value.replace(/[-\s]/g, '').toUpperCase();
+    
+    // Limitar a 12 caracteres (sin contar guiones)
+    if (clean.length > 12) {
+      clean = clean.substring(0, 12);
+    }
+    
+    // Formatear automáticamente: TG-XXX-XXXXXXX
+    let formatted = '';
+    
+    if (clean.length > 0) {
+      // Primeros 2 caracteres: TG
+      formatted = clean.substring(0, 2);
+      
+      if (clean.length > 2) {
+        // Agregar guión después de TG
+        formatted += '-' + clean.substring(2, 5);
+        
+        if (clean.length > 5) {
+          // Agregar segundo guión después de XXX
+          formatted += '-' + clean.substring(5, 12);
+        }
+      }
+    }
+    
+    setCode(formatted);
     setError(null);
   };
 
