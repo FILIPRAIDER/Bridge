@@ -377,7 +377,7 @@ export function TelegramSetupWizard({
                     Instrucciones:
                   </p>
                   <ol className="space-y-3 list-decimal list-inside text-gray-700 dark:text-gray-300">
-                    <li>En el grupo de Telegram, escribe el comando: <code className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">/link</code></li>
+                    <li>En el grupo de Telegram, escribe el comando: <code className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">/vincular</code></li>
                     <li>El bot responderá con un código de 12 caracteres (ej: TG-ABC-123-XYZ)</li>
                     <li>Copia ese código</li>
                     <li>Haz clic en el botón de abajo e ingresa el código</li>

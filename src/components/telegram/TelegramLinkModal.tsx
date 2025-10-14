@@ -161,7 +161,7 @@ export function TelegramLinkModal({
             </p>
             <ol className="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
               <li>Abre el bot de Bridge en Telegram</li>
-              <li>Envía el comando <code className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded">/link</code></li>
+              <li>Envía el comando <code className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded">/vincular</code></li>
               <li>El bot te enviará un código de 12 caracteres</li>
               <li>Copia e ingresa ese código aquí</li>
             </ol>
