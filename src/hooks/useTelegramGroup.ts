@@ -14,7 +14,7 @@ export function useTelegramGroup(areaId: string) {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Carga el grupo vinculado al área
+   * Carga el grupo vinculado al área (silencia 404 mientras el backend no esté listo)
    */
   const fetchGroup = async () => {
     if (!areaId) return;
@@ -26,8 +26,11 @@ export function useTelegramGroup(areaId: string) {
       const data = await TelegramService.getGroupByAreaId(areaId);
       setGroup(data);
     } catch (err: any) {
-      console.error("Error fetching Telegram group:", err);
-      setError(err.message || "Error cargando grupo de Telegram");
+      // Silenciamos el error 404 - el backend aún no tiene estos endpoints
+      if (!err.message?.includes('404') && !err.message?.includes('Not Found')) {
+        console.error("Error fetching Telegram group:", err);
+        setError(err.message || "Error cargando grupo de Telegram");
+      }
       setGroup(null);
     } finally {
       setLoading(false);

@@ -147,11 +147,12 @@ export class TelegramService {
 
   /**
    * Obtiene lista de miembros del área con estado de invitación
+   * ✅ ACTUALIZADO: Usa el endpoint correcto con teamId
    */
-  static async getAreaMembers(areaId: string): Promise<TelegramMember[]> {
+  static async getAreaMembers(teamId: string, areaId: string): Promise<TelegramMember[]> {
     const headers = await this.getAuthHeaders();
 
-    const response = await fetch(`${API_BASE_URL}/api/areas/${areaId}/members`, {
+    const response = await fetch(`${API_BASE_URL}/api/teams/${teamId}/areas/${areaId}/members`, {
       method: "GET",
       headers,
     });
