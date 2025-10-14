@@ -23,6 +23,7 @@ export function ManageAreas({ teamId }: ManageAreasProps) {
   const [editingArea, setEditingArea] = useState<TeamArea | null>(null);
   const [assigningArea, setAssigningArea] = useState<TeamArea | null>(null);
   const [showAIInsights, setShowAIInsights] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateArea = async (data: any) => {
     const newArea = await createArea(data);
@@ -192,7 +193,7 @@ export function ManageAreas({ teamId }: ManageAreasProps) {
         <div className="space-y-4">
           {areas.map((area) => (
             <AreaCard
-              key={area.id}
+              key={`${area.id}-${refreshKey}`}
               area={area}
               onEdit={() => setEditingArea(area)}
               onDelete={() => handleDeleteArea(area.id)}
@@ -225,8 +226,10 @@ export function ManageAreas({ teamId }: ManageAreasProps) {
           teamId={teamId}
           onClose={() => setAssigningArea(null)}
           onAssign={() => {
-            setAssigningArea(null);
+            // Recargar áreas y forzar re-render de los cards para actualizar miembros
             loadAreas();
+            setRefreshKey(prev => prev + 1);
+            setAssigningArea(null);
           }}
         />
       )}
